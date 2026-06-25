@@ -10,3 +10,5 @@
 ^air\.toml$
 ^\.covignore$
 ^.*\.Rcheck$
+^data-raw$
+^\.playwright-mcp$

@@ -9,10 +9,10 @@ Authors@R:
       person("Weston", "Voglesonger", email = "westonvogle@gmail.com", role = "ctb"))
 Description: A lean command-line front-end to the 'imuGAP' model-fitting
     package. Reads model inputs (observations, populations, and locations)
-    from a directory of CSV or RDS files, validates them against the
-    canonical 'imuGAP' schema, runs a fit, and writes the result out. The
-    helper functions are exported so they can be used directly from R as
-    well as from the bundled command-line script.
+    from a directory of CSV or RDS files or from a single 'xlsx' workbook,
+    validates them against the canonical 'imuGAP' schema, runs a fit, and
+    writes the result out. The helper functions are exported so they can be
+    used directly from R as well as from the bundled command-line script.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
@@ -21,10 +21,14 @@ RoxygenNote: 7.3.3
 Depends:
     R (>= 4.1.0)
 Imports:
-    imuGAP
+    imuGAP,
+    readxl,
+    tools,
+    utils
 Suggests:
     testthat (>= 3.0.0),
-    spelling
+    spelling,
+    writexl
 Config/testthat/edition: 3
 URL: https://github.com/ACCIDDA/imurun, https://accidda.github.io/imurun
 BugReports: https://github.com/ACCIDDA/imurun/issues
