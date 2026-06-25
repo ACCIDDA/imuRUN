@@ -1,22 +1,37 @@
-# Read all imuGAP inputs from a directory
+# Read all imuGAP inputs from a directory or workbook
 
-Convenience entry point that checks for all required inputs and reads
-them. Returns a named list with the raw (un-canonicalized)
+Convenience entry point that loads the raw (un-canonicalized)
 `observations`, `populations`, and `locations` data, ready to be passed
-to [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md).
+to
+[`validate_inputs()`](https://accidda.github.io/imurun/reference/validate_inputs.md)
+or [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md).
+
+`read_inputs()` accepts either:
+
+- a directory:
+
+  containing `observations`, `populations`, and `locations` files as CSV
+  or RDS (the original behavior); or
+
+- a single `.xlsx` workbook:
+
+  with one sheet per input, read via
+  [`read_workbook()`](https://accidda.github.io/imurun/reference/read_workbook.md).
+
+Missing inputs (files or sheets) are all reported at once.
 
 ## Usage
 
 ``` r
-read_inputs(dir)
+read_inputs(path)
 ```
 
 ## Arguments
 
-- dir:
+- path:
 
-  character; directory containing `observations`, `populations`, and
-  `locations` as CSV or RDS.
+  character; a directory of CSV/RDS files, or the path to a single
+  `.xlsx` workbook.
 
 ## Value
 

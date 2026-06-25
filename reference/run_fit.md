@@ -54,14 +54,21 @@ Invisibly, an integer exit code (see Description).
 run_fit(character(0))
 #> imurun.R -- Minimal CLI for imuGAP model fitting
 #> 
-#> Usage: imurun <input_dir> [output_dir]
-#>        imurun -h <input_dir>          (validate only, no model fitting)
+#> Usage: imurun <input> [output_dir]
+#>        imurun -h <input>              (validate only, no model fitting)
+#>        imurun init [dir]              (write a blank input template workbook)
+#>        imurun example [dir]           (write a filled example workbook)
 #>        imurun -h | --help             (show this message)
 #> 
-#> input_dir must contain:
+#> <input> is either a directory of CSV/RDS files or a single .xlsx workbook.
+#> 
+#> A directory must contain:
 #>   observations.csv (or .rds)      -- columns: obs_id, positive, sample_n
 #>   populations.csv (or .rds)       -- columns: obs_id, loc_id, cohort, age, dose, weight
 #>   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
+#> 
+#> A workbook must have one sheet per input with the same column names
+#> (run 'imurun init' to get a correctly-headed template).
 #> 
 #> Output: fit.rds (raw stanfit object for post-processing).
 #> output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.

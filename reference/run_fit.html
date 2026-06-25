@@ -137,14 +137,21 @@ followed by an input directory).</p></dd>
 <span class="r-in"><span><span class="fu">run_fit</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> imurun.R -- Minimal CLI for imuGAP model fitting</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Usage: imurun &lt;input_dir&gt; [output_dir]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        imurun -h &lt;input_dir&gt;          (validate only, no model fitting)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Usage: imurun &lt;input&gt; [output_dir]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        imurun -h &lt;input&gt;              (validate only, no model fitting)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        imurun init [dir]              (write a blank input template workbook)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        imurun example [dir]           (write a filled example workbook)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        imurun -h | --help             (show this message)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> input_dir must contain:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;input&gt; is either a directory of CSV/RDS files or a single .xlsx workbook.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> A directory must contain:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   observations.csv (or .rds)      -- columns: obs_id, positive, sample_n</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   populations.csv (or .rds)       -- columns: obs_id, loc_id, cohort, age, dose, weight</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> A workbook must have one sheet per input with the same column names</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (run 'imurun init' to get a correctly-headed template).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Output: fit.rds (raw stanfit object for post-processing).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.</span>

@@ -43,6 +43,10 @@
 <ul><li>Initial development version.</li>
 <li>Exported the core CLI engine as ordinary R functions: <code><a href="../reference/run_fit.html">run_fit()</a></code>, <code><a href="../reference/read_inputs.html">read_inputs()</a></code>, <code><a href="../reference/load_by_ext.html">load_by_ext()</a></code>, <code><a href="../reference/find_input_file.html">find_input_file()</a></code>, and <code><a href="../reference/check_all_inputs.html">check_all_inputs()</a></code>.</li>
 <li>Added <code><a href="../reference/install_cli.html">install_cli()</a></code> to put the bundled <code>imurun</code> command on the PATH.</li>
+<li>Added an <code>.xlsx</code> workbook input mode: <code><a href="../reference/read_inputs.html">read_inputs()</a></code> now accepts either a directory of CSV/RDS files or a single workbook with one sheet per input, via the new <code><a href="../reference/read_workbook.html">read_workbook()</a></code>. Missing sheets are reported all at once.</li>
+<li>Pinned the canonical input schema as <code>IMURUN_SCHEMA</code> and shipped a blank template workbook (<code>inst/templates/imurun_template.xlsx</code>) plus a small filled example (<code>inst/extdata/imurun_example.xlsx</code>) derived from imuGAP’s <code>*_sim</code> data; resolve them with <code><a href="../reference/imurun_template.html">imurun_template()</a></code> / <code><a href="../reference/imurun_example.html">imurun_example()</a></code>.</li>
+<li>Added <code><a href="../reference/imurun_init.html">imurun_init()</a></code> and <code><a href="../reference/imurun_copy_example.html">imurun_copy_example()</a></code> (and <code>imurun init</code> / <code>imurun example</code> subcommands) to scaffold workbooks into a directory.</li>
+<li>Added <code><a href="../reference/validate_inputs.html">validate_inputs()</a></code>, a friendly validation layer over the imuGAP canonicalizers that reports every problem at once in spreadsheet terms.</li>
 <li>Set up the development infrastructure: R CMD check, lint, test coverage, pkgdown, and spelling continuous-integration workflows.</li>
 </ul></div>
   </main></div>
