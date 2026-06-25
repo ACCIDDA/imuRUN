@@ -13,17 +13,19 @@ jobs:
 
     strategy:
       fail-fast: false
+      # imurun is pure R (no compiled code), so cross-platform risk is low and a
+      # leaner matrix than imuGAP's suffices: Ubuntu across the R-version range
+      # (oldrel pins the R >= 4.1 floor; devel catches upcoming changes) plus
+      # Windows release, the one OS where pure-R behaviour and install_cli()
+      # genuinely differ. macOS is omitted (~= Linux for pure R, and 10x billing
+      # minutes on a private repo); CRAN's incoming checks cover more platforms
+      # at submission time.
       matrix:
         config:
           - {os: ubuntu-latest,  r: 'release'}
           - {os: ubuntu-latest,  r: 'oldrel'}
           - {os: ubuntu-latest,  r: 'devel'}
-          - {os: macos-latest,   r: 'release'}
-          - {os: macos-latest,   r: 'oldrel'}
-          - {os: macos-latest,   r: 'devel'}
           - {os: windows-latest, r: 'release'}
-          - {os: windows-latest, r: 'oldrel'}
-          - {os: windows-latest, r: 'devel'}
 
     continue-on-error: ${{ matrix.config.r == 'devel' }}
 

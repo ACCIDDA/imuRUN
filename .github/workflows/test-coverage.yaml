@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::covr, any::xml2, any::pkgload
+          extra-packages: any::covr, any::xml2
           needs: coverage
 
       # imurun is pure R: no Stan compilation cache and no fitted-data step.
