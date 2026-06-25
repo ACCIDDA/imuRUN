@@ -16,7 +16,9 @@
 # --- Package guard -----------------------------------------------------------
 
 if (!requireNamespace("imurun", quietly = TRUE)) {
-  stop("Package 'imurun' required. Install with: remotes::install_github(\"ACCIDDA/imurun\")")
+  stop(
+    "Package 'imurun' required. Install with: remotes::install_github(\"ACCIDDA/imurun\")"
+  )
 }
 
 # --- Entry guard -------------------------------------------------------------

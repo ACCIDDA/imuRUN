@@ -41,7 +41,8 @@ file_exists_any_ext <- function(dir, name) {
 load_by_ext <- function(path) {
   ext <- tolower(tools::file_ext(path))
   tryCatch(
-    switch(ext,
+    switch(
+      ext,
       csv = utils::read.csv(path, stringsAsFactors = FALSE),
       rds = readRDS(path),
       stop("Unsupported extension '.", ext, "'", call. = FALSE)
@@ -77,8 +78,16 @@ find_input_file <- function(dir, name) {
     path <- file.path(dir, paste0(name, ".", ext))
     if (file.exists(path)) return(load_by_ext(path))
   }
-  stop("Expected '", name, ".csv' or '", name, ".rds' in ", dir, "/",
-       call. = FALSE)
+  stop(
+    "Expected '",
+    name,
+    ".csv' or '",
+    name,
+    ".rds' in ",
+    dir,
+    "/",
+    call. = FALSE
+  )
 }
 
 #' Check that all required inputs are present
@@ -105,11 +114,18 @@ find_input_file <- function(dir, name) {
 #' @export
 check_all_inputs <- function(dir) {
   required <- c("observations", "populations", "locations")
-  missing <- required[!vapply(required, function(n) file_exists_any_ext(dir, n), logical(1))]
+  missing <- required[
+    !vapply(required, function(n) file_exists_any_ext(dir, n), logical(1))
+  ]
   if (length(missing) > 0) {
-    stop("Missing input files in ", dir, "/: ",
-         paste(missing, collapse = ", "),
-         " (expected .csv or .rds)", call. = FALSE)
+    stop(
+      "Missing input files in ",
+      dir,
+      "/: ",
+      paste(missing, collapse = ", "),
+      " (expected .csv or .rds)",
+      call. = FALSE
+    )
   }
   invisible(NULL)
 }
@@ -143,7 +159,7 @@ check_all_inputs <- function(dir) {
 read_inputs <- function(dir) {
   check_all_inputs(dir)
   list(
-    obs  = find_input_file(dir, "observations"),
+    obs = find_input_file(dir, "observations"),
     pops = find_input_file(dir, "populations"),
     locs = find_input_file(dir, "locations")
   )

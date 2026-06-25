@@ -47,5 +47,5 @@ install_cli <- function(path = "~/.local/bin") {
   }
   message("Installed: ", link, " -> ", script)
   message("Ensure ", path, " is on your PATH.")
-  return(invisible(TRUE))
+  invisible(TRUE)
 }

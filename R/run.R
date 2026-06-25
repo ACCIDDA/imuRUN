@@ -80,7 +80,13 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(3L))
   }
 
-  err <- tryCatch({ check_all_inputs(input_dir); NULL }, error = identity)
+  err <- tryCatch(
+    {
+      check_all_inputs(input_dir)
+      NULL
+    },
+    error = identity
+  )
   if (!is.null(err)) {
     message("ERROR: ", conditionMessage(err))
     return(invisible(3L))
@@ -95,12 +101,15 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   message("[OK] Inputs loaded.")
 
   message("[->] Validating schema...")
-  canonical <- tryCatch({
-    locs <- imuGAP::canonicalize_locations(inputs$locs)
-    obs  <- imuGAP::canonicalize_observations(inputs$obs)
-    pops <- imuGAP::canonicalize_populations(inputs$pops, obs, locs)
-    list(locs = locs, obs = obs, pops = pops)
-  }, error = identity)
+  canonical <- tryCatch(
+    {
+      locs <- imuGAP::canonicalize_locations(inputs$locs)
+      obs <- imuGAP::canonicalize_observations(inputs$obs)
+      pops <- imuGAP::canonicalize_populations(inputs$pops, obs, locs)
+      list(locs = locs, obs = obs, pops = pops)
+    },
+    error = identity
+  )
   if (inherits(canonical, "error")) {
     message("ERROR: ", conditionMessage(canonical))
     return(invisible(1L))
@@ -125,7 +134,8 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   message("[->] Launching imuGAP...")
   fit <- tryCatch(
     imuGAP::sampling(
-      observations = canonical$obs, populations = canonical$pops,
+      observations = canonical$obs,
+      populations = canonical$pops,
       locations = canonical$locs,
       imugap_opts = imuGAP::imugap_options(df = 5L, dose_schedule = c(1L, 4L)),
       stan_opts = stan_opts
@@ -139,10 +149,20 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   message("[OK] Model complete.")
 
   fit_path <- file.path(output_dir, "fit.rds")
-  save_err <- tryCatch({ saveRDS(fit, fit_path); NULL }, error = identity)
+  save_err <- tryCatch(
+    {
+      saveRDS(fit, fit_path)
+      NULL
+    },
+    error = identity
+  )
   if (!is.null(save_err)) {
-    message("ERROR: Failed to save output to ", fit_path, ": ",
-            conditionMessage(save_err))
+    message(
+      "ERROR: Failed to save output to ",
+      fit_path,
+      ": ",
+      conditionMessage(save_err)
+    )
     return(invisible(3L))
   }
   message("[OK] Wrote ", fit_path)

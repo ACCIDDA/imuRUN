@@ -1,6 +1,13 @@
 # imurun
 
-> ⚠️ **Under construction.** Scaffolding is in progress — see the [issues](https://github.com/ACCIDDA/imurun/issues).
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/ACCIDDA/imurun/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ACCIDDA/imurun/actions/workflows/R-CMD-check.yaml)
+[![lint](https://github.com/ACCIDDA/imurun/actions/workflows/lint.yaml/badge.svg)](https://github.com/ACCIDDA/imurun/actions/workflows/lint.yaml)
+[![test-coverage](https://github.com/ACCIDDA/imurun/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/ACCIDDA/imurun/actions/workflows/test-coverage.yaml)
+[![Codecov test coverage](https://codecov.io/gh/ACCIDDA/imurun/graph/badge.svg)](https://app.codecov.io/gh/ACCIDDA/imurun)
+<!-- badges: end -->
+
+> **Under construction.** Scaffolding is in progress — see the [issues](https://github.com/ACCIDDA/imurun/issues).
 
 A beginner-friendly command-line front-end to
 [`imuGAP`](https://github.com/ACCIDDA/imuGAP). Hand it your data and it

@@ -18,7 +18,10 @@ test_that("install_cli creates symlink to correct script", {
 
 test_that("install_cli errors for non-existent directory", {
   skip_on_os("windows")
-  expect_error(imurun::install_cli(path = "/nonexistent/path/xyz"), "does not exist")
+  expect_error(
+    imurun::install_cli(path = "/nonexistent/path/xyz"),
+    "does not exist"
+  )
 })
 
 test_that("install_cli replaces existing file at target", {
