@@ -73,10 +73,15 @@ jobs:
         with:
           name: coverage-data
 
+      # Best-effort until a CODECOV_TOKEN secret is configured for this repo:
+      # Codecov rejects tokenless uploads, so without the token this step would
+      # otherwise hard-fail the job. The unit-tests job above still validates the
+      # suite and generates coverage. Once the token is added, flip
+      # fail_ci_if_error back to strict (as imuGAP does).
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          fail_ci_if_error: ${{ github.event_name != 'pull_request' || ! github.event.pull_request.head.repo.fork }}
+          fail_ci_if_error: false
           files: ./cobertura.xml
           plugins: noop
           disable_search: true
