@@ -6,14 +6,21 @@
 #' @keywords internal
 USAGE <- "imurun.R -- Minimal CLI for imuGAP model fitting
 
-Usage: imurun <input_dir> [output_dir]
-       imurun -h <input_dir>          (validate only, no model fitting)
+Usage: imurun <input> [output_dir]
+       imurun -h <input>              (validate only, no model fitting)
+       imurun init [dir]              (write a blank input template workbook)
+       imurun example [dir]           (write a filled example workbook)
        imurun -h | --help             (show this message)
 
-input_dir must contain:
+<input> is either a directory of CSV/RDS files or a single .xlsx workbook.
+
+A directory must contain:
   observations.csv (or .rds)      -- columns: obs_id, positive, sample_n
   populations.csv (or .rds)       -- columns: obs_id, loc_id, cohort, age, dose, weight
   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
+
+A workbook must have one sheet per input with the same column names
+(run 'imurun init' to get a correctly-headed template).
 
 Output: fit.rds (raw stanfit object for post-processing).
 output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
@@ -67,33 +74,54 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(0L))
   }
 
+  # Subcommands: scaffold a template or copy the example workbook.
+  if (args[1] %in% c("init", "example")) {
+    target <- if (length(args) >= 2) args[2] else "."
+    copier <- if (args[1] == "init") imurun_init else imurun_copy_example
+    res <- tryCatch(copier(target), error = identity)
+    if (inherits(res, "error")) {
+      message("ERROR: ", conditionMessage(res))
+      return(invisible(3L))
+    }
+    return(invisible(0L))
+  }
+
   if (help_flag) {
-    input_dir <- args[2]
-    output_dir <- input_dir
+    input <- args[2]
+    output_dir <- input
   } else {
-    input_dir <- args[1]
-    output_dir <- if (length(args) >= 2) args[2] else input_dir
+    input <- args[1]
+    output_dir <- if (length(args) >= 2) args[2] else input
   }
 
-  if (!dir.exists(input_dir)) {
-    message("ERROR: Input directory not found: ", input_dir)
-    return(invisible(3L))
-  }
+  is_workbook <- tolower(tools::file_ext(input)) == "xlsx"
 
-  err <- tryCatch(
-    {
-      check_all_inputs(input_dir)
-      NULL
-    },
-    error = identity
-  )
-  if (!is.null(err)) {
-    message("ERROR: ", conditionMessage(err))
-    return(invisible(3L))
+  if (is_workbook) {
+    if (!file.exists(input)) {
+      message("ERROR: Input workbook not found: ", input)
+      return(invisible(3L))
+    }
+    output_dir <- if (help_flag || length(args) < 2) dirname(input) else output_dir
+  } else {
+    if (!dir.exists(input)) {
+      message("ERROR: Input directory not found: ", input)
+      return(invisible(3L))
+    }
+    err <- tryCatch(
+      {
+        check_all_inputs(input)
+        NULL
+      },
+      error = identity
+    )
+    if (!is.null(err)) {
+      message("ERROR: ", conditionMessage(err))
+      return(invisible(3L))
+    }
   }
 
   message("[->] Loading inputs...")
-  inputs <- tryCatch(read_inputs(input_dir), error = identity)
+  inputs <- tryCatch(read_inputs(input), error = identity)
   if (inherits(inputs, "error")) {
     message("ERROR: ", conditionMessage(inputs))
     return(invisible(3L))
@@ -101,17 +129,9 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   message("[OK] Inputs loaded.")
 
   message("[->] Validating schema...")
-  canonical <- tryCatch(
-    {
-      locs <- imuGAP::canonicalize_locations(inputs$locs)
-      obs <- imuGAP::canonicalize_observations(inputs$obs)
-      pops <- imuGAP::canonicalize_populations(inputs$pops, obs, locs)
-      list(locs = locs, obs = obs, pops = pops)
-    },
-    error = identity
-  )
-  if (inherits(canonical, "error")) {
-    message("ERROR: ", conditionMessage(canonical))
+  validated <- tryCatch(validate_inputs(inputs), error = identity)
+  if (inherits(validated, "error")) {
+    message("ERROR: ", conditionMessage(validated))
     return(invisible(1L))
   }
   message("[OK] Schema validated.")
@@ -119,6 +139,25 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   if (help_flag) {
     message("[OK] Validation passed.")
     return(invisible(0L))
+  }
+
+  # Re-canonicalize for the fit (validate_inputs does not retain populations).
+  canonical <- tryCatch(
+    {
+      locs <- imuGAP::canonicalize_locations(inputs$locs)
+      obs <- imuGAP::canonicalize_observations(inputs$obs)
+      pops <- imuGAP::canonicalize_populations(
+        inputs$pops, obs, locs,
+        max_cohort = max(as.integer(inputs$pops$cohort)),
+        max_age = max(as.integer(inputs$pops$age))
+      )
+      list(locs = locs, obs = obs, pops = pops)
+    },
+    error = identity
+  )
+  if (inherits(canonical, "error")) {
+    message("ERROR: ", conditionMessage(canonical))
+    return(invisible(1L))
   }
 
   stan_opts <- imuGAP::stan_options(iter = 2000L, chains = 4L)

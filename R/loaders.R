@@ -130,15 +130,102 @@ check_all_inputs <- function(dir) {
   invisible(NULL)
 }
 
-#' Read all imuGAP inputs from a directory
+#' Read all required sheets from an .xlsx workbook
 #'
-#' @description Convenience entry point that checks for all required inputs and
-#' reads them. Returns a named list with the raw (un-canonicalized)
+#' @description Reads the `observations`, `populations`, and `locations` sheets
+#' from a single Excel workbook into data frames. Reports every missing sheet at
+#' once (mirroring [check_all_inputs()] semantics) rather than failing on the
+#' first.
+#'
+#' Sheet names are matched case-insensitively against the required
+#' [IMURUN_SHEETS]. The reader package ('readxl') is only needed at call time;
+#' an informative error is raised if it is not installed.
+#'
+#' @param path character; path to a `.xlsx` workbook.
+#'
+#' @return A named list with elements `obs`, `pops`, and `locs`, each a
+#'   `data.frame`.
+#'
+#' @examples
+#' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
+#' if (nzchar(wb) && requireNamespace("readxl", quietly = TRUE)) {
+#'   inputs <- read_workbook(wb)
+#'   names(inputs)
+#' }
+#'
+#' @export
+read_workbook <- function(path) {
+  if (!requireNamespace("readxl", quietly = TRUE)) {
+    stop(
+      "Reading .xlsx input requires the 'readxl' package. ",
+      "Install it with install.packages(\"readxl\").",
+      call. = FALSE
+    )
+  }
+  if (!file.exists(path)) {
+    stop("Workbook not found: ", path, call. = FALSE)
+  }
+
+  present <- tryCatch(
+    readxl::excel_sheets(path),
+    error = function(e) {
+      stop(
+        "Failed to open workbook '", basename(path), "': ", e$message,
+        call. = FALSE
+      )
+    }
+  )
+  matched <- match(tolower(IMURUN_SHEETS), tolower(present))
+  missing <- IMURUN_SHEETS[is.na(matched)]
+  if (length(missing) > 0) {
+    stop(
+      "Workbook '", basename(path), "' is missing required sheet(s): ",
+      paste(missing, collapse = ", "),
+      " (found: ", paste(present, collapse = ", "), ")",
+      call. = FALSE
+    )
+  }
+
+  read_one <- function(sheet_name) {
+    actual <- present[matched[match(sheet_name, IMURUN_SHEETS)]]
+    df <- tryCatch(
+      readxl::read_excel(path, sheet = actual),
+      error = function(e) {
+        stop(
+          "Failed to read sheet '", actual, "' from '", basename(path),
+          "': ", e$message,
+          call. = FALSE
+        )
+      }
+    )
+    as.data.frame(df, stringsAsFactors = FALSE)
+  }
+
+  list(
+    obs = read_one("observations"),
+    pops = read_one("populations"),
+    locs = read_one("locations")
+  )
+}
+
+#' Read all imuGAP inputs from a directory or workbook
+#'
+#' @description Convenience entry point that loads the raw (un-canonicalized)
 #' `observations`, `populations`, and `locations` data, ready to be passed to
-#' [run_fit()].
+#' [validate_inputs()] or [run_fit()].
 #'
-#' @param dir character; directory containing `observations`, `populations`,
-#'   and `locations` as CSV or RDS.
+#' `read_inputs()` accepts either:
+#' \describe{
+#'   \item{a directory}{containing `observations`, `populations`, and
+#'     `locations` files as CSV or RDS (the original behavior); or}
+#'   \item{a single `.xlsx` workbook}{with one sheet per input, read via
+#'     [read_workbook()].}
+#' }
+#'
+#' Missing inputs (files or sheets) are all reported at once.
+#'
+#' @param path character; a directory of CSV/RDS files, or the path to a single
+#'   `.xlsx` workbook.
 #'
 #' @return A named list with elements `obs`, `pops`, and `locs`.
 #'
@@ -156,11 +243,17 @@ check_all_inputs <- function(dir) {
 #' names(inputs)
 #'
 #' @export
-read_inputs <- function(dir) {
-  check_all_inputs(dir)
+read_inputs <- function(path) {
+  if (!is.character(path) || length(path) != 1L) {
+    stop("'path' must be a single directory or .xlsx file path.", call. = FALSE)
+  }
+  if (tolower(tools::file_ext(path)) == "xlsx") {
+    return(read_workbook(path))
+  }
+  check_all_inputs(path)
   list(
-    obs = find_input_file(dir, "observations"),
-    pops = find_input_file(dir, "populations"),
-    locs = find_input_file(dir, "locations")
+    obs = find_input_file(path, "observations"),
+    pops = find_input_file(path, "populations"),
+    locs = find_input_file(path, "locations")
   )
 }

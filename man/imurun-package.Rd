@@ -6,7 +6,7 @@
 \alias{imurun-package}
 \title{imurun: Beginner-Friendly Command-Line Front-End for imuGAP}
 \description{
-A lean command-line front-end to the 'imuGAP' model-fitting package. Reads model inputs (observations, populations, and locations) from a directory of CSV or RDS files, validates them against the canonical 'imuGAP' schema, runs a fit, and writes the result out. The helper functions are exported so they can be used directly from R as well as from the bundled command-line script.
+A lean command-line front-end to the 'imuGAP' model-fitting package. Reads model inputs (observations, populations, and locations) from a directory of CSV or RDS files or from a single 'xlsx' workbook, validates them against the canonical 'imuGAP' schema, runs a fit, and writes the result out. The helper functions are exported so they can be used directly from R as well as from the bundled command-line script.
 }
 \seealso{
 Useful links:

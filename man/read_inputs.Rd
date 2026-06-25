@@ -2,22 +2,31 @@
 % Please edit documentation in R/loaders.R
 \name{read_inputs}
 \alias{read_inputs}
-\title{Read all imuGAP inputs from a directory}
+\title{Read all imuGAP inputs from a directory or workbook}
 \usage{
-read_inputs(dir)
+read_inputs(path)
 }
 \arguments{
-\item{dir}{character; directory containing \code{observations}, \code{populations},
-and \code{locations} as CSV or RDS.}
+\item{path}{character; a directory of CSV/RDS files, or the path to a single
+\code{.xlsx} workbook.}
 }
 \value{
 A named list with elements \code{obs}, \code{pops}, and \code{locs}.
 }
 \description{
-Convenience entry point that checks for all required inputs and
-reads them. Returns a named list with the raw (un-canonicalized)
+Convenience entry point that loads the raw (un-canonicalized)
 \code{observations}, \code{populations}, and \code{locations} data, ready to be passed to
-\code{\link[=run_fit]{run_fit()}}.
+\code{\link[=validate_inputs]{validate_inputs()}} or \code{\link[=run_fit]{run_fit()}}.
+
+\code{read_inputs()} accepts either:
+\describe{
+\item{a directory}{containing \code{observations}, \code{populations}, and
+\code{locations} files as CSV or RDS (the original behavior); or}
+\item{a single \code{.xlsx} workbook}{with one sheet per input, read via
+\code{\link[=read_workbook]{read_workbook()}}.}
+}
+
+Missing inputs (files or sheets) are all reported at once.
 }
 \examples{
 dir <- tempfile("imurun_read_")
