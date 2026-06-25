@@ -18,12 +18,4 @@ Logical scalar; \code{TRUE} if a matching file exists.
 Tests whether a named input (e.g. \code{"observations"}) exists in a
 directory under any of the \link{SUPPORTED_EXT} extensions.
 }
-\examples{
-dir <- tempfile("imurun_exists_")
-dir.create(dir)
-write.csv(data.frame(a = 1), file.path(dir, "observations.csv"),
-          row.names = FALSE)
-file_exists_any_ext(dir, "observations")
-file_exists_any_ext(dir, "populations")
-
-}
+\keyword{internal}

@@ -16,15 +16,7 @@ SUPPORTED_EXT <- c("csv", "rds")
 #'
 #' @return Logical scalar; `TRUE` if a matching file exists.
 #'
-#' @examples
-#' dir <- tempfile("imurun_exists_")
-#' dir.create(dir)
-#' write.csv(data.frame(a = 1), file.path(dir, "observations.csv"),
-#'           row.names = FALSE)
-#' file_exists_any_ext(dir, "observations")
-#' file_exists_any_ext(dir, "populations")
-#'
-#' @export
+#' @keywords internal
 file_exists_any_ext <- function(dir, name) {
   any(file.exists(file.path(dir, paste0(name, ".", SUPPORTED_EXT))))
 }
