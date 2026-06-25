@@ -1,0 +1,8 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles: {}
+last_built: 2026-06-25T01:40Z
+urls:
+  reference: https://accidda.github.io/imurun/reference
+  article: https://accidda.github.io/imurun/articles
