@@ -180,3 +180,56 @@ test_that("summarize_targets respects a non-default ci_level and validates input
   expect_error(summarize_targets(data.frame(x = 1), ci_level = 0.95), "obs_id")
   expect_error(summarize_targets(d, ci_level = 1.5), "ci_level")
 })
+
+# --- reading the optional target sheet/file ----------------------------------
+
+test_that("read_workbook omits target when the sheet is absent", {
+  skip_if_not_installed("readxl")
+  wb <- testthat::test_path("fixtures", "example.xlsx")
+  expect_null(imurun::read_workbook(wb)$target)
+})
+
+test_that("read_workbook reads an optional target sheet when present", {
+  skip_if_not_installed("readxl")
+  skip_if_not_installed("writexl")
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  writexl::write_xlsx(
+    list(
+      observations = data.frame(obs_id = 1, positive = 1, sample_n = 10),
+      populations = data.frame(
+        obs_id = 1,
+        loc_id = "A",
+        cohort = 5,
+        age = 5,
+        dose = 2,
+        weight = 1
+      ),
+      locations = data.frame(loc_id = "A", parent_id = NA),
+      target = data.frame(loc_id = "A", cohort = 5, age_low = 5, age_high = 7)
+    ),
+    tmp
+  )
+  target <- imurun::read_workbook(tmp)$target
+  expect_true(is.data.frame(target))
+  expect_true(all(IMURUN_TARGET_SCHEMA %in% names(target)))
+})
+
+test_that("read_inputs reads an optional target.csv in directory mode", {
+  dir <- tempfile("imurun_target_dir_")
+  dir.create(dir)
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+  for (n in c("observations", "populations", "locations")) {
+    write.csv(
+      data.frame(a = 1),
+      file.path(dir, paste0(n, ".csv")),
+      row.names = FALSE
+    )
+  }
+  write.csv(
+    data.frame(loc_id = "A", cohort = 5, age_low = 5, age_high = 7),
+    file.path(dir, "target.csv"),
+    row.names = FALSE
+  )
+  expect_equal(imurun::read_inputs(dir)$target$loc_id, "A")
+})

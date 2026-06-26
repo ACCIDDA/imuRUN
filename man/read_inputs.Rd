@@ -11,7 +11,8 @@ read_inputs(path)
 \code{.xlsx} workbook.}
 }
 \value{
-A named list with elements \code{obs}, \code{pops}, and \code{locs}.
+A named list with elements \code{obs}, \code{pops}, and \code{locs}, plus \code{target}
+when an optional target input is present.
 }
 \description{
 Convenience entry point that loads the raw (un-canonicalized)
@@ -26,7 +27,9 @@ Convenience entry point that loads the raw (un-canonicalized)
 \code{\link[=read_workbook]{read_workbook()}}.}
 }
 
-Missing inputs (files or sheets) are all reported at once.
+Missing inputs (files or sheets) are all reported at once. An optional
+\code{target} sheet (in a workbook) or \code{target.csv}/\code{target.rds} (in a directory)
+is read when present and returned as a \code{target} element (issue #14).
 }
 \examples{
 dir <- tempfile("imurun_read_")

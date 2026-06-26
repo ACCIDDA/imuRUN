@@ -10,8 +10,8 @@ read_workbook(path)
 \item{path}{character; path to a \code{.xlsx} workbook.}
 }
 \value{
-A named list with elements \code{obs}, \code{pops}, and \code{locs}, each a
-\code{data.frame}.
+A named list with elements \code{obs}, \code{pops}, and \code{locs} (each a
+\code{data.frame}), plus \code{target} when the optional \code{target} sheet is present.
 }
 \description{
 Reads the \code{observations}, \code{populations}, and \code{locations} sheets
@@ -22,6 +22,10 @@ first.
 Sheet names are matched case-insensitively against the required
 \link{IMURUN_SHEETS}. The reader package ('readxl') is only needed at call time;
 an informative error is raised if it is not installed.
+
+An optional fourth sheet named \code{target} (\link{IMURUN_TARGET_SHEET}) is read when
+present and returned as a \code{target} element; it is never required, so its
+absence is not an error.
 }
 \examples{
 wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")

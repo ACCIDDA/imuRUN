@@ -141,10 +141,14 @@ check_all_inputs <- function(dir) {
 #' [IMURUN_SHEETS]. The reader package ('readxl') is only needed at call time;
 #' an informative error is raised if it is not installed.
 #'
+#' An optional fourth sheet named `target` ([IMURUN_TARGET_SHEET]) is read when
+#' present and returned as a `target` element; it is never required, so its
+#' absence is not an error.
+#'
 #' @param path character; path to a `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs`, `pops`, and `locs`, each a
-#'   `data.frame`.
+#' @return A named list with elements `obs`, `pops`, and `locs` (each a
+#'   `data.frame`), plus `target` when the optional `target` sheet is present.
 #'
 #' @examples
 #' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
@@ -170,7 +174,10 @@ read_workbook <- function(path) {
     readxl::excel_sheets(path),
     error = function(e) {
       stop(
-        "Failed to open workbook '", basename(path), "': ", e$message,
+        "Failed to open workbook '",
+        basename(path),
+        "': ",
+        e$message,
         call. = FALSE
       )
     }
@@ -179,9 +186,13 @@ read_workbook <- function(path) {
   missing <- IMURUN_SHEETS[is.na(matched)]
   if (length(missing) > 0) {
     stop(
-      "Workbook '", basename(path), "' is missing required sheet(s): ",
+      "Workbook '",
+      basename(path),
+      "' is missing required sheet(s): ",
       paste(missing, collapse = ", "),
-      " (found: ", paste(present, collapse = ", "), ")",
+      " (found: ",
+      paste(present, collapse = ", "),
+      ")",
       call. = FALSE
     )
   }
@@ -192,8 +203,12 @@ read_workbook <- function(path) {
       readxl::read_excel(path, sheet = actual),
       error = function(e) {
         stop(
-          "Failed to read sheet '", actual, "' from '", basename(path),
-          "': ", e$message,
+          "Failed to read sheet '",
+          actual,
+          "' from '",
+          basename(path),
+          "': ",
+          e$message,
           call. = FALSE
         )
       }
@@ -201,11 +216,35 @@ read_workbook <- function(path) {
     as.data.frame(df, stringsAsFactors = FALSE)
   }
 
-  list(
+  result <- list(
     obs = read_one("observations"),
     pops = read_one("populations"),
     locs = read_one("locations")
   )
+
+  # Optional target-request sheet (issue #14): read it when present, else leave
+  # it out (callers treat a missing/NULL `target` as "no targets requested").
+  tgt_idx <- match(tolower(IMURUN_TARGET_SHEET), tolower(present))
+  if (!is.na(tgt_idx)) {
+    result$target <- tryCatch(
+      as.data.frame(
+        readxl::read_excel(path, sheet = present[tgt_idx]),
+        stringsAsFactors = FALSE
+      ),
+      error = function(e) {
+        stop(
+          "Failed to read sheet '",
+          present[tgt_idx],
+          "' from '",
+          basename(path),
+          "': ",
+          e$message,
+          call. = FALSE
+        )
+      }
+    )
+  }
+  result
 }
 
 #' Read all imuGAP inputs from a directory or workbook
@@ -222,12 +261,15 @@ read_workbook <- function(path) {
 #'     [read_workbook()].}
 #' }
 #'
-#' Missing inputs (files or sheets) are all reported at once.
+#' Missing inputs (files or sheets) are all reported at once. An optional
+#' `target` sheet (in a workbook) or `target.csv`/`target.rds` (in a directory)
+#' is read when present and returned as a `target` element (issue #14).
 #'
 #' @param path character; a directory of CSV/RDS files, or the path to a single
 #'   `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs`, `pops`, and `locs`.
+#' @return A named list with elements `obs`, `pops`, and `locs`, plus `target`
+#'   when an optional target input is present.
 #'
 #' @examples
 #' dir <- tempfile("imurun_read_")
@@ -251,9 +293,14 @@ read_inputs <- function(path) {
     return(read_workbook(path))
   }
   check_all_inputs(path)
-  list(
+  result <- list(
     obs = find_input_file(path, "observations"),
     pops = find_input_file(path, "populations"),
     locs = find_input_file(path, "locations")
   )
+  # Optional target input (issue #14): target.csv / target.rds if present.
+  if (file_exists_any_ext(path, IMURUN_TARGET_SHEET)) {
+    result$target <- find_input_file(path, IMURUN_TARGET_SHEET)
+  }
+  result
 }
