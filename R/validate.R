@@ -7,13 +7,15 @@
 #'
 #' @param df data.frame; the sheet contents.
 #' @param sheet character; one of `"observations"`, `"populations"`,
-#'   `"locations"`.
+#'   `"locations"` (or any sheet name used in the message).
+#' @param required character; the required column names. Defaults to the
+#'   [IMURUN_SCHEMA] entry for `sheet`; pass an explicit vector to check a sheet
+#'   not in `IMURUN_SCHEMA` (e.g. the `target` sheet).
 #'
 #' @return character vector of problem messages (possibly length zero).
 #'
 #' @keywords internal
-check_sheet_columns <- function(df, sheet) {
-  required <- IMURUN_SCHEMA[[sheet]]
+check_sheet_columns <- function(df, sheet, required = IMURUN_SCHEMA[[sheet]]) {
   missing <- setdiff(required, names(df))
   if (length(missing) == 0) {
     return(character(0))
@@ -44,7 +46,9 @@ check_numeric_column <- function(df, sheet, col) {
     return(character(0))
   }
   coerced <- suppressWarnings(as.numeric(as.character(values)))
-  bad_rows <- which(is.na(coerced) & !is.na(values) & nzchar(trimws(as.character(values))))
+  bad_rows <- which(
+    is.na(coerced) & !is.na(values) & nzchar(trimws(as.character(values)))
+  )
   if (length(bad_rows) == 0) {
     return(character(0))
   }
@@ -110,10 +114,12 @@ friendly_canonical_error <- function(sheet, e) {
 #' }
 #'
 #' @export
-validate_inputs <- function(inputs,
-                            max_cohort = NULL,
-                            max_age = NULL,
-                            max_dose = 2L) {
+validate_inputs <- function(
+  inputs,
+  max_cohort = NULL,
+  max_age = NULL,
+  max_dose = 2L
+) {
   if (is.character(inputs)) {
     inputs <- read_inputs(inputs)
   }
@@ -179,7 +185,9 @@ validate_inputs <- function(inputs,
   if (!is.null(c_obs) && !is.null(c_locs)) {
     c_pops <- tryCatch(
       imuGAP::canonicalize_populations(
-        pops, c_obs, c_locs,
+        pops,
+        c_obs,
+        c_locs,
         max_cohort = as.integer(max_cohort),
         max_age = as.integer(max_age),
         max_dose = as.integer(max_dose)

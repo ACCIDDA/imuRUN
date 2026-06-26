@@ -4,13 +4,17 @@
 \alias{check_sheet_columns}
 \title{Check required columns and report them in spreadsheet terms}
 \usage{
-check_sheet_columns(df, sheet)
+check_sheet_columns(df, sheet, required = IMURUN_SCHEMA[[sheet]])
 }
 \arguments{
 \item{df}{data.frame; the sheet contents.}
 
 \item{sheet}{character; one of \code{"observations"}, \code{"populations"},
-\code{"locations"}.}
+\code{"locations"} (or any sheet name used in the message).}
+
+\item{required}{character; the required column names. Defaults to the
+\link{IMURUN_SCHEMA} entry for \code{sheet}; pass an explicit vector to check a sheet
+not in \code{IMURUN_SCHEMA} (e.g. the \code{target} sheet).}
 }
 \value{
 character vector of problem messages (possibly length zero).
