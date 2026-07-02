@@ -33,11 +33,14 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, local::.
+          extra-packages: any::pkgdown, any::roxygen2, any::pkgload, local::.
           needs: website
 
-      # imurun is pure R and ships its man/*.Rd in git, so there is no Stan
-      # toolchain, no fitted-data generation, and no roxygenise step here.
+      # man/*.Rd is gitignored and regenerated here before the site builds.
+      - name: Generate documentation
+        run: roxygen2::roxygenise()
+        shell: Rscript {0}
+
       # install = TRUE so the package (and its imuGAP dependency) is available
       # when pkgdown runs the reference examples.
       - name: Build site

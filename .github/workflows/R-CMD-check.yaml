@@ -46,12 +46,16 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, any::roxygen2, any::pkgload
           needs: check
 
-      # imurun is pure R and ships its man/*.Rd in git, so there is no Stan
-      # toolchain, no fitted-data generation, and no roxygenise step here.
-      # imuGAP installs as an ordinary dependency (binary where available).
+      # man/*.Rd is gitignored and regenerated here (imuGAP installs as an
+      # ordinary dependency, binary where available). imurun is pure R, so
+      # there is no Stan toolchain or fitted-data generation to run first.
+      - name: Generate documentation
+        run: roxygen2::roxygenise()
+        shell: Rscript {0}
+
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
