@@ -72,6 +72,10 @@ IMURUN_SHEETS <- c("observations", "populations", "locations")
 #' translation. Optional columns are `dose` (a blank cell defaults to the final
 #' dose) and `target_id` (a free-text label echoed into the results).
 #'
+#' A row that names only a `loc_id`, leaving `cohort`/`age_low`/`age_high`/`dose`
+#' blank, inherits those values from the row above (last-observation-carried-
+#' forward), so a run of locations sharing one request need not repeat them.
+#'
 #' @format A character vector of the required target columns, in sheet order.
 #'
 #' @seealso [expand_targets()], [validate_targets()], [summarize_targets()]

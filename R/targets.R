@@ -23,6 +23,43 @@ parse_loc_list <- function(x) {
   toks[nzchar(toks)]
 }
 
+#' Carry non-location target columns forward into blank rows
+#'
+#' @description Fills the `target` sheet the way a spreadsheet user expects:
+#' a row that names only a `loc_id` (leaving `cohort`, `age_low`, `age_high`,
+#' and/or `dose` blank) inherits those values from the nearest row above that
+#' supplied them. Each fillable column is carried forward independently, so a
+#' run of location-only rows all share the preceding request's cohort/age/dose.
+#' A blank cell with no value above it is left blank (the first row cannot
+#' inherit, and a never-supplied `dose` still falls back to the default).
+#'
+#' @param targets data.frame of target-request rows.
+#'
+#' @return The `targets` data.frame with blank `cohort`/`age_low`/`age_high`/
+#'   `dose` cells filled from the row above.
+#'
+#' @keywords internal
+fill_target_locf <- function(targets) {
+  targets <- as.data.frame(targets, stringsAsFactors = FALSE)
+  is_blank <- function(v) is.na(v) | !nzchar(trimws(as.character(v)))
+  fill_cols <- intersect(
+    c("cohort", "age_low", "age_high", "dose"),
+    names(targets)
+  )
+  for (col in fill_cols) {
+    v <- targets[[col]]
+    blank <- is_blank(v)
+    for (i in seq_along(v)[-1L]) {
+      if (blank[i] && !blank[i - 1L]) {
+        v[i] <- v[i - 1L]
+        blank[i] <- FALSE
+      }
+    }
+    targets[[col]] <- v
+  }
+  targets
+}
+
 #' Expand a compact target-request sheet into explicit target rows
 #'
 #' @description Turns each row of the `target` sheet into the explicit
@@ -61,7 +98,7 @@ parse_loc_list <- function(x) {
 #'
 #' @export
 expand_targets <- function(targets, default_dose) {
-  targets <- as.data.frame(targets, stringsAsFactors = FALSE)
+  targets <- fill_target_locf(as.data.frame(targets, stringsAsFactors = FALSE))
   has_dose <- "dose" %in% names(targets)
   has_id <- "target_id" %in% names(targets)
 
@@ -171,7 +208,7 @@ validate_targets <- function(
   max_age,
   max_dose = 2L
 ) {
-  targets <- as.data.frame(targets, stringsAsFactors = FALSE)
+  targets <- fill_target_locf(as.data.frame(targets, stringsAsFactors = FALSE))
 
   problems <- check_sheet_columns(targets, "target", IMURUN_TARGET_SCHEMA)
   for (col in c("cohort", "age_low", "age_high", "dose")) {

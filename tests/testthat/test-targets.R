@@ -69,6 +69,24 @@ test_that("expand_targets de-duplicates identical target identities across rows"
   expect_equal(ex$obs_id, 1L)
 })
 
+test_that("expand_targets carries cohort/age/dose into location-only rows (LOCF)", {
+  tg <- data.frame(
+    loc_id = c("A", "B"),
+    cohort = c(5, NA),
+    age_low = c(5, NA),
+    age_high = c(7, NA),
+    dose = c(1, NA),
+    stringsAsFactors = FALSE
+  )
+  ex <- expand_targets(tg, default_dose = 2L)
+
+  # Row 2 (B) is location-only, so it inherits row 1's cohort/age span/dose.
+  expect_setequal(unique(ex$loc_id), c("A", "B"))
+  expect_setequal(unique(ex$age), 5:7)
+  expect_true(all(ex$dose == 1L)) # inherited dose, not default_dose
+  expect_true(all(ex$age + ex$cohort == 12L)) # inherited snapshot reference
+})
+
 # --- validate_targets --------------------------------------------------------
 
 test_that("validate_targets accepts a clean sheet", {
