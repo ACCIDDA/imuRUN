@@ -72,6 +72,32 @@ friendly_canonical_error <- function(sheet, e) {
   sprintf("[%s] %s", sheet, conditionMessage(e))
 }
 
+#' Construct an imuGAP populations frame from an observations frame
+#'
+#' @description imurun has no populations sheet: each observation carries its own
+#' `loc_id`/`cohort`/`age`/`dose`, so the imuGAP populations are one `weight = 1`
+#' row per observation. This is the limited (single-row-per-observation) flavor
+#' of imuGAP's populations flexibility.
+#'
+#' @param obs a data.frame of observations with `obs_id`, `loc_id`, `cohort`,
+#'   `age`, and `dose` columns.
+#'
+#' @return a data.frame with `obs_id`, `loc_id`, `cohort`, `age`, `dose`, and
+#'   `weight` (all `1`).
+#'
+#' @keywords internal
+build_populations <- function(obs) {
+  data.frame(
+    obs_id = obs$obs_id,
+    loc_id = obs$loc_id,
+    cohort = suppressWarnings(as.integer(obs$cohort)),
+    age = suppressWarnings(as.integer(obs$age)),
+    dose = suppressWarnings(as.integer(obs$dose)),
+    weight = 1,
+    stringsAsFactors = FALSE
+  )
+}
+
 #' Validate imurun inputs and report all problems at once
 #'
 #' @description A friendly validation layer over the 'imuGAP' canonicalizers
@@ -86,26 +112,27 @@ friendly_canonical_error <- function(sheet, e) {
 #'   \item missing or renamed required columns (per [IMURUN_SCHEMA]);
 #'   \item non-numeric count columns (`positive`, `sample_n`, `cohort`, `age`,
 #'     `dose`);
-#'   \item `loc_id` values referenced in `populations` but absent from
-#'     `locations`;
-#'   \item `obs_id` mismatches between `observations` and `populations`;
+#'   \item `loc_id` values in `observations` but absent from `locations`;
 #'   \item `dose`, `cohort`, and `age` values out of range;
 #'   \item structural location problems (duplicate or missing root, cycles).
 #' }
 #'
+#' The imuGAP populations are constructed from the observations
+#' ([build_populations()]); there is no populations sheet.
+#'
 #' On success the canonicalized frames are returned invisibly. On failure a
 #' single error is raised whose message lists every problem found.
 #'
-#' @param inputs a named list with `obs`, `pops`, and `locs` (as returned by
+#' @param inputs a named list with `obs` and `locs` (as returned by
 #'   [read_inputs()]), or a path passed straight to [read_inputs()].
 #' @param max_cohort,max_age integer upper bounds for the `cohort` and `age`
-#'   columns. Default to the largest value present in `populations` so that
+#'   columns. Default to the largest value present in `observations` so that
 #'   validation does not impose a model configuration; supply explicit bounds to
 #'   enforce a particular schedule.
 #' @param max_dose integer; the maximum allowed `dose` (default `2`).
 #'
 #' @return Invisibly, a named list of the canonicalized `obs`, `pops`, and
-#'   `locs` frames.
+#'   `locs` frames (`pops` derived from `obs`).
 #'
 #' @examples
 #' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
@@ -123,31 +150,28 @@ validate_inputs <- function(
   if (is.character(inputs)) {
     inputs <- read_inputs(inputs)
   }
-  if (!is.list(inputs) || !all(c("obs", "pops", "locs") %in% names(inputs))) {
+  if (!is.list(inputs) || !all(c("obs", "locs") %in% names(inputs))) {
     stop(
-      "'inputs' must be a list with elements obs, pops, locs ",
+      "'inputs' must be a list with elements obs, locs ",
       "(or a path to read_inputs()).",
       call. = FALSE
     )
   }
 
   obs <- as.data.frame(inputs$obs, stringsAsFactors = FALSE)
-  pops <- as.data.frame(inputs$pops, stringsAsFactors = FALSE)
   locs <- as.data.frame(inputs$locs, stringsAsFactors = FALSE)
 
   problems <- character(0)
 
   # 1. Structural column checks first (report all missing columns at once).
   problems <- c(problems, check_sheet_columns(obs, "observations"))
-  problems <- c(problems, check_sheet_columns(pops, "populations"))
   problems <- c(problems, check_sheet_columns(locs, "locations"))
 
-  # 2. Numeric-type checks for count columns that are present.
-  problems <- c(problems, check_numeric_column(obs, "observations", "positive"))
-  problems <- c(problems, check_numeric_column(obs, "observations", "sample_n"))
-  problems <- c(problems, check_numeric_column(pops, "populations", "cohort"))
-  problems <- c(problems, check_numeric_column(pops, "populations", "age"))
-  problems <- c(problems, check_numeric_column(pops, "populations", "dose"))
+  # 2. Numeric-type checks for count columns that are present. loc/cohort/age/
+  #    dose now live on the observations sheet (populations is derived from it).
+  for (col in c("cohort", "age", "dose", "positive", "sample_n")) {
+    problems <- c(problems, check_numeric_column(obs, "observations", col))
+  }
 
   # If columns or types are wrong, stop here: the canonicalizers below would
   # raise confusing low-level errors on top of what we already know.
@@ -172,20 +196,22 @@ validate_inputs <- function(
     }
   )
 
-  if (is.null(max_cohort) && "cohort" %in% names(pops)) {
-    max_cohort <- suppressWarnings(max(as.numeric(pops$cohort), na.rm = TRUE))
+  if (is.null(max_cohort)) {
+    max_cohort <- suppressWarnings(max(as.numeric(obs$cohort), na.rm = TRUE))
   }
-  if (is.null(max_age) && "age" %in% names(pops)) {
-    max_age <- suppressWarnings(max(as.numeric(pops$age), na.rm = TRUE))
+  if (is.null(max_age)) {
+    max_age <- suppressWarnings(max(as.numeric(obs$age), na.rm = TRUE))
   }
 
-  # populations canonicalization needs valid obs + locs; only attempt it when
-  # those succeeded, otherwise its set-equivalence checks are meaningless.
+  # populations are derived from the observations. Canonicalizing them needs
+  # valid obs + locs; only attempt it when those succeeded, otherwise its
+  # set-equivalence checks are meaningless. Attribute failures to observations,
+  # since that is the sheet the user actually provides.
   c_pops <- NULL
   if (!is.null(c_obs) && !is.null(c_locs)) {
     c_pops <- tryCatch(
       imuGAP::canonicalize_populations(
-        pops,
+        build_populations(obs),
         c_obs,
         c_locs,
         max_cohort = as.integer(max_cohort),
@@ -193,7 +219,7 @@ validate_inputs <- function(
         max_dose = as.integer(max_dose)
       ),
       error = function(e) {
-        problems <<- c(problems, friendly_canonical_error("populations", e))
+        problems <<- c(problems, friendly_canonical_error("observations", e))
         NULL
       }
     )

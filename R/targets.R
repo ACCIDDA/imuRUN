@@ -28,7 +28,7 @@ parse_loc_list <- function(x) {
 #' @description Fills the `target` sheet the way a spreadsheet user expects:
 #' a row that names only a `loc_id` (leaving `cohort`, `age_low`, `age_high`,
 #' and/or `dose` blank) inherits those values from the nearest row above that
-#' supplied them. Each fillable column is carried forward independently, so a
+#' supplied them. Each of those columns is carried forward independently, so a
 #' run of location-only rows all share the preceding request's cohort/age/dose.
 #' A blank cell with no value above it is left blank (the first row cannot
 #' inherit, and a never-supplied `dose` still falls back to the default).
@@ -75,7 +75,7 @@ fill_target_locf <- function(targets) {
 #' is held constant (`cohort_i = cohort + max(age) - age_i`) -- i.e. a snapshot in
 #' time. A blank `dose` cell takes `default_dose` (typically the final dose).
 #' Every expanded row is an independent target carrying `weight = 1`. Identical
-#' target identities (across rows) are de-duplicated, and a unique integer
+#' target identities (across rows) are dropped as duplicates, and a unique integer
 #' `obs_id` is assigned so the posterior draws can be grouped unambiguously by
 #' target.
 #'

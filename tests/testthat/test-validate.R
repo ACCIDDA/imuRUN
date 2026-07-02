@@ -37,11 +37,13 @@ test_that("validate_inputs reports the corrupted workbook problems", {
 })
 
 test_that("validate_inputs names a missing column and its sheet", {
-  obs <- data.frame(obs_id = 1, positive = 1)  # sample_n missing
-  pops <- data.frame(obs_id = 1, loc_id = "A", cohort = 1, age = 1, dose = 1)
+  # sample_n missing from the (merged) observations sheet
+  obs <- data.frame(
+    obs_id = 1, loc_id = "A", cohort = 1, age = 1, dose = 1, positive = 1
+  )
   locs <- data.frame(loc_id = "A", parent_id = NA)
   err <- tryCatch(
-    imurun::validate_inputs(list(obs = obs, pops = pops, locs = locs)),
+    imurun::validate_inputs(list(obs = obs, locs = locs)),
     error = identity
   )
   expect_true(inherits(err, "error"))
@@ -50,23 +52,28 @@ test_that("validate_inputs names a missing column and its sheet", {
 })
 
 test_that("validate_inputs catches a loc_id referenced but not defined", {
-  obs <- data.frame(obs_id = 1, positive = 1, sample_n = 10)
-  pops <- data.frame(obs_id = 1, loc_id = "Ghost", cohort = 1, age = 1, dose = 1)
+  obs <- data.frame(
+    obs_id = 1, loc_id = "Ghost", cohort = 1, age = 1, dose = 1,
+    positive = 1, sample_n = 10
+  )
   locs <- data.frame(loc_id = "A", parent_id = NA)
   err <- tryCatch(
-    imurun::validate_inputs(list(obs = obs, pops = pops, locs = locs)),
+    imurun::validate_inputs(list(obs = obs, locs = locs)),
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "populations")
+  # populations are derived from observations, so the problem is attributed there
+  expect_match(err$message, "observations")
 })
 
 test_that("validate_inputs catches out-of-range dose", {
-  obs <- data.frame(obs_id = 1, positive = 1, sample_n = 10)
-  pops <- data.frame(obs_id = 1, loc_id = "A", cohort = 1, age = 1, dose = 9)
+  obs <- data.frame(
+    obs_id = 1, loc_id = "A", cohort = 1, age = 1, dose = 9,
+    positive = 1, sample_n = 10
+  )
   locs <- data.frame(loc_id = "A", parent_id = NA)
   err <- tryCatch(
-    imurun::validate_inputs(list(obs = obs, pops = pops, locs = locs)),
+    imurun::validate_inputs(list(obs = obs, locs = locs)),
     error = identity
   )
   expect_true(inherits(err, "error"))
@@ -74,16 +81,14 @@ test_that("validate_inputs catches out-of-range dose", {
 })
 
 test_that("validate_inputs collects multiple problems at once", {
-  obs <- data.frame(obs_id = 1)            # missing positive, sample_n
-  pops <- data.frame(obs_id = 1)           # missing several columns
+  obs <- data.frame(obs_id = 1)            # missing loc/cohort/age/dose/counts
   locs <- data.frame(loc_id = "A")         # missing parent_id
   err <- tryCatch(
-    imurun::validate_inputs(list(obs = obs, pops = pops, locs = locs)),
+    imurun::validate_inputs(list(obs = obs, locs = locs)),
     error = identity
   )
   expect_true(inherits(err, "error"))
   expect_match(err$message, "problem")
   expect_match(err$message, "observations")
-  expect_match(err$message, "populations")
   expect_match(err$message, "locations")
 })

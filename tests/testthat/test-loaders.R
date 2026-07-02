@@ -50,7 +50,7 @@ test_that("check_all_inputs reports all missing files at once", {
 
   expect_error(
     imurun::check_all_inputs(dir),
-    "observations.*populations.*locations"
+    "observations.*locations"
   )
 })
 
@@ -67,7 +67,6 @@ test_that("check_all_inputs reports only the actually missing files", {
   err <- tryCatch(imurun::check_all_inputs(dir), error = identity)
   expect_true(inherits(err, "error"))
   expect_false(grepl("observations", err$message))
-  expect_true(grepl("populations", err$message))
   expect_true(grepl("locations", err$message))
 })
 
@@ -79,11 +78,6 @@ test_that("check_all_inputs passes when all files present", {
   write.csv(
     data.frame(a = 1),
     file.path(dir, "observations.csv"),
-    row.names = FALSE
-  )
-  write.csv(
-    data.frame(a = 1),
-    file.path(dir, "populations.csv"),
     row.names = FALSE
   )
   write.csv(
@@ -128,7 +122,7 @@ test_that("load_by_ext includes filename in error for corrupt files", {
 
 # --- read_inputs -------------------------------------------------------------
 
-test_that("read_inputs returns all three inputs", {
+test_that("read_inputs returns both inputs", {
   dir <- tempfile("test_read_inputs_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
@@ -138,18 +132,13 @@ test_that("read_inputs returns all three inputs", {
     file.path(dir, "observations.csv"),
     row.names = FALSE
   )
-  write.csv(
-    data.frame(a = 1:2),
-    file.path(dir, "populations.csv"),
-    row.names = FALSE
-  )
   saveRDS(
     data.frame(loc_id = 1, parent_id = NA),
     file.path(dir, "locations.rds")
   )
 
   inputs <- imurun::read_inputs(dir)
-  expect_named(inputs, c("obs", "pops", "locs"))
+  expect_named(inputs, c("obs", "locs"))
   expect_equal(inputs$obs$positive, 1:2)
 })
 
