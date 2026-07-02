@@ -187,20 +187,12 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     ),
     error = identity
   )
+  # imuGAP::sampling() raises a typed `imugap_no_draws` error when the Stan
+  # sampler fails to initialize and produces no draws (rather than returning an
+  # empty fit), so that silent-failure case now surfaces here as a model error
+  # alongside any other fit failure -- no separate check is needed in imurun.
   if (inherits(fit, "error")) {
     message("ERROR: ", conditionMessage(fit))
-    return(invisible(2L))
-  }
-  # imuGAP::sampling() returns an imugap_fit even when the Stan sampler fails to
-  # initialize (e.g. a degenerate location hierarchy): it prints the Stan
-  # exception and hands back a stanfit in mode 2 with no draws, without raising
-  # an R error. Detect that here so we report a model failure instead of writing
-  # an empty fit.rds and claiming success.
-  if (!stanfit_drew_samples(fit$stanfit)) {
-    message(
-      "ERROR: Model fitting failed: the sampler produced no draws ",
-      "(see the Stan messages above)."
-    )
     return(invisible(2L))
   }
   message("[OK] Model complete.")
@@ -225,27 +217,4 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   message("[OK] Wrote ", fit_path)
 
   invisible(0L)
-}
-
-#' Did a stanfit actually draw posterior samples?
-#'
-#' @description [imuGAP::sampling()] returns an `imugap_fit` wrapper even when
-#' the underlying Stan sampler fails to initialize -- it prints the Stan
-#' exception and returns a `stanfit` in mode `2` with an empty `@sim` slot,
-#' rather than raising an R error. This helper distinguishes a genuine fit
-#' (samples drawn) from that silent-failure case so [run_fit()] can report the
-#' failure instead of saving an empty `fit.rds`.
-#'
-#' @param stanfit the `stanfit` object carried by an `imugap_fit`
-#'   (i.e. `fit$stanfit`). A `NULL` or otherwise malformed value yields `FALSE`
-#'   rather than an error.
-#'
-#' @return Logical scalar; `TRUE` only when the sampler completed (`@mode == 0`)
-#'   and stored at least one draw.
-#'
-#' @keywords internal
-stanfit_drew_samples <- function(stanfit) {
-  mode <- tryCatch(stanfit@mode, error = function(e) NA_integer_)
-  n_sim <- tryCatch(length(stanfit@sim), error = function(e) 0L)
-  isTRUE(mode == 0L) && n_sim > 0L
 }
