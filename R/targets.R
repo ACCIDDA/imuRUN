@@ -27,13 +27,20 @@ parse_loc_list <- function(x) {
 #'
 #' @description Turns each row of the `target` sheet into the explicit
 #' `(loc_id, cohort, age, dose)` rows that imuGAP's by-target prediction path
-#' consumes. A row fans out over its location list (`loc_id`) and its inclusive
-#' age span (`age_low`..`age_high`), holding `cohort` and `dose` fixed; a blank
-#' `dose` cell takes `default_dose` (typically the final dose). Every expanded
-#' row is an independent target carrying `weight = 1` -- the only regime
-#' 'imuGAP''s data-frame target builder accepts. Identical target identities
-#' (across rows) are de-duplicated, and a unique integer `obs_id` is assigned so
-#' the posterior draws can be grouped unambiguously by target.
+#' consumes. imurun is a thin adapter here: the actual expansion is delegated to
+#' [imuGAP::create_target()] in `"snapshot"` mode, one call per target-request
+#' row.
+#'
+#' @details Each row's `cohort` is the snapshot **reference** cohort (that of the
+#' oldest age in the row's span). `create_target(mode = "snapshot")` fans the row
+#' out over its location list (`loc_id`) and inclusive age span
+#' (`age_low`..`age_high`), deriving a cohort for each age so that `age + cohort`
+#' is held constant (`cohort_i = cohort + max(age) - age_i`) -- i.e. a snapshot in
+#' time. A blank `dose` cell takes `default_dose` (typically the final dose).
+#' Every expanded row is an independent target carrying `weight = 1`. Identical
+#' target identities (across rows) are de-duplicated, and a unique integer
+#' `obs_id` is assigned so the posterior draws can be grouped unambiguously by
+#' target.
 #'
 #' @param targets data.frame of target-request rows (see [IMURUN_TARGET_SCHEMA]).
 #' @param default_dose integer; the dose used when a row's `dose` cell is blank.
@@ -42,7 +49,8 @@ parse_loc_list <- function(x) {
 #' @return A data.frame with columns `obs_id`, `target_id`, `loc_id`, `cohort`,
 #'   `age`, `dose`, `weight` -- one row per distinct target identity.
 #'
-#' @seealso [validate_targets()], [summarize_targets()]
+#' @seealso [validate_targets()], [summarize_targets()],
+#'   [imuGAP::create_target()]
 #'
 #' @examples
 #' tg <- data.frame(
@@ -59,6 +67,7 @@ expand_targets <- function(targets, default_dose) {
 
   is_blank <- function(v) is.na(v) || !nzchar(trimws(as.character(v)))
 
+  cols <- c("target_id", "loc_id", "cohort", "age", "dose", "weight")
   rows <- vector("list", nrow(targets))
   for (i in seq_len(nrow(targets))) {
     locs <- parse_loc_list(targets$loc_id[i])
@@ -79,14 +88,20 @@ expand_targets <- function(targets, default_dose) {
     } else {
       as.character(i)
     }
-    grid <- expand.grid(loc_id = locs, age = ages, stringsAsFactors = FALSE)
+    grid <- as.data.frame(
+      imuGAP::create_target(
+        location = locs,
+        age = ages,
+        cohort = as.integer(targets$cohort[i]),
+        dose = dose,
+        mode = "snapshot"
+      ),
+      stringsAsFactors = FALSE
+    )
     grid$target_id <- tid
-    grid$cohort <- as.integer(targets$cohort[i])
-    grid$dose <- dose
-    rows[[i]] <- grid
+    rows[[i]] <- grid[, cols]
   }
 
-  out <- do.call(rbind, rows)
   empty <- data.frame(
     obs_id = integer(0),
     target_id = character(0),
@@ -97,9 +112,11 @@ expand_targets <- function(targets, default_dose) {
     weight = numeric(0),
     stringsAsFactors = FALSE
   )
-  if (is.null(out) || nrow(out) == 0) {
+  rows <- rows[!vapply(rows, is.null, logical(1))]
+  if (length(rows) == 0) {
     return(empty)
   }
+  out <- do.call(rbind, rows)
 
   # De-duplicate on the target identity, keeping the first contributing label.
   key <- paste(out$loc_id, out$cohort, out$age, out$dose, sep = "\r")

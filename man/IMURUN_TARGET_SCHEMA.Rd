@@ -13,12 +13,14 @@ IMURUN_TARGET_SCHEMA
 \description{
 Required columns of the optional \code{target} sheet that drives
 imurun's by-target predictions. A target-request row names one or more
-locations (\code{loc_id}, a \verb{;}-separated list), a single birth-cohort index
-(\code{cohort}), and an inclusive age span (\code{age_low}..\code{age_high}). All columns
-use the same integer-index representation as the \code{populations} sheet -- there
-is no calendar-year translation. Optional columns are \code{dose} (a blank cell
-defaults to the final dose) and \code{target_id} (a free-text label echoed into
-the results).
+locations (\code{loc_id}, a \verb{;}-separated list), a reference birth-cohort index
+(\code{cohort}), and an inclusive age span (\code{age_low}..\code{age_high}). The row is
+expanded in snapshot mode (via \code{\link[imuGAP:create_target]{imuGAP::create_target()}}): \code{cohort} is the
+cohort of the oldest age in the span, and a cohort is derived for each age so
+that \code{age + cohort} stays constant. All columns use the same integer-index
+representation as the \code{populations} sheet -- there is no calendar-year
+translation. Optional columns are \code{dose} (a blank cell defaults to the final
+dose) and \code{target_id} (a free-text label echoed into the results).
 }
 \examples{
 IMURUN_TARGET_SCHEMA

@@ -27,7 +27,10 @@ test_that("expand_targets fans out locations x age span, defaulting a blank dose
   expect_equal(nrow(ex), 6L) # 2 locations x 3 ages
   expect_equal(sort(unique(ex$loc_id)), c("A", "B"))
   expect_equal(sort(unique(ex$age)), 5:7)
-  expect_true(all(ex$cohort == 5L))
+  # snapshot mode: cohort derived per age so age + cohort is constant, with the
+  # sheet's cohort (5) as the reference at the oldest age (7).
+  expect_true(all(ex$age + ex$cohort == 12L))
+  expect_equal(unique(ex$cohort[ex$age == 7L]), 5L)
   expect_true(all(ex$dose == 2L)) # blank dose -> default_dose
   expect_true(all(ex$weight == 1))
   expect_equal(ex$obs_id, 1:6) # unique key for grouping draws

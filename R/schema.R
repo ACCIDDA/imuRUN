@@ -63,12 +63,14 @@ IMURUN_SHEETS <- c("observations", "populations", "locations")
 #'
 #' @description Required columns of the optional `target` sheet that drives
 #' imurun's by-target predictions. A target-request row names one or more
-#' locations (`loc_id`, a `;`-separated list), a single birth-cohort index
-#' (`cohort`), and an inclusive age span (`age_low`..`age_high`). All columns
-#' use the same integer-index representation as the `populations` sheet -- there
-#' is no calendar-year translation. Optional columns are `dose` (a blank cell
-#' defaults to the final dose) and `target_id` (a free-text label echoed into
-#' the results).
+#' locations (`loc_id`, a `;`-separated list), a reference birth-cohort index
+#' (`cohort`), and an inclusive age span (`age_low`..`age_high`). The row is
+#' expanded in snapshot mode (via [imuGAP::create_target()]): `cohort` is the
+#' cohort of the oldest age in the span, and a cohort is derived for each age so
+#' that `age + cohort` stays constant. All columns use the same integer-index
+#' representation as the `populations` sheet -- there is no calendar-year
+#' translation. Optional columns are `dose` (a blank cell defaults to the final
+#' dose) and `target_id` (a free-text label echoed into the results).
 #'
 #' @format A character vector of the required target columns, in sheet order.
 #'

@@ -19,13 +19,21 @@ A data.frame with columns \code{obs_id}, \code{target_id}, \code{loc_id}, \code{
 \description{
 Turns each row of the \code{target} sheet into the explicit
 \verb{(loc_id, cohort, age, dose)} rows that imuGAP's by-target prediction path
-consumes. A row fans out over its location list (\code{loc_id}) and its inclusive
-age span (\code{age_low}..\code{age_high}), holding \code{cohort} and \code{dose} fixed; a blank
-\code{dose} cell takes \code{default_dose} (typically the final dose). Every expanded
-row is an independent target carrying \code{weight = 1} -- the only regime
-'imuGAP''s data-frame target builder accepts. Identical target identities
-(across rows) are de-duplicated, and a unique integer \code{obs_id} is assigned so
-the posterior draws can be grouped unambiguously by target.
+consumes. imurun is a thin adapter here: the actual expansion is delegated to
+\code{\link[imuGAP:create_target]{imuGAP::create_target()}} in \code{"snapshot"} mode, one call per target-request
+row.
+}
+\details{
+Each row's \code{cohort} is the snapshot \strong{reference} cohort (that of the
+oldest age in the row's span). \code{create_target(mode = "snapshot")} fans the row
+out over its location list (\code{loc_id}) and inclusive age span
+(\code{age_low}..\code{age_high}), deriving a cohort for each age so that \code{age + cohort}
+is held constant (\code{cohort_i = cohort + max(age) - age_i}) -- i.e. a snapshot in
+time. A blank \code{dose} cell takes \code{default_dose} (typically the final dose).
+Every expanded row is an independent target carrying \code{weight = 1}. Identical
+target identities (across rows) are de-duplicated, and a unique integer
+\code{obs_id} is assigned so the posterior draws can be grouped unambiguously by
+target.
 }
 \examples{
 tg <- data.frame(
@@ -36,5 +44,6 @@ expand_targets(tg, default_dose = 2L)
 
 }
 \seealso{
-\code{\link[=validate_targets]{validate_targets()}}, \code{\link[=summarize_targets]{summarize_targets()}}
+\code{\link[=validate_targets]{validate_targets()}}, \code{\link[=summarize_targets]{summarize_targets()}},
+\code{\link[imuGAP:create_target]{imuGAP::create_target()}}
 }
