@@ -1,36 +1,51 @@
-# Tests for install_cli(), ported from imugap-map's test-imugap-cli.R.
-# Skipped on Windows, as upstream, since symlinks are unsupported there.
+# Tests for install_cli(). Runs on all platforms: Unix installs a symlink,
+# Windows writes an imurun.cmd shim (issue #16).
 
-test_that("install_cli creates symlink to correct script", {
-  skip_on_os("windows")
+test_that("install_cli installs a launcher pointing at the bundled script", {
   dir <- tempfile("test_install_cli_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
 
   result <- imurun::install_cli(path = dir)
-  link <- file.path(dir, "imurun")
   expect_true(result)
-  expect_true(file.exists(link))
-  target <- Sys.readlink(link)
-  expected <- system.file("scripts", "imurun.R", package = "imurun")
-  expect_equal(normalizePath(target), normalizePath(expected))
+
+  script <- system.file("scripts", "imurun.R", package = "imurun")
+  if (.Platform$OS.type == "windows") {
+    shim <- file.path(dir, "imurun.cmd")
+    expect_true(file.exists(shim))
+    lines <- readLines(shim)
+    # the shim runs the bundled script through Rscript
+    expect_true(any(grepl("Rscript", lines, fixed = TRUE)))
+    expect_true(any(grepl(basename(script), lines, fixed = TRUE)))
+  } else {
+    link <- file.path(dir, "imurun")
+    expect_true(file.exists(link))
+    expect_equal(normalizePath(Sys.readlink(link)), normalizePath(script))
+  }
 })
 
 test_that("install_cli errors for non-existent directory", {
-  skip_on_os("windows")
   expect_error(
-    imurun::install_cli(path = "/nonexistent/path/xyz"),
+    imurun::install_cli(path = file.path(tempdir(), "nonexistent_xyz_123")),
     "does not exist"
   )
 })
 
-test_that("install_cli replaces existing file at target", {
-  skip_on_os("windows")
+test_that("install_cli replaces an existing launcher at the target", {
   dir <- tempfile("test_install_replace_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
 
-  writeLines("old", file.path(dir, "imurun"))
+  is_windows <- .Platform$OS.type == "windows"
+  target <- file.path(dir, if (is_windows) "imurun.cmd" else "imurun")
+  writeLines("old", target)
+
   imurun::install_cli(path = dir)
-  expect_true(nzchar(Sys.readlink(file.path(dir, "imurun"))))
+
+  if (is_windows) {
+    # the stale contents are replaced by the shim
+    expect_true(any(grepl("Rscript", readLines(target), fixed = TRUE)))
+  } else {
+    expect_true(nzchar(Sys.readlink(target)))
+  }
 })
