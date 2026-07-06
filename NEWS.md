@@ -1,6 +1,6 @@
-# imurun 0.0.0.9000
+# imurun 0.1.0
 
-* Initial development version.
+* Initial release.
 * Exported the core CLI engine as ordinary R functions: `run_fit()`,
   `read_inputs()`, `load_by_ext()`, `find_input_file()`, and
   `check_all_inputs()`.

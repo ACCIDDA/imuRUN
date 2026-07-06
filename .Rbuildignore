@@ -12,3 +12,5 @@
 ^.*\.Rcheck$
 ^data-raw$
 ^\.playwright-mcp$
+^cran-comments\.md$
+^CITATION\.cff$
