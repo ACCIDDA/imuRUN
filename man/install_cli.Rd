@@ -7,15 +7,17 @@
 install_cli(path = "~/.local/bin")
 }
 \arguments{
-\item{path}{character; directory to install the symlink into.
-Defaults to \code{"~/.local/bin"}.}
+\item{path}{character; directory to install into. Defaults to
+\code{"~/.local/bin"}. The directory must already exist and be on your \code{PATH}.}
 }
 \value{
 Invisible \code{TRUE} on success, errors on failure.
 }
 \description{
-Creates a symlink to the bundled CLI script so \code{imurun} is
-available as a shell command.
+Installs the bundled CLI so \code{imurun} is available as a shell
+command. On Unix-like systems this symlinks the script into \code{path}; on Windows
+it writes an \code{imurun.cmd} shim that runs the script through \code{Rscript}
+(Windows has neither shebangs nor user symlinks by default).
 }
 \examples{
 \dontrun{
