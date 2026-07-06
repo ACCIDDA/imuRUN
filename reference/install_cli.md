@@ -1,7 +1,9 @@
 # Install imurun CLI to PATH
 
-Creates a symlink to the bundled CLI script so `imurun` is available as
-a shell command.
+Installs the bundled CLI so `imurun` is available as a shell command. On
+Unix-like systems this symlinks the script into `path`; on Windows it
+writes an `imurun.cmd` shim that runs the script through `Rscript`
+(Windows has neither shebangs nor user symlinks by default).
 
 ## Usage
 
@@ -13,8 +15,8 @@ install_cli(path = "~/.local/bin")
 
 - path:
 
-  character; directory to install the symlink into. Defaults to
-  `"~/.local/bin"`.
+  character; directory to install into. Defaults to `"~/.local/bin"`.
+  The directory must already exist and be on your `PATH`.
 
 ## Value
 

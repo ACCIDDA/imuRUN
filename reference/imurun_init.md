@@ -32,10 +32,10 @@ Invisibly, the path to the copied workbook.
 ``` r
 dir <- tempfile("imurun_init_")
 imurun_init(dir)
-#> Created: /tmp/RtmpOLZRfF/imurun_init_189e61c0c679/imurun_template.xlsx
+#> Created: /tmp/RtmpSYmfTt/imurun_init_18a33d5d4d9e/imurun_template.xlsx
 #> Next steps:
 #>   1. Open the workbook and fill the observations, populations, and
 #>      locations sheets (see the instructions sheet).
-#>   2. Validate it:  imurun -h /tmp/RtmpOLZRfF/imurun_init_189e61c0c679/imurun_template.xlsx
-#>   3. Fit it:       imurun /tmp/RtmpOLZRfF/imurun_init_189e61c0c679/imurun_template.xlsx
+#>   2. Validate it:  imurun -h /tmp/RtmpSYmfTt/imurun_init_18a33d5d4d9e/imurun_template.xlsx
+#>   3. Fit it:       imurun /tmp/RtmpSYmfTt/imurun_init_18a33d5d4d9e/imurun_template.xlsx
 ```
