@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "imurun - Beginner-Friendly Command-Line Front-End for imuGAP"
+abstract: >-
+  A lean command-line front-end to the imuGAP model-fitting package. Reads
+  model inputs (observations, populations, and locations) from a directory of
+  CSV or RDS files or from a single xlsx workbook, validates them against the
+  canonical imuGAP schema, runs a fit, and writes the result out. Helper
+  functions are exported so they can be used directly from R as well as from
+  the bundled command-line script.
+type: software
+version: "0.1.0"
+license: MIT
+repository-code: "https://github.com/ACCIDDA/imurun"
+url: "https://accidda.github.io/imurun/"
+authors:
+  - family-names: Pearson
+    given-names: Carl
+    email: carl.ab.pearson@gmail.com
+    orcid: "https://orcid.org/0000-0003-0701-7860"
+  - family-names: Smith
+    given-names: Claire Perrin
+    orcid: "https://orcid.org/0000-0003-1069-9460"
+  - family-names: Voglesonger
+    given-names: Weston
+    email: westonvogle@gmail.com
+keywords:
+  - measles
+  - vaccine-coverage
+  - command-line
+  - imugap
+  - epidemiology
