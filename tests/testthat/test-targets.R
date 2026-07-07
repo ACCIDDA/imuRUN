@@ -202,13 +202,12 @@ test_that("summarize_targets respects a non-default ci_level and validates input
   expect_error(summarize_targets(d, ci_level = 1.5), "ci_level")
 })
 
-# --- reading the optional target sheet/file ----------------------------------
+# --- reading the (required) target sheet/file --------------------------------
 
-test_that("read_workbook omits target when the sheet is absent", {
+test_that("read_workbook errors when the target sheet is absent", {
   skip_if_not_installed("readxl")
   skip_if_not_installed("writexl")
-  # The bundled example now ships a target sheet, so build a target-less
-  # workbook here to exercise the "no target" path.
+  # The target sheet is required, so a workbook without one is an error.
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
   writexl::write_xlsx(
@@ -220,10 +219,10 @@ test_that("read_workbook omits target when the sheet is absent", {
     ),
     tmp
   )
-  expect_null(imurun::read_workbook(tmp)$target)
+  expect_error(imurun::read_workbook(tmp), "target")
 })
 
-test_that("read_workbook reads an optional target sheet when present", {
+test_that("read_workbook reads the target sheet", {
   skip_if_not_installed("readxl")
   skip_if_not_installed("writexl")
   tmp <- tempfile(fileext = ".xlsx")
@@ -249,7 +248,7 @@ test_that("read_workbook reads an optional target sheet when present", {
   expect_true(all(IMURUN_TARGET_SCHEMA %in% names(target)))
 })
 
-test_that("read_inputs reads an optional target.csv in directory mode", {
+test_that("read_inputs reads the target.csv in directory mode", {
   dir <- tempfile("imurun_target_dir_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)

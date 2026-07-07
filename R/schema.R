@@ -59,7 +59,7 @@ IMURUN_SHEETS <- c("observations", "locations")
 
 #' Target-request sheet schema
 #'
-#' @description Required columns of the optional `target` sheet that drives
+#' @description Required columns of the (required) `target` sheet that drives
 #' the by-target predictions. A target-request row names one or more
 #' locations (`loc_id`, a `;`-separated list), a reference birth-cohort index
 #' (`cohort`), and an inclusive age span (`age_low`..`age_high`). The row is
@@ -89,7 +89,7 @@ IMURUN_TARGET_SCHEMA <- c("loc_id", "cohort", "age_low", "age_high")
 #' @keywords internal
 IMURUN_TARGET_OPTIONAL <- c("dose", "target_id")
 
-#' Name of the optional target-request sheet
+#' Name of the (required) target-request sheet
 #'
 #' @keywords internal
 IMURUN_TARGET_SHEET <- "target"

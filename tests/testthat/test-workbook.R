@@ -75,8 +75,12 @@ test_that("read_inputs still reads a CSV/RDS directory", {
     data.frame(loc_id = 1, parent_id = NA),
     file.path(dir, "locations.csv"), row.names = FALSE
   )
+  write.csv(
+    data.frame(loc_id = 1, cohort = 5, age_low = 1, age_high = 1),
+    file.path(dir, "target.csv"), row.names = FALSE
+  )
   inputs <- imurun::read_inputs(dir)
-  expect_named(inputs, c("obs", "locs"))
+  expect_named(inputs, c("obs", "locs", "target"))
 })
 
 # --- friendly headers, auto obs_id, instructions-tab tolerance (issue #25) ----
@@ -94,6 +98,10 @@ test_that("read_inputs accepts human-readable headers and auto-assigns obs_id", 
       ),
       locations = data.frame(
         Location = "A", "Parent location" = NA, check.names = FALSE
+      ),
+      target = data.frame(
+        Location = "A", "Birth cohort" = 5L, "Youngest age" = 1L,
+        "Oldest age" = 1L, check.names = FALSE
       )
     ),
     wb
@@ -117,6 +125,10 @@ test_that("an instructions sheet is tolerated whether present or absent", {
     ),
     locations = data.frame(
       Location = "A", "Parent location" = NA, check.names = FALSE
+    ),
+    target = data.frame(
+      Location = "A", "Birth cohort" = 5L, "Youngest age" = 1L,
+      "Oldest age" = 1L, check.names = FALSE
     )
   )
   with_wb <- tempfile(fileext = ".xlsx")
@@ -137,7 +149,8 @@ test_that("write_workbook round-trips through read_workbook", {
   inputs <- list(
     obs = data.frame(obs_id = 1:2, loc_id = "A", cohort = 5L, age = 5:6,
                      dose = 2L, positive = 3:4, sample_n = 10L),
-    locs = data.frame(loc_id = "A", parent_id = NA)
+    locs = data.frame(loc_id = "A", parent_id = NA),
+    target = data.frame(loc_id = "A", cohort = 5L, age_low = 1L, age_high = 1L)
   )
   out <- tempfile(fileext = ".xlsx")
   imurun::write_workbook(inputs, out)

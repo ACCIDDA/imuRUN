@@ -105,7 +105,7 @@ find_input_file <- function(dir, name) {
 #' @examples
 #' dir <- tempfile("imurun_check_")
 #' dir.create(dir)
-#' for (n in c("observations", "locations")) {
+#' for (n in c("observations", "locations", "target")) {
 #'   write.csv(data.frame(a = 1), file.path(dir, paste0(n, ".csv")),
 #'             row.names = FALSE)
 #' }
@@ -113,7 +113,7 @@ find_input_file <- function(dir, name) {
 #'
 #' @export
 check_all_inputs <- function(dir) {
-  required <- c("observations", "locations")
+  required <- c("observations", "locations", IMURUN_TARGET_SHEET)
   missing <- required[
     !vapply(required, function(n) file_exists_any_ext(dir, n), logical(1))
   ]
@@ -201,14 +201,14 @@ normalize_inputs <- function(result) {
 #' [IMURUN_SHEETS]. The reader package ('readxl') is only needed at call time;
 #' an informative error is raised if it is not installed.
 #'
-#' An optional fourth sheet named `target` ([IMURUN_TARGET_SHEET]) is read when
-#' present and returned as a `target` element; it is never required, so its
-#' absence is not an error.
+#' A `target` sheet ([IMURUN_TARGET_SHEET]) is also required and returned as a
+#' `target` element: imurun always predicts coverage for named populations, so
+#' there is no such thing as a target-less input.
 #'
 #' @param path character; path to a `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs` and `locs` (each a
-#'   `data.frame`), plus `target` when the optional `target` sheet is present.
+#' @return A named list with elements `obs`, `locs`, and `target` (each a
+#'   `data.frame`).
 #'
 #' @examples
 #' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
@@ -244,6 +244,12 @@ read_workbook <- function(path) {
   )
   matched <- match(tolower(IMURUN_SHEETS), tolower(present))
   missing <- IMURUN_SHEETS[is.na(matched)]
+  # The target sheet is required: imurun always predicts coverage for named
+  # populations, so there is no such thing as a target-less input.
+  tgt_idx <- match(tolower(IMURUN_TARGET_SHEET), tolower(present))
+  if (is.na(tgt_idx)) {
+    missing <- c(missing, IMURUN_TARGET_SHEET)
+  }
   if (length(missing) > 0) {
     stop(
       "Workbook '",
@@ -281,28 +287,24 @@ read_workbook <- function(path) {
     locs = read_one("locations")
   )
 
-  # Optional target-request sheet (issue #14): read it when present, else leave
-  # it out (callers treat a missing/NULL `target` as "no targets requested").
-  tgt_idx <- match(tolower(IMURUN_TARGET_SHEET), tolower(present))
-  if (!is.na(tgt_idx)) {
-    result$target <- tryCatch(
-      as.data.frame(
-        readxl::read_excel(path, sheet = present[tgt_idx]),
-        stringsAsFactors = FALSE
-      ),
-      error = function(e) {
-        stop(
-          "Failed to read sheet '",
-          present[tgt_idx],
-          "' from '",
-          basename(path),
-          "': ",
-          e$message,
-          call. = FALSE
-        )
-      }
-    )
-  }
+  # Required target-request sheet (issue #14): drives the by-target predictions.
+  result$target <- tryCatch(
+    as.data.frame(
+      readxl::read_excel(path, sheet = present[tgt_idx]),
+      stringsAsFactors = FALSE
+    ),
+    error = function(e) {
+      stop(
+        "Failed to read sheet '",
+        present[tgt_idx],
+        "' from '",
+        basename(path),
+        "': ",
+        e$message,
+        call. = FALSE
+      )
+    }
+  )
   normalize_inputs(result)
 }
 
@@ -320,15 +322,14 @@ read_workbook <- function(path) {
 #'     [read_workbook()].}
 #' }
 #'
-#' Missing inputs (files or sheets) are all reported at once. An optional
-#' `target` sheet (in a workbook) or `target.csv`/`target.rds` (in a directory)
-#' is read when present and returned as a `target` element (issue #14).
+#' Missing inputs (files or sheets) are all reported at once. A `target` sheet
+#' (in a workbook) or `target.csv`/`target.rds` (in a directory) is required and
+#' returned as a `target` element (issue #14).
 #'
 #' @param path character; a directory of CSV/RDS files, or the path to a single
 #'   `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs` and `locs`, plus `target`
-#'   when an optional target input is present.
+#' @return A named list with elements `obs`, `locs`, and `target`.
 #'
 #' @examples
 #' dir <- tempfile("imurun_read_")
@@ -338,6 +339,8 @@ read_workbook <- function(path) {
 #'           file.path(dir, "observations.csv"), row.names = FALSE)
 #' write.csv(data.frame(loc_id = 1, parent_id = NA),
 #'           file.path(dir, "locations.csv"), row.names = FALSE)
+#' write.csv(data.frame(loc_id = 1, cohort = 5, age_low = 1, age_high = 1),
+#'           file.path(dir, "target.csv"), row.names = FALSE)
 #' inputs <- read_inputs(dir)
 #' names(inputs)
 #'
@@ -354,10 +357,8 @@ read_inputs <- function(path) {
     obs = find_input_file(path, "observations"),
     locs = find_input_file(path, "locations")
   )
-  # Optional target input (issue #14): target.csv / target.rds if present.
-  if (file_exists_any_ext(path, IMURUN_TARGET_SHEET)) {
-    result$target <- find_input_file(path, IMURUN_TARGET_SHEET)
-  }
+  # Required target input (issue #14): target.csv / target.rds.
+  result$target <- find_input_file(path, IMURUN_TARGET_SHEET)
   normalize_inputs(result)
 }
 

@@ -91,7 +91,7 @@ instructions <- data.frame(
     "  Location          unique location name",
     "  Parent location   the parent's name; leave blank for the single root",
     "",
-    "target sheet -- optional; populations to predict coverage for:",
+    "target sheet -- the populations to predict coverage for (required):",
     "  Location          one or more locations, ';'-separated",
     "  Birth cohort      reference cohort index for the oldest age in the span",
     "  Youngest age      youngest age to predict",
@@ -199,7 +199,10 @@ writexl::write_xlsx(
   list(
     instructions = instructions,
     observations = bad_obs,
-    locations = to_friendly(ex_loc, loc_headers)
+    locations = to_friendly(ex_loc, loc_headers),
+    # target is required, so include a valid one -- the corruption is in the
+    # observations sheet, which is what validation should catch.
+    target = to_friendly(ex_target, tgt_headers)
   ),
   path = file.path(fixture_dir, "example_corrupt.xlsx")
 )

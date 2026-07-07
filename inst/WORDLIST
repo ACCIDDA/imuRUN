@@ -1,4 +1,5 @@
 ACCIDDA
+canonicalization
 canonicalize
 canonicalized
 canonicalizer
@@ -16,16 +17,18 @@ imuGAP
 imuGAP's
 imumap
 imurun
+imurun's
 io
 lintr
 ORCID
 Perrin
 pkgdown
 RDS
+readxl
 reprex
 RStan
-readxl
 runnable
+Scriptable
 sessionInfo
 sheet
 spreadsheet
