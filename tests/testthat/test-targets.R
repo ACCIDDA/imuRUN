@@ -206,8 +206,21 @@ test_that("summarize_targets respects a non-default ci_level and validates input
 
 test_that("read_workbook omits target when the sheet is absent", {
   skip_if_not_installed("readxl")
-  wb <- testthat::test_path("fixtures", "example.xlsx")
-  expect_null(imurun::read_workbook(wb)$target)
+  skip_if_not_installed("writexl")
+  # The bundled example now ships a target sheet, so build a target-less
+  # workbook here to exercise the "no target" path.
+  tmp <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  writexl::write_xlsx(
+    list(
+      observations = data.frame(
+        loc_id = "A", cohort = 5, age = 5, dose = 2, positive = 3, sample_n = 10
+      ),
+      locations = data.frame(loc_id = "A", parent_id = NA)
+    ),
+    tmp
+  )
+  expect_null(imurun::read_workbook(tmp)$target)
 })
 
 test_that("read_workbook reads an optional target sheet when present", {
