@@ -17,13 +17,13 @@ Source:
 [`DESCRIPTION`](https://github.com/ACCIDDA/imurun/blob/main/DESCRIPTION)
 
 Pearson C, Smith C (2026). *imurun: Beginner-Friendly Command-Line
-Front-End for imuGAP*. R package version 0.0.0.9000,
+Front-End for 'imuGAP'*. R package version 0.1.0,
 <https://github.com/ACCIDDA/imurun>.
 
     @Manual{,
-      title = {imurun: Beginner-Friendly Command-Line Front-End for imuGAP},
+      title = {imurun: Beginner-Friendly Command-Line Front-End for 'imuGAP'},
       author = {Carl Pearson and Claire Perrin Smith},
       year = {2026},
-      note = {R package version 0.0.0.9000},
+      note = {R package version 0.1.0},
       url = {https://github.com/ACCIDDA/imurun},
     }

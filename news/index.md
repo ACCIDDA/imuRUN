@@ -1,8 +1,8 @@
 # Changelog
 
-## imurun 0.0.0.9000
+## imurun 0.1.0
 
-- Initial development version.
+- Initial release.
 - Exported the core CLI engine as ordinary R functions:
   [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md),
   [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md),
