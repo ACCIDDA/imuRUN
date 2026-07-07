@@ -92,8 +92,8 @@ find_input_file <- function(dir, name) {
 
 #' Check that all required inputs are present
 #'
-#' @description Verifies that all three required imuGAP inputs
-#' (`observations`, `populations`, `locations`) exist in a directory under some
+#' @description Verifies that both required imuGAP inputs
+#' (`observations`, `locations`) exist in a directory under some
 #' supported extension. Reports every missing input at once rather than failing
 #' on the first.
 #'
@@ -105,7 +105,7 @@ find_input_file <- function(dir, name) {
 #' @examples
 #' dir <- tempfile("imurun_check_")
 #' dir.create(dir)
-#' for (n in c("observations", "populations", "locations")) {
+#' for (n in c("observations", "locations")) {
 #'   write.csv(data.frame(a = 1), file.path(dir, paste0(n, ".csv")),
 #'             row.names = FALSE)
 #' }
@@ -113,7 +113,7 @@ find_input_file <- function(dir, name) {
 #'
 #' @export
 check_all_inputs <- function(dir) {
-  required <- c("observations", "populations", "locations")
+  required <- c("observations", "locations")
   missing <- required[
     !vapply(required, function(n) file_exists_any_ext(dir, n), logical(1))
   ]
@@ -132,7 +132,7 @@ check_all_inputs <- function(dir) {
 
 #' Read all required sheets from an .xlsx workbook
 #'
-#' @description Reads the `observations`, `populations`, and `locations` sheets
+#' @description Reads the `observations` and `locations` sheets
 #' from a single Excel workbook into data frames. Reports every missing sheet at
 #' once (mirroring [check_all_inputs()] semantics) rather than failing on the
 #' first.
@@ -141,10 +141,14 @@ check_all_inputs <- function(dir) {
 #' [IMURUN_SHEETS]. The reader package ('readxl') is only needed at call time;
 #' an informative error is raised if it is not installed.
 #'
+#' An optional fourth sheet named `target` ([IMURUN_TARGET_SHEET]) is read when
+#' present and returned as a `target` element; it is never required, so its
+#' absence is not an error.
+#'
 #' @param path character; path to a `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs`, `pops`, and `locs`, each a
-#'   `data.frame`.
+#' @return A named list with elements `obs` and `locs` (each a
+#'   `data.frame`), plus `target` when the optional `target` sheet is present.
 #'
 #' @examples
 #' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
@@ -170,7 +174,10 @@ read_workbook <- function(path) {
     readxl::excel_sheets(path),
     error = function(e) {
       stop(
-        "Failed to open workbook '", basename(path), "': ", e$message,
+        "Failed to open workbook '",
+        basename(path),
+        "': ",
+        e$message,
         call. = FALSE
       )
     }
@@ -179,9 +186,13 @@ read_workbook <- function(path) {
   missing <- IMURUN_SHEETS[is.na(matched)]
   if (length(missing) > 0) {
     stop(
-      "Workbook '", basename(path), "' is missing required sheet(s): ",
+      "Workbook '",
+      basename(path),
+      "' is missing required sheet(s): ",
       paste(missing, collapse = ", "),
-      " (found: ", paste(present, collapse = ", "), ")",
+      " (found: ",
+      paste(present, collapse = ", "),
+      ")",
       call. = FALSE
     )
   }
@@ -192,8 +203,12 @@ read_workbook <- function(path) {
       readxl::read_excel(path, sheet = actual),
       error = function(e) {
         stop(
-          "Failed to read sheet '", actual, "' from '", basename(path),
-          "': ", e$message,
+          "Failed to read sheet '",
+          actual,
+          "' from '",
+          basename(path),
+          "': ",
+          e$message,
           call. = FALSE
         )
       }
@@ -201,42 +216,66 @@ read_workbook <- function(path) {
     as.data.frame(df, stringsAsFactors = FALSE)
   }
 
-  list(
+  result <- list(
     obs = read_one("observations"),
-    pops = read_one("populations"),
     locs = read_one("locations")
   )
+
+  # Optional target-request sheet (issue #14): read it when present, else leave
+  # it out (callers treat a missing/NULL `target` as "no targets requested").
+  tgt_idx <- match(tolower(IMURUN_TARGET_SHEET), tolower(present))
+  if (!is.na(tgt_idx)) {
+    result$target <- tryCatch(
+      as.data.frame(
+        readxl::read_excel(path, sheet = present[tgt_idx]),
+        stringsAsFactors = FALSE
+      ),
+      error = function(e) {
+        stop(
+          "Failed to read sheet '",
+          present[tgt_idx],
+          "' from '",
+          basename(path),
+          "': ",
+          e$message,
+          call. = FALSE
+        )
+      }
+    )
+  }
+  result
 }
 
 #' Read all imuGAP inputs from a directory or workbook
 #'
 #' @description Convenience entry point that loads the raw (un-canonicalized)
-#' `observations`, `populations`, and `locations` data, ready to be passed to
+#' `observations` and `locations` data, ready to be passed to
 #' [validate_inputs()] or [run_fit()].
 #'
 #' `read_inputs()` accepts either:
 #' \describe{
-#'   \item{a directory}{containing `observations`, `populations`, and
+#'   \item{a directory}{containing `observations` and
 #'     `locations` files as CSV or RDS (the original behavior); or}
 #'   \item{a single `.xlsx` workbook}{with one sheet per input, read via
 #'     [read_workbook()].}
 #' }
 #'
-#' Missing inputs (files or sheets) are all reported at once.
+#' Missing inputs (files or sheets) are all reported at once. An optional
+#' `target` sheet (in a workbook) or `target.csv`/`target.rds` (in a directory)
+#' is read when present and returned as a `target` element (issue #14).
 #'
 #' @param path character; a directory of CSV/RDS files, or the path to a single
 #'   `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs`, `pops`, and `locs`.
+#' @return A named list with elements `obs` and `locs`, plus `target`
+#'   when an optional target input is present.
 #'
 #' @examples
 #' dir <- tempfile("imurun_read_")
 #' dir.create(dir)
-#' write.csv(data.frame(obs_id = 1, positive = 1, sample_n = 10),
-#'           file.path(dir, "observations.csv"), row.names = FALSE)
 #' write.csv(data.frame(obs_id = 1, loc_id = 1, cohort = 2000, age = 1,
-#'                      dose = 1, weight = 1),
-#'           file.path(dir, "populations.csv"), row.names = FALSE)
+#'                      dose = 1, positive = 1, sample_n = 10),
+#'           file.path(dir, "observations.csv"), row.names = FALSE)
 #' write.csv(data.frame(loc_id = 1, parent_id = NA),
 #'           file.path(dir, "locations.csv"), row.names = FALSE)
 #' inputs <- read_inputs(dir)
@@ -251,9 +290,13 @@ read_inputs <- function(path) {
     return(read_workbook(path))
   }
   check_all_inputs(path)
-  list(
+  result <- list(
     obs = find_input_file(path, "observations"),
-    pops = find_input_file(path, "populations"),
     locs = find_input_file(path, "locations")
   )
+  # Optional target input (issue #14): target.csv / target.rds if present.
+  if (file_exists_any_ext(path, IMURUN_TARGET_SHEET)) {
+    result$target <- find_input_file(path, IMURUN_TARGET_SHEET)
+  }
+  result
 }

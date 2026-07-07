@@ -75,8 +75,8 @@ copy_bundled_workbook <- function(src, path, overwrite, label) {
 #'
 #' @description Copies the bundled blank template workbook into a target
 #' directory so users can fill in their own data. The template has one sheet per
-#' input (`observations`, `populations`, `locations`) with the exact required
-#' headers, plus an `instructions` sheet.
+#' input (`observations`, `locations`) with the exact required headers, plus an
+#' `instructions` sheet.
 #'
 #' @param path character; destination directory (created if needed). Defaults to
 #'   the current working directory.
@@ -96,8 +96,8 @@ imurun_init <- function(path = ".", overwrite = FALSE) {
   )
   message("Created: ", dest)
   message("Next steps:")
-  message("  1. Open the workbook and fill the observations, populations, and")
-  message("     locations sheets (see the instructions sheet).")
+  message("  1. Open the workbook and fill the observations and locations")
+  message("     sheets (see the instructions sheet).")
   message("  2. Validate it:  imurun -h ", dest)
   message("  3. Fit it:       imurun ", dest)
   invisible(dest)

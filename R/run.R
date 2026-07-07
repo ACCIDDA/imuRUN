@@ -15,8 +15,7 @@ Usage: imurun <input> [output_dir]
 <input> is either a directory of CSV/RDS files or a single .xlsx workbook.
 
 A directory must contain:
-  observations.csv (or .rds)      -- columns: obs_id, positive, sample_n
-  populations.csv (or .rds)       -- columns: obs_id, loc_id, cohort, age, dose, weight
+  observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age, dose, positive, sample_n
   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
 
 A workbook must have one sheet per input with the same column names
@@ -30,7 +29,7 @@ output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 
 #'
 #' @description The core engine behind the `imurun` command-line interface,
 #' exposed as an ordinary R function. Given a directory of inputs it loads the
-#' `observations`, `populations`, and `locations` files (CSV or RDS), validates
+#' `observations` and `locations` files (CSV or RDS), validates
 #' them against the canonical 'imuGAP' schema, fits the model with
 #' `imuGAP::sampling()`, and writes `fit.rds` to the output directory.
 #'
@@ -141,15 +140,19 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(0L))
   }
 
-  # Re-canonicalize for the fit (validate_inputs does not retain populations).
+  # Re-canonicalize for the fit. imurun has no populations sheet: the imuGAP
+  # populations are derived from the observations (one weight-1 row each).
   canonical <- tryCatch(
     {
       locs <- imuGAP::canonicalize_locations(inputs$locs)
       obs <- imuGAP::canonicalize_observations(inputs$obs)
+      pops_raw <- build_populations(
+        as.data.frame(inputs$obs, stringsAsFactors = FALSE)
+      )
       pops <- imuGAP::canonicalize_populations(
-        inputs$pops, obs, locs,
-        max_cohort = max(as.integer(inputs$pops$cohort)),
-        max_age = max(as.integer(inputs$pops$age))
+        pops_raw, obs, locs,
+        max_cohort = max(as.integer(pops_raw$cohort)),
+        max_age = max(as.integer(pops_raw$age))
       )
       list(locs = locs, obs = obs, pops = pops)
     },
