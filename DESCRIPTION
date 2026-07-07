@@ -27,8 +27,9 @@ Imports:
     utils,
     writexl
 Suggests:
-    testthat (>= 3.0.0),
-    spelling
+    openxlsx2,
+    spelling,
+    testthat (>= 3.0.0)
 Remotes:
     ACCIDDA/imuGAP
 Config/testthat/edition: 3
