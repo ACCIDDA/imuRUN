@@ -9,7 +9,3 @@ available.
 ``` r
 IMURUN_OPTIONAL
 ```
-
-## Format
-
-An object of class `list` of length 3.

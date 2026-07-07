@@ -9,13 +9,13 @@ Problems detected include:
 missing or renamed required columns (per IMURUN_SCHEMA);
 non-numeric count columns (positive, sample_n, cohort, age,
 dose);
-loc_id values referenced in populations but absent from
-locations;
-obs_id mismatches between observations and populations;
+loc_id values in observations but absent from locations;
 dose, cohort, and age values out of range;
 structural location problems (duplicate or missing root, cycles).
 
 
+The imuGAP populations are constructed from the observations
+(build_populations()); there is no populations sheet.
 On success the canonicalized frames are returned invisibly. On failure a
 single error is raised whose message lists every problem found."><meta property="og:description" content="A friendly validation layer over the 'imuGAP' canonicalizers
 (canonicalize_observations(), canonicalize_populations(), and
@@ -27,13 +27,13 @@ Problems detected include:
 missing or renamed required columns (per IMURUN_SCHEMA);
 non-numeric count columns (positive, sample_n, cohort, age,
 dose);
-loc_id values referenced in populations but absent from
-locations;
-obs_id mismatches between observations and populations;
+loc_id values in observations but absent from locations;
 dose, cohort, and age values out of range;
 structural location problems (duplicate or missing root, cycles).
 
 
+The imuGAP populations are constructed from the observations
+(build_populations()); there is no populations sheet.
 On success the canonicalized frames are returned invisibly. On failure a
 single error is raised whose message lists every problem found."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -85,12 +85,12 @@ than stopping at the first.</p>
 <p>Problems detected include:</p><ul><li><p>missing or renamed required columns (per <a href="IMURUN_SCHEMA.html">IMURUN_SCHEMA</a>);</p></li>
 <li><p>non-numeric count columns (<code>positive</code>, <code>sample_n</code>, <code>cohort</code>, <code>age</code>,
 <code>dose</code>);</p></li>
-<li><p><code>loc_id</code> values referenced in <code>populations</code> but absent from
-<code>locations</code>;</p></li>
-<li><p><code>obs_id</code> mismatches between <code>observations</code> and <code>populations</code>;</p></li>
+<li><p><code>loc_id</code> values in <code>observations</code> but absent from <code>locations</code>;</p></li>
 <li><p><code>dose</code>, <code>cohort</code>, and <code>age</code> values out of range;</p></li>
 <li><p>structural location problems (duplicate or missing root, cycles).</p></li>
-</ul><p>On success the canonicalized frames are returned invisibly. On failure a
+</ul><p>The imuGAP populations are constructed from the observations
+(<code><a href="build_populations.html">build_populations()</a></code>); there is no populations sheet.</p>
+<p>On success the canonicalized frames are returned invisibly. On failure a
 single error is raised whose message lists every problem found.</p>
     </div>
 
@@ -104,13 +104,13 @@ single error is raised whose message lists every problem found.</p>
 
 
 <dl><dt id="arg-inputs">inputs<a class="anchor" aria-label="anchor" href="#arg-inputs"></a></dt>
-<dd><p>a named list with <code>obs</code>, <code>pops</code>, and <code>locs</code> (as returned by
+<dd><p>a named list with <code>obs</code> and <code>locs</code> (as returned by
 <code><a href="read_inputs.html">read_inputs()</a></code>), or a path passed straight to <code><a href="read_inputs.html">read_inputs()</a></code>.</p></dd>
 
 
 <dt id="arg-max-cohort-max-age">max_cohort, max_age<a class="anchor" aria-label="anchor" href="#arg-max-cohort-max-age"></a></dt>
 <dd><p>integer upper bounds for the <code>cohort</code> and <code>age</code>
-columns. Default to the largest value present in <code>populations</code> so that
+columns. Default to the largest value present in <code>observations</code> so that
 validation does not impose a model configuration; supply explicit bounds to
 enforce a particular schedule.</p></dd>
 
@@ -122,7 +122,7 @@ enforce a particular schedule.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Invisibly, a named list of the canonicalized <code>obs</code>, <code>pops</code>, and
-<code>locs</code> frames.</p>
+<code>locs</code> frames (<code>pops</code> derived from <code>obs</code>).</p>
     </div>
 
     <div class="section level2">

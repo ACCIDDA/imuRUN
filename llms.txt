@@ -170,8 +170,12 @@ model-fitting package.
 
 - [`IMURUN_SCHEMA`](https://accidda.github.io/imurun/reference/IMURUN_SCHEMA.md)
   : Canonical imuGAP input schema
+- [`IMURUN_TARGET_SCHEMA`](https://accidda.github.io/imurun/reference/IMURUN_TARGET_SCHEMA.md)
+  : Target-request sheet schema
 - [`check_all_inputs()`](https://accidda.github.io/imurun/reference/check_all_inputs.md)
   : Check that all required inputs are present
+- [`expand_targets()`](https://accidda.github.io/imurun/reference/expand_targets.md)
+  : Expand a compact target-request sheet into explicit target rows
 - [`find_input_file()`](https://accidda.github.io/imurun/reference/find_input_file.md)
   : Find and read a named input from a directory
 - [`imurun_copy_example()`](https://accidda.github.io/imurun/reference/imurun_copy_example.md)
@@ -192,6 +196,10 @@ model-fitting package.
   : Read all required sheets from an .xlsx workbook
 - [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md) :
   Run the imurun fitting pipeline
+- [`summarize_targets()`](https://accidda.github.io/imurun/reference/summarize_targets.md)
+  : Reduce posterior draws to a median and credible interval per target
 - [`validate_inputs()`](https://accidda.github.io/imurun/reference/validate_inputs.md)
   : Validate imurun inputs and report all problems at once
+- [`validate_targets()`](https://accidda.github.io/imurun/reference/validate_targets.md)
+  : Validate a target-request sheet with friendly, row-referenced errors
 

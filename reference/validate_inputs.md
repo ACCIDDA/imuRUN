@@ -15,14 +15,15 @@ Problems detected include:
 - non-numeric count columns (`positive`, `sample_n`, `cohort`, `age`,
   `dose`);
 
-- `loc_id` values referenced in `populations` but absent from
-  `locations`;
-
-- `obs_id` mismatches between `observations` and `populations`;
+- `loc_id` values in `observations` but absent from `locations`;
 
 - `dose`, `cohort`, and `age` values out of range;
 
 - structural location problems (duplicate or missing root, cycles).
+
+The imuGAP populations are constructed from the observations
+([`build_populations()`](https://accidda.github.io/imurun/reference/build_populations.md));
+there is no populations sheet.
 
 On success the canonicalized frames are returned invisibly. On failure a
 single error is raised whose message lists every problem found.
@@ -37,7 +38,7 @@ validate_inputs(inputs, max_cohort = NULL, max_age = NULL, max_dose = 2L)
 
 - inputs:
 
-  a named list with `obs`, `pops`, and `locs` (as returned by
+  a named list with `obs` and `locs` (as returned by
   [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md)),
   or a path passed straight to
   [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md).
@@ -45,8 +46,8 @@ validate_inputs(inputs, max_cohort = NULL, max_age = NULL, max_dose = 2L)
 - max_cohort, max_age:
 
   integer upper bounds for the `cohort` and `age` columns. Default to
-  the largest value present in `populations` so that validation does not
-  impose a model configuration; supply explicit bounds to enforce a
+  the largest value present in `observations` so that validation does
+  not impose a model configuration; supply explicit bounds to enforce a
   particular schedule.
 
 - max_dose:
@@ -56,7 +57,7 @@ validate_inputs(inputs, max_cohort = NULL, max_age = NULL, max_dose = 2L)
 ## Value
 
 Invisibly, a named list of the canonicalized `obs`, `pops`, and `locs`
-frames.
+frames (`pops` derived from `obs`).
 
 ## Examples
 

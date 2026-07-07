@@ -9,7 +9,3 @@ when invoked with no arguments or a help flag.
 ``` r
 USAGE
 ```
-
-## Format
-
-An object of class `character` of length 1.

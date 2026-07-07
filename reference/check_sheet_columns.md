@@ -9,7 +9,7 @@ problem messages (empty if none). Used by
 ## Usage
 
 ``` r
-check_sheet_columns(df, sheet)
+check_sheet_columns(df, sheet, required = IMURUN_SCHEMA[[sheet]])
 ```
 
 ## Arguments
@@ -20,7 +20,15 @@ check_sheet_columns(df, sheet)
 
 - sheet:
 
-  character; one of `"observations"`, `"populations"`, `"locations"`.
+  character; one of `"observations"`, `"populations"`, `"locations"` (or
+  any sheet name used in the message).
+
+- required:
+
+  character; the required column names. Defaults to the
+  [IMURUN_SCHEMA](https://accidda.github.io/imurun/reference/IMURUN_SCHEMA.md)
+  entry for `sheet`; pass an explicit vector to check a sheet not in
+  `IMURUN_SCHEMA` (e.g. the `target` sheet).
 
 ## Value
 

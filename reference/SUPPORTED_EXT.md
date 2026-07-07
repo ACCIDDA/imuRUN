@@ -8,7 +8,3 @@ takes precedence over RDS when both exist for the same input.
 ``` r
 SUPPORTED_EXT
 ```
-
-## Format
-
-An object of class `character` of length 2.

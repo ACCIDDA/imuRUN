@@ -2,9 +2,9 @@
 
 The core engine behind the `imurun` command-line interface, exposed as
 an ordinary R function. Given a directory of inputs it loads the
-`observations`, `populations`, and `locations` files (CSV or RDS),
-validates them against the canonical 'imuGAP' schema, fits the model
-with `imuGAP::sampling()`, and writes `fit.rds` to the output directory.
+`observations` and `locations` files (CSV or RDS), validates them
+against the canonical 'imuGAP' schema, fits the model with
+`imuGAP::sampling()`, and writes `fit.rds` to the output directory.
 
 The function never throws for expected failure modes; instead it prints
 a human-readable message and returns an integer exit code, so it can
@@ -63,8 +63,7 @@ run_fit(character(0))
 #> <input> is either a directory of CSV/RDS files or a single .xlsx workbook.
 #> 
 #> A directory must contain:
-#>   observations.csv (or .rds)      -- columns: obs_id, positive, sample_n
-#>   populations.csv (or .rds)       -- columns: obs_id, loc_id, cohort, age, dose, weight
+#>   observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age, dose, positive, sample_n
 #>   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
 #> 
 #> A workbook must have one sheet per input with the same column names
