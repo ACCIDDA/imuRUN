@@ -92,7 +92,7 @@ instructions_lines <- c(
   "for you. Extra columns you add for your own notes are ignored.",
   "",
   "observations sheet -- one row per sampled count:",
-  "  Location          the location this count is from (must match a Location in the locations sheet)",
+  "  Location          the location of this count (must match a Location in the locations sheet)",
   "  Birth cohort      positive whole-number birth-cohort index",
   "  Age               positive whole-number age",
   "  Dose              which dose this count is for: 1 or 2",
