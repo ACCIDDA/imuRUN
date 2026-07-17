@@ -11,8 +11,9 @@
 #'
 #' Each element of `IMURUN_SCHEMA` describes one sheet/input:
 #' \describe{
-#'   \item{observations}{One row per observation. Required columns: `obs_id`
-#'     (unique non-missing identifier), `loc_id` (must exist in locations),
+#'   \item{observations}{One row per observation. Columns: `obs_id` (a unique
+#'     identifier -- the loader assigns one automatically if you omit it, so it
+#'     is not a user column), `loc_id` (must exist in locations),
 #'     `cohort` (positive integer), `age` (positive integer), `dose` (integer in
 #'     `1:max_dose`), `positive` (non-negative integer count of positive
 #'     results), `sample_n` (positive integer sample size, with
@@ -58,7 +59,7 @@ IMURUN_SHEETS <- c("observations", "locations")
 
 #' Target-request sheet schema
 #'
-#' @description Required columns of the optional `target` sheet that drives
+#' @description Required columns of the (required) `target` sheet that drives
 #' the by-target predictions. A target-request row names one or more
 #' locations (`loc_id`, a `;`-separated list), a reference birth-cohort index
 #' (`cohort`), and an inclusive age span (`age_low`..`age_high`). The row is
@@ -88,7 +89,35 @@ IMURUN_TARGET_SCHEMA <- c("loc_id", "cohort", "age_low", "age_high")
 #' @keywords internal
 IMURUN_TARGET_OPTIONAL <- c("dose", "target_id")
 
-#' Name of the optional target-request sheet
+#' Name of the (required) target-request sheet
 #'
 #' @keywords internal
 IMURUN_TARGET_SHEET <- "target"
+
+#' Human-readable column-header aliases
+#'
+#' @description Maps friendly, human-readable column headers (as shipped in the
+#' template and example workbooks) to imurun's canonical column names. The
+#' loader ([read_inputs()]) accepts **either** the friendly header or the
+#' canonical name (case-insensitively) and renames friendly headers to canonical
+#' before validation, so the rest of imurun only ever sees canonical names.
+#'
+#' Names are the friendly headers; values are the canonical names. Friendly
+#' labels are unambiguous across sheets (e.g. "Location" always means `loc_id`),
+#' so a single flat map serves every sheet.
+#'
+#' @keywords internal
+IMURUN_HEADER_ALIASES <- c(
+  "Observation ID"  = "obs_id",
+  "Location"        = "loc_id",
+  "Parent location" = "parent_id",
+  "Birth cohort"    = "cohort",
+  "Age"             = "age",
+  "Dose"            = "dose",
+  "Vaccinated"      = "positive",
+  "Sampled"         = "sample_n",
+  "Censored"        = "censored",
+  "Youngest age"    = "age_low",
+  "Oldest age"      = "age_high",
+  "Label"           = "target_id"
+)

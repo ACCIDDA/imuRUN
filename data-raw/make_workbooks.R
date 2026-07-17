@@ -1,101 +1,194 @@
-# Generates the two shipped .xlsx workbooks + test fixtures:
-#   * inst/templates/imurun_template.xlsx -- blank, headers only + instructions
-#   * inst/extdata/imurun_example.xlsx    -- a small filled example carved from
-#                                            imuGAP's *_sim datasets
+# Generates the shipped .xlsx workbooks + test fixtures:
+#   * inst/templates/imurun_template.xlsx -- blank, human-readable headers +
+#                                            an instructions sheet (first tab)
+#   * inst/extdata/imurun_example.xlsx    -- a filled example carved (unsubset)
+#                                            from imuGAP's *_sim datasets, with
+#                                            the same instructions tab
 #   * tests/testthat/fixtures/example*.xlsx
 #
-# Input model (#26): imurun has no populations sheet. Each observation carries
-# its own loc_id/cohort/age/dose, and imurun derives the imuGAP populations from
-# the observations (one weight-1 row each).
+# Design (issue #25, addressing @pearsonca's review):
+#   - The instructions tab is the FIRST sheet you see when the file opens, and
+#     ships in the example too. The tool works with or without it (the loader
+#     only reads the named data sheets), so users may delete it.
+#   - Columns use human-readable headers ("Location", "Birth cohort", ...). The
+#     loader (R/loaders.R canonicalize_headers) maps them back to imuGAP's
+#     canonical names, accepting either form.
+#   - No populations sheet: each observation carries its own location/cohort/
+#     age/dose and imurun derives one weight-1 population per observation (#26).
+#   - obs_id is not a user column -- it is irrelevant to the input and is
+#     assigned automatically by the loader.
+#   - A target sheet drives by-target predictions (#14); target_id is an
+#     optional free-text label.
+#   - The example uses the FULL *_sim data (not a subset) so the real trends
+#     survive (@pearsonca, make_workbooks.R:125).
+#
+# Structure (openxlsx2): each data sheet gets an AutoFilter, a frozen header
+# row, auto-fit column widths, and a Dose dropdown (1/2). These are cosmetic --
+# the loader reads values with readxl and is blind to filters/freeze/validation
+# -- so they never affect parsing, only human usability. openxlsx2 is used only
+# here at build time; the shipped .xlsx are committed, so it is a dev-only
+# dependency (the runtime writer, R/loaders.R::write_workbook(), stays writexl).
 #
 # Run from the package root with:  Rscript data-raw/make_workbooks.R
-# Requires the 'writexl' package.
+# Requires the 'openxlsx2' package (dev-only; see DESCRIPTION Suggests).
 
-if (!requireNamespace("writexl", quietly = TRUE)) {
-  stop("data-raw/make_workbooks.R needs the 'writexl' package.")
+if (!requireNamespace("openxlsx2", quietly = TRUE)) {
+  stop("data-raw/make_workbooks.R needs the 'openxlsx2' package.")
 }
 suppressMessages({
   library(imuGAP)
   library(data.table)
 })
 
-# The schema (kept in lock-step with R/schema.R).
-schema <- list(
-  observations = c(
-    "obs_id", "loc_id", "cohort", "age", "dose", "positive", "sample_n"
-  ),
-  locations = c("loc_id", "parent_id")
+# Canonical -> human-readable header maps. Keep in lock-step with
+# R/schema.R::IMURUN_HEADER_ALIASES (which maps the friendly labels back).
+obs_headers <- c(
+  loc_id = "Location", cohort = "Birth cohort", age = "Age", dose = "Dose",
+  positive = "Vaccinated", sample_n = "Sampled", censored = "Censored"
 )
+loc_headers <- c(loc_id = "Location", parent_id = "Parent location")
+tgt_headers <- c(
+  loc_id = "Location", cohort = "Birth cohort", age_low = "Youngest age",
+  age_high = "Oldest age", dose = "Dose", target_id = "Label"
+)
+
+# Rename a frame's canonical columns to friendly headers, keeping map order and
+# dropping columns not in the map.
+to_friendly <- function(df, map) {
+  keep <- names(map)[names(map) %in% names(df)]
+  df <- df[, keep, drop = FALSE]
+  names(df) <- unname(map[keep])
+  df
+}
+
+empty_friendly <- function(map) {
+  df <- as.data.frame(
+    matrix(character(0), ncol = length(map), dimnames = list(NULL, names(map))),
+    stringsAsFactors = FALSE
+  )
+  to_friendly(df, map)
+}
 
 out_template <- file.path("inst", "templates", "imurun_template.xlsx")
 out_example <- file.path("inst", "extdata", "imurun_example.xlsx")
 dir.create(dirname(out_template), recursive = TRUE, showWarnings = FALSE)
 dir.create(dirname(out_example), recursive = TRUE, showWarnings = FALSE)
 
-# --- Blank template ----------------------------------------------------------
+# --- Instructions sheet (first tab) ------------------------------------------
 
-empty_sheet <- function(cols) {
-  as.data.frame(
-    matrix(character(0), ncol = length(cols), dimnames = list(NULL, cols)),
-    stringsAsFactors = FALSE
+instructions_lines <- c(
+  "imurun input workbook -- a beginner-friendly front-end to the imuGAP coverage model.",
+  "",
+  "HOW TO USE THIS FILE",
+  "  1. Fill in the data sheets below (the tabs at the bottom): one row per record.",
+  "  2. Keep the header row on each sheet. You may use these friendly headers or",
+  "     imuGAP's own names (loc_id, cohort, ...); either works.",
+  "  3. Save the file, then check it:   imurun -h yourfile.xlsx",
+  "  4. Fix anything it flags, then fit: imurun yourfile.xlsx",
+  "  A bad edit fails the check with a clear message -- it cannot silently produce a wrong result.",
+  "",
+  "This 'instructions' sheet is optional: imurun reads only the data sheets by name, so you may",
+  "delete it. Do not add a populations sheet or an observation-id column -- imurun handles both",
+  "for you. Extra columns you add for your own notes are ignored.",
+  "",
+  "observations sheet -- one row per sampled count:",
+  "  Location          the location of this count (must match a Location in the locations sheet)",
+  "  Birth cohort      positive whole-number birth-cohort index",
+  "  Age               positive whole-number age",
+  "  Dose              which dose this count is for: 1 or 2",
+  "  Vaccinated        how many were found vaccinated",
+  "  Sampled           how many were sampled (Vaccinated must be <= Sampled)",
+  "  Censored          optional; leave blank, or put 1 for a right-censored observation",
+  "",
+  "locations sheet -- your location hierarchy, written as a tree:",
+  "  Location          a unique name for the location (you choose the names)",
+  "  Parent location   the name of this location's parent (must be another Location in this sheet)",
+  "  IMPORTANT: there must be exactly ONE root -- the single top location whose Parent location",
+  "  is left BLANK. Every other location must name its parent, and the parents must chain up to",
+  "  that one root (no loops, no second root). This is the most common thing to get wrong.",
+  "",
+  "target sheet -- the populations to predict coverage for (required):",
+  "  Location          one or more locations to predict, ';'-separated",
+  "  Birth cohort      reference cohort index for the oldest age in the span",
+  "  Youngest age      youngest age to predict",
+  "  Oldest age        oldest age to predict",
+  "  Dose              optional; leave blank to default to the final dose",
+  "  Label             optional; free-text label echoed into the results",
+  "  A Location-only row (cohort/ages/dose left blank) inherits those from the row above it.",
+  "",
+  "Check with: imurun -h yourfile.xlsx",
+  "Fit with:   imurun yourfile.xlsx"
+)
+
+# --- openxlsx2 workbook assembly ---------------------------------------------
+
+# Add the instructions as the first tab: a single wide, wrapped column with a
+# bold title row. The loader ignores this sheet entirely.
+add_instructions_sheet <- function(wb) {
+  n <- length(instructions_lines)
+  wb$add_worksheet("instructions")
+  wb$add_data("instructions", instructions_lines, col_names = FALSE)
+  wb$set_col_widths("instructions", cols = 1, widths = 100)
+  wb$add_font("instructions", dims = "A1", bold = TRUE, size = 13)
+  wb$add_cell_style(
+    "instructions",
+    dims = paste0("A1:A", n),
+    wrap_text = TRUE,
+    vertical = "top"
   )
+  invisible(wb)
 }
 
-instructions <- data.frame(
-  field = c(
-    "imurun input workbook",
-    "",
-    "observations sheet",
-    "  obs_id",
-    "  loc_id",
-    "  cohort",
-    "  age",
-    "  dose",
-    "  positive",
-    "  sample_n",
-    "  censored (optional)",
-    "",
-    "locations sheet",
-    "  loc_id",
-    "  parent_id",
-    "",
-    "Validate with:  imurun -h yourfile.xlsx",
-    "Fit with:       imurun yourfile.xlsx"
-  ),
-  description = c(
-    "Fill one row per record on each sheet. Do not rename the headers.",
-    "",
-    "One row per observation (a sampled count) and the group it covers.",
-    "Unique, non-missing identifier for the observation.",
-    "Must match a loc_id in the locations sheet.",
-    "Positive integer birth cohort.",
-    "Positive integer age.",
-    "Integer dose (1 or 2).",
-    "Non-negative integer count of positive results.",
-    "Positive integer sample size; positive must be <= sample_n.",
-    "Leave blank, or 1 to mark a right-censored observation.",
-    "",
-    "The location hierarchy.",
-    "Unique location identifier.",
-    "The parent location's loc_id; leave blank for the single root.",
-    "",
-    "",
-    ""
-  ),
-  stringsAsFactors = FALSE
-)
+# Add a data sheet with an AutoFilter, a frozen header row, auto-fit widths, and
+# (where the sheet has a Dose column) a 1/2 dropdown over `valid_rows` data rows.
+add_data_sheet <- function(wb, sheet, df, valid_rows) {
+  ncol_df <- ncol(df)
+  wb$add_worksheet(sheet)
+  wb$add_data(sheet, df)
+  wb$add_filter(sheet, rows = 1, cols = seq_len(ncol_df))
+  wb$freeze_pane(sheet, first_active_row = 2)
+  wb$set_col_widths(sheet, cols = seq_len(ncol_df), widths = "auto")
 
-writexl::write_xlsx(
-  list(
-    observations = empty_sheet(schema$observations),
-    locations = empty_sheet(schema$locations),
-    instructions = instructions
-  ),
-  path = out_template
+  dose_col <- match("Dose", names(df))
+  if (!is.na(dose_col) && valid_rows > 0L) {
+    letter <- openxlsx2::int2col(dose_col)
+    wb$add_data_validation(
+      sheet,
+      dims = paste0(letter, 2, ":", letter, valid_rows + 1L),
+      type = "list",
+      value = '"1,2"'
+    )
+  }
+  invisible(wb)
+}
+
+# Build a whole workbook: instructions tab + the three data sheets. `valid_rows`
+# is how many data rows the Dose dropdown should cover (a generous span for the
+# blank template, the actual row count for filled workbooks).
+build_workbook <- function(observations, locations, target, valid_rows) {
+  wb <- openxlsx2::wb_workbook()
+  add_instructions_sheet(wb)
+  add_data_sheet(wb, "observations", observations, valid_rows)
+  add_data_sheet(wb, "locations", locations, valid_rows)
+  add_data_sheet(wb, "target", target, valid_rows)
+  wb
+}
+
+# --- Blank template ----------------------------------------------------------
+
+# The template ships empty, so pre-apply the Dose dropdown to a generous span of
+# rows the user is likely to fill.
+TEMPLATE_ROWS <- 1000L
+wb_template <- build_workbook(
+  empty_friendly(obs_headers),
+  empty_friendly(loc_headers),
+  empty_friendly(tgt_headers),
+  valid_rows = TEMPLATE_ROWS
 )
+openxlsx2::wb_save(wb_template, out_template, overwrite = TRUE)
 message("Wrote ", out_template)
 
-# --- Filled example ----------------------------------------------------------
+# --- Filled example (full *_sim data, not subset) ----------------------------
 
 data(observations_sim, package = "imuGAP")
 data(populations_sim, package = "imuGAP")
@@ -105,66 +198,74 @@ obs_sim <- as.data.table(observations_sim)
 pop_sim <- as.data.table(populations_sim)
 loc_sim <- as.data.table(locations_sim)
 
-# Carve a small but valid subset: the root, one mid-level parent, and two
-# schools beneath it, plus the observations that reference them.
-keep_locs <- c("State", "Scruggs", "Chickadee Elementary", "Nuthatch Academy")
-ex_loc <- loc_sim[loc_id %in% keep_locs]
-
-# Observations whose populations reference only the kept locations.
-ok_obs_ids <- pop_sim[, .(ok = all(loc_id %in% keep_locs)), by = obs_id][
-  ok == TRUE, obs_id
-]
-# Keep it small and deterministic.
-ex_obs_ids <- head(sort(ok_obs_ids), 12L)
-
 # imurun's limited model is one population row per observation: take the first
 # population row per obs_id and merge its loc/cohort/age/dose onto the counts.
-pop_one <- pop_sim[obs_id %in% ex_obs_ids][, .SD[1L], by = obs_id]
+# Use ALL observations and ALL locations -- do not subset (keep the real trends).
+pop_one <- pop_sim[, .SD[1L], by = obs_id]
 ex_obs <- merge(
-  obs_sim[obs_id %in% ex_obs_ids, .(obs_id, positive, sample_n)],
+  obs_sim[, .(obs_id, positive, sample_n)],
   pop_one[, .(obs_id, loc_id, cohort, age, dose)],
   by = "obs_id"
 )
-setcolorder(ex_obs, schema$observations)
+setorder(ex_obs, obs_id)
 ex_obs <- as.data.frame(ex_obs, stringsAsFactors = FALSE)
-loc_cols <- schema$locations
-ex_loc <- as.data.frame(ex_loc[, ..loc_cols], stringsAsFactors = FALSE)
+ex_loc <- as.data.frame(loc_sim[, .(loc_id, parent_id)], stringsAsFactors = FALSE)
 
-# Sanity check: the example must pass canonicalization the way imurun runs it.
+# Sanity check: the example must pass canonicalization the way imurun runs it
+# (obs_id auto-assigned here mirrors the loader's ensure_obs_id()).
 loc_c <- imuGAP::canonicalize_locations(ex_loc)
 obs_c <- imuGAP::canonicalize_observations(ex_obs)
-pops_raw <- data.frame(
-  ex_obs[, c("obs_id", "loc_id", "cohort", "age", "dose")],
-  weight = 1,
-  stringsAsFactors = FALSE
-)
 imuGAP::canonicalize_populations(
-  pops_raw, obs_c, loc_c,
-  max_cohort = max(ex_obs$cohort),
-  max_age = max(ex_obs$age)
+  data.frame(
+    ex_obs[, c("obs_id", "loc_id", "cohort", "age", "dose")],
+    weight = 1, stringsAsFactors = FALSE
+  ),
+  obs_c, loc_c,
+  max_cohort = max(ex_obs$cohort), max_age = max(ex_obs$age)
 )
 
-writexl::write_xlsx(
-  list(observations = ex_obs, locations = ex_loc),
-  path = out_example
+# A small target example: a multi-location request plus a location-only row
+# that inherits the request above it (demonstrates the LOCF fill).
+some_locs <- unique(ex_loc$loc_id[!is.na(ex_loc$parent_id)])
+ex_target <- data.frame(
+  loc_id = c(paste(utils::head(some_locs, 2L), collapse = "; "), some_locs[3L]),
+  cohort = c(max(ex_obs$cohort), NA),
+  age_low = c(1L, NA),
+  age_high = c(min(5L, max(ex_obs$age)), NA),
+  dose = c(2L, NA),
+  target_id = c("schools, ages 1-5", ""),
+  stringsAsFactors = FALSE
 )
+
+ex_obs_friendly <- to_friendly(ex_obs, obs_headers)
+ex_loc_friendly <- to_friendly(ex_loc, loc_headers)
+ex_tgt_friendly <- to_friendly(ex_target, tgt_headers)
+
+wb_example <- build_workbook(
+  ex_obs_friendly, ex_loc_friendly, ex_tgt_friendly,
+  valid_rows = nrow(ex_obs_friendly)
+)
+openxlsx2::wb_save(wb_example, out_example, overwrite = TRUE)
 message("Wrote ", out_example,
         " (", nrow(ex_obs), " obs, ", nrow(ex_loc), " loc)")
 
 # --- Test fixtures -----------------------------------------------------------
-# Mirror the example into tests/testthat as the golden fixture, plus a corrupted
-# copy that should fail validation.
 fixture_dir <- file.path("tests", "testthat", "fixtures")
 dir.create(fixture_dir, recursive = TRUE, showWarnings = FALSE)
 file.copy(out_example, file.path(fixture_dir, "example.xlsx"), overwrite = TRUE)
 
-# Corrupted copy: rename a required column and blank out a numeric with a string
-# -- exercises the structural and numeric validation branches at once.
-bad_obs <- ex_obs
-names(bad_obs)[names(bad_obs) == "sample_n"] <- "sampleN"  # renamed column
-bad_obs$cohort[1] <- "abc"                                 # non-numeric
-writexl::write_xlsx(
-  list(observations = bad_obs, locations = ex_loc),
-  path = file.path(fixture_dir, "example_corrupt.xlsx")
-)
+# Corrupted copy: give a required column an unrecognized header (so it is neither
+# friendly nor canonical -> missing) and blank a numeric with a string --
+# exercises the structural and numeric validation branches at once.
+bad_obs <- to_friendly(ex_obs, obs_headers)
+names(bad_obs)[names(bad_obs) == "Sampled"] <- "Sampl3d"  # unrecognized header
+bad_obs[["Birth cohort"]][1] <- "abc"                     # non-numeric
+wb_corrupt <- openxlsx2::wb_workbook()
+add_instructions_sheet(wb_corrupt)
+add_data_sheet(wb_corrupt, "observations", bad_obs, valid_rows = nrow(bad_obs))
+add_data_sheet(wb_corrupt, "locations", ex_loc_friendly, valid_rows = nrow(ex_loc_friendly))
+# target is required, so include a valid one -- the corruption is in the
+# observations sheet, which is what validation should catch.
+add_data_sheet(wb_corrupt, "target", ex_tgt_friendly, valid_rows = nrow(ex_tgt_friendly))
+openxlsx2::wb_save(wb_corrupt, file.path(fixture_dir, "example_corrupt.xlsx"), overwrite = TRUE)
 message("Wrote test fixtures to ", fixture_dir)

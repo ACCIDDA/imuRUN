@@ -85,6 +85,11 @@ test_that("check_all_inputs passes when all files present", {
     file.path(dir, "locations.csv"),
     row.names = FALSE
   )
+  write.csv(
+    data.frame(a = 1),
+    file.path(dir, "target.csv"),
+    row.names = FALSE
+  )
   expect_no_error(imurun::check_all_inputs(dir))
 })
 
@@ -122,7 +127,7 @@ test_that("load_by_ext includes filename in error for corrupt files", {
 
 # --- read_inputs -------------------------------------------------------------
 
-test_that("read_inputs returns both inputs", {
+test_that("read_inputs returns all inputs", {
   dir <- tempfile("test_read_inputs_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
@@ -136,9 +141,14 @@ test_that("read_inputs returns both inputs", {
     data.frame(loc_id = 1, parent_id = NA),
     file.path(dir, "locations.rds")
   )
+  write.csv(
+    data.frame(loc_id = 1, cohort = 5, age_low = 1, age_high = 1),
+    file.path(dir, "target.csv"),
+    row.names = FALSE
+  )
 
   inputs <- imurun::read_inputs(dir)
-  expect_named(inputs, c("obs", "locs"))
+  expect_named(inputs, c("obs", "locs", "target"))
   expect_equal(inputs$obs$positive, 1:2)
 })
 

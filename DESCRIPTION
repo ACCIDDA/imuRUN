@@ -24,11 +24,12 @@ Imports:
     imuGAP (>= 0.1.0),
     readxl,
     tools,
-    utils
-Suggests:
-    testthat (>= 3.0.0),
-    spelling,
+    utils,
     writexl
+Suggests:
+    openxlsx2,
+    spelling,
+    testthat (>= 3.0.0)
 Remotes:
     ACCIDDA/imuGAP
 Config/testthat/edition: 3
