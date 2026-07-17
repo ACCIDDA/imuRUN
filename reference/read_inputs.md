@@ -17,10 +17,9 @@ or [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md).
   with one sheet per input, read via
   [`read_workbook()`](https://accidda.github.io/imurun/reference/read_workbook.md).
 
-Missing inputs (files or sheets) are all reported at once. An optional
-`target` sheet (in a workbook) or `target.csv`/`target.rds` (in a
-directory) is read when present and returned as a `target` element
-(issue \#14).
+Missing inputs (files or sheets) are all reported at once. A `target`
+sheet (in a workbook) or `target.csv`/`target.rds` (in a directory) is
+required and returned as a `target` element (issue \#14).
 
 ## Usage
 
@@ -37,8 +36,7 @@ read_inputs(path)
 
 ## Value
 
-A named list with elements `obs` and `locs`, plus `target` when an
-optional target input is present.
+A named list with elements `obs`, `locs`, and `target`.
 
 ## Examples
 
@@ -50,7 +48,9 @@ write.csv(data.frame(obs_id = 1, loc_id = 1, cohort = 2000, age = 1,
           file.path(dir, "observations.csv"), row.names = FALSE)
 write.csv(data.frame(loc_id = 1, parent_id = NA),
           file.path(dir, "locations.csv"), row.names = FALSE)
+write.csv(data.frame(loc_id = 1, cohort = 5, age_low = 1, age_high = 1),
+          file.path(dir, "target.csv"), row.names = FALSE)
 inputs <- read_inputs(dir)
 names(inputs)
-#> [1] "obs"  "locs"
+#> [1] "obs"    "locs"   "target"
 ```

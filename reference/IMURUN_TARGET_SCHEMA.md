@@ -1,6 +1,6 @@
 # Target-request sheet schema
 
-Required columns of the optional `target` sheet that drives the
+Required columns of the (required) `target` sheet that drives the
 by-target predictions. A target-request row names one or more locations
 (`loc_id`, a `;`-separated list), a reference birth-cohort index
 (`cohort`), and an inclusive age span (`age_low`..`age_high`). The row

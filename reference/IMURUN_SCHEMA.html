@@ -9,8 +9,9 @@ optional populations sheet as a pure expansion. Extra columns are permitted
 and ignored; only the required columns are enforced.
 Each element of IMURUN_SCHEMA describes one sheet/input:
 observations
-One row per observation. Required columns: obs_id
-(unique non-missing identifier), loc_id (must exist in locations),
+One row per observation. Columns: obs_id (a unique
+identifier – the loader assigns one automatically if you omit it, so it
+is not a user column), loc_id (must exist in locations),
 cohort (positive integer), age (positive integer), dose (integer in
 1:max_dose), positive (non-negative integer count of positive
 results), sample_n (positive integer sample size, with
@@ -33,8 +34,9 @@ optional populations sheet as a pure expansion. Extra columns are permitted
 and ignored; only the required columns are enforced.
 Each element of IMURUN_SCHEMA describes one sheet/input:
 observations
-One row per observation. Required columns: obs_id
-(unique non-missing identifier), loc_id (must exist in locations),
+One row per observation. Columns: obs_id (a unique
+identifier – the loader assigns one automatically if you omit it, so it
+is not a user column), loc_id (must exist in locations),
 cohort (positive integer), age (positive integer), dose (integer in
 1:max_dose), positive (non-negative integer count of positive
 results), sample_n (positive integer sample size, with
@@ -64,6 +66,10 @@ single root).
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with imurun</a></li>
+  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -97,8 +103,9 @@ populations for a simpler one-sheet input; a future version may add an
 optional populations sheet as a pure expansion. Extra columns are permitted
 and ignored; only the required columns are enforced.</p>
 <p>Each element of <code>IMURUN_SCHEMA</code> describes one sheet/input:</p><dl><dt>observations</dt>
-<dd><p>One row per observation. Required columns: <code>obs_id</code>
-(unique non-missing identifier), <code>loc_id</code> (must exist in locations),
+<dd><p>One row per observation. Columns: <code>obs_id</code> (a unique
+identifier – the loader assigns one automatically if you omit it, so it
+is not a user column), <code>loc_id</code> (must exist in locations),
 <code>cohort</code> (positive integer), <code>age</code> (positive integer), <code>dose</code> (integer in
 <code>1:max_dose</code>), <code>positive</code> (non-negative integer count of positive
 results), <code>sample_n</code> (positive integer sample size, with

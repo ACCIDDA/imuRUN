@@ -26,7 +26,7 @@ otherwise.
 ``` r
 dir <- tempfile("imurun_check_")
 dir.create(dir)
-for (n in c("observations", "locations")) {
+for (n in c("observations", "locations", "target")) {
   write.csv(data.frame(a = 1), file.path(dir, paste0(n, ".csv")),
             row.names = FALSE)
 }

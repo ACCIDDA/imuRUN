@@ -13,11 +13,12 @@ Each element of `IMURUN_SCHEMA` describes one sheet/input:
 
 - observations:
 
-  One row per observation. Required columns: `obs_id` (unique
-  non-missing identifier), `loc_id` (must exist in locations), `cohort`
-  (positive integer), `age` (positive integer), `dose` (integer in
-  `1:max_dose`), `positive` (non-negative integer count of positive
-  results), `sample_n` (positive integer sample size, with
+  One row per observation. Columns: `obs_id` (a unique identifier – the
+  loader assigns one automatically if you omit it, so it is not a user
+  column), `loc_id` (must exist in locations), `cohort` (positive
+  integer), `age` (positive integer), `dose` (integer in `1:max_dose`),
+  `positive` (non-negative integer count of positive results),
+  `sample_n` (positive integer sample size, with
   `positive <= sample_n`). Optional: `censored` (`NA` or `1`).
 
 - locations:

@@ -36,3 +36,5 @@
   : Validate imurun inputs and report all problems at once
 - [`validate_targets()`](https://accidda.github.io/imurun/reference/validate_targets.md)
   : Validate a target-request sheet with friendly, row-referenced errors
+- [`write_workbook()`](https://accidda.github.io/imurun/reference/write_workbook.md)
+  : Write imurun inputs to an .xlsx workbook

@@ -11,10 +11,11 @@ Sheet names are matched case-insensitively against the required
 The reader package ('readxl') is only needed at call time; an
 informative error is raised if it is not installed.
 
-An optional fourth sheet named `target`
+A `target` sheet
 ([IMURUN_TARGET_SHEET](https://accidda.github.io/imurun/reference/IMURUN_TARGET_SHEET.md))
-is read when present and returned as a `target` element; it is never
-required, so its absence is not an error.
+is also required and returned as a `target` element: imurun always
+predicts coverage for named populations, so there is no such thing as a
+target-less input.
 
 ## Usage
 
@@ -30,8 +31,8 @@ read_workbook(path)
 
 ## Value
 
-A named list with elements `obs` and `locs` (each a `data.frame`), plus
-`target` when the optional `target` sheet is present.
+A named list with elements `obs`, `locs`, and `target` (each a
+`data.frame`).
 
 ## Examples
 
@@ -41,5 +42,5 @@ if (nzchar(wb) && requireNamespace("readxl", quietly = TRUE)) {
   inputs <- read_workbook(wb)
   names(inputs)
 }
-#> [1] "obs"  "locs"
+#> [1] "obs"    "locs"   "target"
 ```
