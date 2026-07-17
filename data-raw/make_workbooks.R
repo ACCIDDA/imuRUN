@@ -249,6 +249,23 @@ openxlsx2::wb_save(wb_example, out_example, overwrite = TRUE)
 message("Wrote ", out_example,
         " (", nrow(ex_obs), " obs, ", nrow(ex_loc), " loc)")
 
+# --- CSV directory fixture (same example, directory read path) ---------------
+# Canonical headers here: read.csv() mangles headers with spaces, and this
+# fixture's job is to exercise the directory/CSV path (the friendly-header alias
+# path is covered by the .xlsx fixtures). obs_id is omitted (auto-assigned).
+csv_dir <- file.path("tests", "testthat", "fixtures", "example_dir")
+dir.create(csv_dir, recursive = TRUE, showWarnings = FALSE)
+utils::write.csv(
+  ex_obs[, c("loc_id", "cohort", "age", "dose", "positive", "sample_n")],
+  file.path(csv_dir, "observations.csv"), row.names = FALSE
+)
+utils::write.csv(
+  ex_loc[, c("loc_id", "parent_id")],
+  file.path(csv_dir, "locations.csv"), row.names = FALSE
+)
+utils::write.csv(ex_target, file.path(csv_dir, "target.csv"), row.names = FALSE)
+message("Wrote CSV directory fixture to ", csv_dir)
+
 # --- Test fixtures -----------------------------------------------------------
 fixture_dir <- file.path("tests", "testthat", "fixtures")
 dir.create(fixture_dir, recursive = TRUE, showWarnings = FALSE)

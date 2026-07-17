@@ -1,16 +1,5 @@
 # Tests for the .xlsx reader (read_workbook / read_inputs xlsx mode).
-
-skip_if_no_readxl <- function() {
-  testthat::skip_if_not_installed("readxl")
-}
-
-example_wb <- function() {
-  testthat::test_path("fixtures", "example.xlsx")
-}
-
-corrupt_wb <- function() {
-  testthat::test_path("fixtures", "example_corrupt.xlsx")
-}
+# Fixtures (example_wb, corrupt_wb, skip_if_no_readxl) come from helper-fixtures.R.
 
 # --- read_workbook -----------------------------------------------------------
 

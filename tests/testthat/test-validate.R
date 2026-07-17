@@ -1,12 +1,5 @@
 # Tests for the friendly validation layer (validate_inputs).
-
-example_wb <- function() {
-  testthat::test_path("fixtures", "example.xlsx")
-}
-
-corrupt_wb <- function() {
-  testthat::test_path("fixtures", "example_corrupt.xlsx")
-}
+# Fixtures (example_wb, corrupt_wb) come from helper-fixtures.R.
 
 # --- clean input passes ------------------------------------------------------
 
