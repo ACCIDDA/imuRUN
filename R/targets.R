@@ -180,8 +180,9 @@ expand_targets <- function(targets, default_dose) {
 #' spreadsheet terms, naming the offending column and row. Problems detected
 #' include missing/renamed required columns (per [IMURUN_TARGET_SCHEMA]),
 #' non-numeric `cohort`/`age_low`/`age_high`/`dose`, `loc_id` values absent from
-#' the locations sheet, an inverted age span (`age_low > age_high`), and
-#' out-of-range `cohort`/`age`/`dose`.
+#' the locations sheet, an inverted age span (`age_low > age_high`),
+#' out-of-range `cohort`/`age`/`dose`, and a snapshot span whose expansion
+#' (`cohort + (age_high - age_low)`) reaches beyond the model's cohort count.
 #'
 #' On success the (unmodified) target frame is returned invisibly. On failure a
 #' single error is raised whose message lists every problem found.
@@ -269,6 +270,33 @@ validate_targets <- function(
         "[target] cohort out of range [1, %d] at row(s): %s",
         max_cohort,
         paste(utils::head(bad_cohort, 20L), collapse = ", ")
+      )
+    )
+  }
+
+  # The snapshot expansion holds `age + cohort` constant, so a span reaches
+  # cohort + (age_high - age_low) at its youngest age (younger = later birth
+  # cohort). A reference cohort that is itself in range can still expand past the
+  # model's cohort count; catch that here, before predict() would fail deep
+  # inside imuGAP (#38). Only rows whose reference cohort and span are otherwise
+  # valid are considered, so this does not pile onto the checks above.
+  reach <- cohort + (age_high - age_low)
+  over <- which(
+    !is.na(reach) &
+      cohort >= 1L & cohort <= max_cohort &
+      age_low <= age_high &
+      reach > max_cohort
+  )
+  for (i in over) {
+    problems <- c(
+      problems,
+      sprintf(
+        paste0(
+          "[target] cohort %d over ages %d-%d expands to cohort %d, beyond ",
+          "the model's %d cohorts; lower the reference cohort to <= %d (row %d)"
+        ),
+        cohort[i], age_low[i], age_high[i], reach[i],
+        max_cohort, max_cohort - (age_high[i] - age_low[i]), i
       )
     )
   }
