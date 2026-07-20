@@ -82,6 +82,7 @@ test_that("the example fits end-to-end (gated)", {
   expect_equal(nrow(smry), nrow(exp)) # one summary row per expanded target
   expect_true(all(c("est_median", "est_lower", "est_upper") %in% names(smry)))
   expect_true(all(smry$est_median >= 0 & smry$est_median <= 1))
-  expect_true(all(smry$est_lower <= smry$est_median &
-    smry$est_median <= smry$est_upper))
+  lower_ok <- all(smry$est_lower <= smry$est_median)
+  upper_ok <- all(smry$est_median <= smry$est_upper)
+  expect_true(lower_ok && upper_ok)
 })
