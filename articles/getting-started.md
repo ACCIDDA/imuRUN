@@ -36,7 +36,7 @@ data. From R, its installed location is:
 ``` r
 
 imurun::imurun_example()
-#> [1] "/tmp/RtmpUeHwdm/temp_libpath182226dc76f2/imurun/extdata/imurun_example.xlsx"
+#> [1] "/tmp/RtmpaQDzck/temp_libpath18b66c20dba4/imurun/extdata/imurun_example.xlsx"
 ```
 
 Open it in your spreadsheet program. The first tab is **instructions**;
