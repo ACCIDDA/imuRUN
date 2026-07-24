@@ -32,3 +32,30 @@ test_that("run_fit returns 3 when input files are missing", {
   result <- suppressMessages(imurun::run_fit(c(dir)))
   expect_equal(result, 3L)
 })
+
+test_that("run_fit strips sampler flags before the positional parsing", {
+  # With ONLY a sampler flag and no input, stripping leaves no positional args,
+  # so usage prints and it returns 0. If the flag were NOT stripped it would be
+  # taken as the input path and fail (exit 3), so this discriminates.
+  out <- capture.output(res <- imurun::run_fit(c("--iter", "4000")))
+  expect_equal(res, 0L)
+  expect_true(any(grepl("imurun", out)))
+})
+
+test_that("run_fit returns 1 for a malformed sampler flag", {
+  # A bad flag value is caught before anything else and reported as a validation
+  # (exit 1) failure, not an I/O one.
+  result <- suppressMessages(
+    imurun::run_fit(c("/nonexistent/path/xyz", "--iter", "abc"))
+  )
+  expect_equal(result, 1L)
+})
+
+test_that("run_fit rejects an unknown/mistyped option instead of pathifying it", {
+  # `--iters` is a typo (not `--iter`); it must error (exit 1) rather than
+  # silently becoming the output directory with the override dropped.
+  result <- suppressMessages(
+    imurun::run_fit(c("/nonexistent/xyz", "--iters", "4000"))
+  )
+  expect_equal(result, 1L)
+})
