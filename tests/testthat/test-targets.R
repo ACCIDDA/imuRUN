@@ -141,6 +141,33 @@ test_that("validate_targets collects unknown loc, bad span, and out-of-range val
   expect_match(err$message, "dose") # dose above its max
 })
 
+test_that("validate_targets rejects a snapshot span that expands past n_cohort", {
+  # The reference cohort 15 is itself in range [1, 15], but the snapshot fans
+  # ages 1-5 out to cohort 15 + (5 - 1) = 19 -- beyond the model (#38).
+  bad <- data.frame(
+    loc_id = "A",
+    cohort = 15,
+    age_low = 1,
+    age_high = 5,
+    dose = 2,
+    stringsAsFactors = FALSE
+  )
+  err <- tryCatch(
+    validate_targets(bad, loc_ids = "A", max_cohort = 15, max_age = 8),
+    error = identity
+  )
+  expect_true(inherits(err, "error"))
+  expect_match(err$message, "expands to cohort 19")
+  expect_match(err$message, "beyond the model's 15 cohorts")
+  expect_match(err$message, "lower the reference cohort to <= 11")
+
+  # A reference cohort low enough that the whole span stays in range passes.
+  ok <- transform(bad, cohort = 11)
+  expect_no_error(
+    validate_targets(ok, loc_ids = "A", max_cohort = 15, max_age = 8)
+  )
+})
+
 # --- summarize_targets -------------------------------------------------------
 
 test_that("summarize_targets reduces draws to median + CI per target", {

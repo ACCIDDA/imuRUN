@@ -226,12 +226,19 @@ imuGAP::canonicalize_populations(
 
 # A small target example: a multi-location request plus a location-only row
 # that inherits the request above it (demonstrates the LOCF fill).
+# The snapshot expansion holds `age + cohort` constant, so a span [age_low,
+# age_high] reaches reference_cohort + (age_high - age_low) at its youngest age.
+# Pick the reference cohort so the whole span stays within the observed cohort
+# range, otherwise predict() fails on cohorts the model was never fit for (#38).
 some_locs <- unique(ex_loc$loc_id[!is.na(ex_loc$parent_id)])
+tgt_age_low <- 1L
+tgt_age_high <- min(5L, max(ex_obs$age))
+tgt_ref_cohort <- max(ex_obs$cohort) - (tgt_age_high - tgt_age_low)
 ex_target <- data.frame(
   loc_id = c(paste(utils::head(some_locs, 2L), collapse = "; "), some_locs[3L]),
-  cohort = c(max(ex_obs$cohort), NA),
-  age_low = c(1L, NA),
-  age_high = c(min(5L, max(ex_obs$age)), NA),
+  cohort = c(tgt_ref_cohort, NA),
+  age_low = c(tgt_age_low, NA),
+  age_high = c(tgt_age_high, NA),
   dose = c(2L, NA),
   target_id = c("schools, ages 1-5", ""),
   stringsAsFactors = FALSE
