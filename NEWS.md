@@ -26,5 +26,13 @@
   the cohorts of younger ages are derived so that age plus cohort stays
   constant, matching how the target sheet is already expanded. The former
   *Birth cohort* header is still accepted.
+* `imurun fit` now writes a human-readable result, not just `fit.rds`. The
+  target sheet is expanded, predicted, and summarized into a `results.xlsx`:
+  a copy of the input workbook with a `results` sheet giving the posterior
+  median and credible interval for each requested population. `--csv` also
+  writes a results-only CSV, `--results` sets the workbook path, and imurun
+  refuses to overwrite existing output unless `--overwrite` is passed. The
+  target sheet is validated before fitting, so a bad target row fails
+  immediately rather than after the model runs.
 * Set up the development infrastructure: R CMD check, lint, test coverage,
   pkgdown, and spelling continuous-integration workflows.

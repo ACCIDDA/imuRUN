@@ -31,9 +31,25 @@ the default, otherwise the imuGAP defaults are used):
   --warmup N      warmup iterations per chain
 Flags may appear anywhere and may be written --iter N or --iter=N.
 
-Output: fit.rds (raw stanfit object for post-processing).
+Output options:
+  --results PATH  amended workbook to write (default <output_dir>/results.xlsx)
+  --csv PATH      also write a results-only CSV
+  --overwrite     replace existing output files (otherwise imurun refuses)
+
+Output: results.xlsx (the inputs plus a 'results' sheet of per-target medians
+and credible intervals) and fit.rds (the raw fit object for post-processing).
 output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
 "
+
+# Credible-interval level for the reported target estimates. imuGAP returns
+# draws; the median and this interval are the reduction imurun reports.
+IMURUN_CI_LEVEL <- 0.95
+
+# The imuGAP model options imurun fits with. Hoisted out of run_fit() so the
+# dose schedule has one definition: its length is the model's dose count, which
+# is both the default dose for a blank `target` cell and the upper bound
+# validate_targets() checks against.
+IMURUN_IMUGAP_ARGS <- list(df = 5L, dose_schedule = c(1L, 4L))
 
 # imurun's sampler defaults. Overridable per-run via CLI flags (see
 # parse_sampler_options()); chains matches imuGAP::stan_options()'s default and
@@ -201,6 +217,17 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   sampler_overrides <- parsed$overrides
   args <- parsed$rest
 
+  # Same treatment for the output flags, so they are stripped before the
+  # positional input/output parsing and a missing value fails early.
+  out_parsed <- tryCatch(parse_output_options(args), error = identity)
+  if (inherits(out_parsed, "error")) {
+    message("ERROR: ", conditionMessage(out_parsed))
+    return(invisible(1L))
+  }
+  output_opts <- out_parsed$options
+  overwrite <- isTRUE(output_opts$overwrite)
+  args <- out_parsed$rest
+
   # Reject a mistyped or unknown option instead of silently treating it as a
   # path. The only options imurun accepts are the sampler flags (stripped
   # above) plus the help flag.
@@ -297,12 +324,19 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
       pops_raw <- build_populations(
         as.data.frame(inputs$obs, stringsAsFactors = FALSE)
       )
+      max_cohort <- max(as.integer(pops_raw$cohort))
+      max_age <- max(as.integer(pops_raw$age))
       pops <- imuGAP::canonicalize_populations(
         pops_raw, obs, locs,
-        max_cohort = max(as.integer(pops_raw$cohort)),
-        max_age = max(as.integer(pops_raw$age))
+        max_cohort = max_cohort,
+        max_age = max_age
       )
-      list(locs = locs, obs = obs, pops = pops)
+      # Carry the bounds out: the target sheet is validated against the same
+      # cohort/age extent the model was actually fit over.
+      list(
+        locs = locs, obs = obs, pops = pops,
+        max_cohort = max_cohort, max_age = max_age
+      )
     },
     error = identity
   )
@@ -316,6 +350,31 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     utils::modifyList(IMURUN_SAMPLER_DEFAULTS, sampler_overrides)
   )
 
+  # The model's dose count: the default for a blank `target` dose cell and the
+  # upper bound the target sheet is checked against.
+  n_doses <- length(IMURUN_IMUGAP_ARGS$dose_schedule)
+
+  # Validate the target sheet BEFORE fitting. A typo in a target row is a
+  # spreadsheet mistake, and finding it after a half-hour fit would be a poor
+  # trade when the check costs nothing.
+  target_err <- tryCatch(
+    {
+      validate_targets(
+        inputs$target,
+        loc_ids = as.character(inputs$locs$loc_id),
+        max_cohort = canonical$max_cohort,
+        max_age = canonical$max_age,
+        max_dose = n_doses
+      )
+      NULL
+    },
+    error = identity
+  )
+  if (!is.null(target_err)) {
+    message("ERROR: ", conditionMessage(target_err))
+    return(invisible(1L))
+  }
+
   if (!dir.exists(output_dir)) {
     ok <- dir.create(output_dir, recursive = TRUE)
     if (!ok) {
@@ -324,13 +383,37 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     }
   }
 
+  # Resolve the output paths and refuse to clobber now, for the same reason:
+  # discovering that results.xlsx already exists is a failure worth having
+  # before the fit rather than after it.
+  results_path <- if (!is.null(output_opts$results)) {
+    output_opts$results
+  } else {
+    file.path(output_dir, "results.xlsx")
+  }
+  csv_path <- output_opts$csv
+  fit_path <- file.path(output_dir, "fit.rds")
+  clobber_err <- tryCatch(
+    {
+      for (p in c(fit_path, results_path, csv_path)) {
+        assert_no_clobber(p, overwrite)
+      }
+      NULL
+    },
+    error = identity
+  )
+  if (!is.null(clobber_err)) {
+    message("ERROR: ", conditionMessage(clobber_err))
+    return(invisible(3L))
+  }
+
   message("[->] Launching imuGAP...")
   fit <- tryCatch(
     imuGAP::sampling(
       observations = canonical$obs,
       populations = canonical$pops,
       locations = canonical$locs,
-      imugap_opts = imuGAP::imugap_options(df = 5L, dose_schedule = c(1L, 4L)),
+      imugap_opts = do.call(imuGAP::imugap_options, IMURUN_IMUGAP_ARGS),
       stan_opts = stan_opts
     ),
     error = identity
@@ -341,7 +424,6 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   message("[OK] Model complete.")
 
-  fit_path <- file.path(output_dir, "fit.rds")
   save_err <- tryCatch(
     {
       saveRDS(fit, fit_path)
@@ -359,6 +441,55 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(3L))
   }
   message("[OK] Wrote ", fit_path)
+
+  # By-target predictions. fit.rds is the raw fit object and is useless to a
+  # non-R user, so the amended workbook is the actual deliverable: the target
+  # requests expanded to explicit rows, predicted, and reduced to a median plus
+  # credible interval per target.
+  message("[->] Predicting targets...")
+  summary_err <- NULL
+  results <- tryCatch(
+    {
+      targets <- expand_targets(inputs$target, default_dose = n_doses)
+      if (nrow(targets) == 0L) {
+        stop("the target sheet expanded to no targets.", call. = FALSE)
+      }
+      draws <- as_target_draws(stats::predict(fit, target = targets))
+      # predict() echoes imuGAP's own identity columns (loc_id/cohort/age/dose)
+      # but not `target_id`, which is imurun's label from the target sheet.
+      # Carry it across on obs_id so each result row names the request it came
+      # from; summarize_targets() then keeps it as an identity column.
+      draws$target_id <- targets$target_id[match(draws$obs_id, targets$obs_id)]
+      summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
+    },
+    error = identity
+  )
+  if (inherits(results, "error")) {
+    message("ERROR: ", conditionMessage(results))
+    return(invisible(2L))
+  }
+  message("[OK] Summarized ", nrow(results), " target(s).")
+
+  # Outputs. The clobber checks already ran before the fit, so pass
+  # overwrite = TRUE here: refusing now would discard a completed fit.
+  write_err <- tryCatch(
+    {
+      write_results_workbook(inputs, results, results_path, overwrite = TRUE)
+      if (!is.null(csv_path)) {
+        write_results_csv(results, csv_path, overwrite = TRUE)
+      }
+      NULL
+    },
+    error = identity
+  )
+  if (!is.null(write_err)) {
+    message("ERROR: ", conditionMessage(write_err))
+    return(invisible(3L))
+  }
+  message("[OK] Wrote ", results_path)
+  if (!is.null(csv_path)) {
+    message("[OK] Wrote ", csv_path)
+  }
 
   invisible(0L)
 }
