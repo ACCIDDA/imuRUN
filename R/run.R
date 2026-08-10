@@ -15,7 +15,9 @@ Usage: imurun <input> [output_dir] [sampler options]
 <input> is either a directory of CSV/RDS files or a single .xlsx workbook.
 
 A directory must contain:
-  observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age, dose, positive, sample_n
+  observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age_min, age_max, dose,
+                                     positive, sample_n. cohort is the reference cohort, that of
+                                     age_max; a single 'age' column works for a one-age count.
   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
 
 A workbook must have one sheet per input with the same column names

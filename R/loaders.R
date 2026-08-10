@@ -138,18 +138,57 @@ check_all_inputs <- function(dir) {
 #' unchanged. This lets the shipped template and example workbooks use
 #' human-readable headers while the rest of imurun sees only canonical names.
 #'
+#' When `sheet` names a sheet with entries in [IMURUN_SHEET_ALIASES], those
+#' entries win over the shared map. That is what lets `observations` and
+#' `target` both label their age span "Youngest age" / "Oldest age" while
+#' canonicalizing to `age_min`/`age_max` and `age_low`/`age_high` respectively.
+#'
 #' @param df a data.frame.
+#' @param sheet character or `NULL`; which sheet `df` came from. `NULL` uses
+#'   only the shared map.
 #'
 #' @return `df` with friendly headers renamed to canonical.
 #'
 #' @keywords internal
-canonicalize_headers <- function(df) {
+canonicalize_headers <- function(df, sheet = NULL) {
+  aliases <- IMURUN_HEADER_ALIASES
+  if (!is.null(sheet) && !is.null(IMURUN_SHEET_ALIASES[[sheet]])) {
+    # Sheet-specific entries replace the shared meaning of the same label.
+    overrides <- IMURUN_SHEET_ALIASES[[sheet]]
+    aliases <- aliases[!tolower(names(aliases)) %in% tolower(names(overrides))]
+    aliases <- c(overrides, aliases)
+  }
   nm <- names(df)
-  hit <- match(tolower(nm), tolower(names(IMURUN_HEADER_ALIASES)))
+  hit <- match(tolower(nm), tolower(names(aliases)))
   ok <- !is.na(hit)
-  nm[ok] <- unname(IMURUN_HEADER_ALIASES[hit[ok]])
+  nm[ok] <- unname(aliases[hit[ok]])
   names(df) <- nm
   df
+}
+
+#' Expand a single `age` column into the `age_min`/`age_max` span
+#'
+#' @description The observations sheet describes the inclusive age span a count
+#' was drawn over (`age_min`..`age_max`), but the overwhelmingly common case is
+#' a count at one age. Rather than make every such row repeat itself, a sheet
+#' that carries a lone `age` column is read as `age_min = age_max = age`.
+#'
+#' Only applied when neither span column is present: a sheet that supplies
+#' `age_min`/`age_max` is authoritative, and any `age` column alongside them is
+#' an ordinary ignored extra column.
+#'
+#' @param obs a data.frame of observations.
+#'
+#' @return `obs`, with `age_min`/`age_max` present whenever `age` was.
+#'
+#' @keywords internal
+expand_obs_age <- function(obs) {
+  nm <- names(obs)
+  if ("age" %in% nm && !any(c("age_min", "age_max") %in% nm)) {
+    obs$age_min <- obs$age
+    obs$age_max <- obs$age
+  }
+  obs
 }
 
 #' Assign a row-number obs_id when the observations sheet omits one
@@ -179,13 +218,15 @@ ensure_obs_id <- function(obs) {
 #' @keywords internal
 normalize_inputs <- function(result) {
   if (!is.null(result$obs)) {
-    result$obs <- ensure_obs_id(canonicalize_headers(result$obs))
+    result$obs <- ensure_obs_id(
+      expand_obs_age(canonicalize_headers(result$obs, "observations"))
+    )
   }
   if (!is.null(result$locs)) {
-    result$locs <- canonicalize_headers(result$locs)
+    result$locs <- canonicalize_headers(result$locs, "locations")
   }
   if (!is.null(result$target)) {
-    result$target <- canonicalize_headers(result$target)
+    result$target <- canonicalize_headers(result$target, "target")
   }
   result
 }
