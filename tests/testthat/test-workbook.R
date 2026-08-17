@@ -9,7 +9,10 @@ test_that("read_workbook returns the expected frames (incl. the target sheet)", 
   expect_named(inputs, c("obs", "locs", "target"))
   expect_s3_class(inputs$obs, "data.frame")
   expect_true(all(
-    c("obs_id", "loc_id", "cohort", "age", "dose", "positive", "sample_n")
+    c(
+      "obs_id", "loc_id", "cohort", "age_min", "age_max", "dose",
+      "positive", "sample_n"
+    )
     %in% names(inputs$obs)
   ))
   expect_true(all(c("loc_id", "parent_id") %in% names(inputs$locs)))
@@ -97,11 +100,76 @@ test_that("read_inputs accepts human-readable headers and auto-assigns obs_id", 
   )
   inp <- imurun::read_inputs(wb)
   expect_true(all(
-    c("obs_id", "loc_id", "cohort", "age", "dose", "positive", "sample_n") %in%
+    c(
+      "obs_id", "loc_id", "cohort", "age_min", "age_max", "dose",
+      "positive", "sample_n"
+    ) %in%
       names(inp$obs)
   ))
   expect_true(all(c("loc_id", "parent_id") %in% names(inp$locs)))
   expect_identical(inp$obs$obs_id, seq_len(nrow(inp$obs)))
+  # A single "Age" column is the shorthand for a one-age span (#36).
+  expect_equal(inp$obs$age_min, c(5L, 6L))
+  expect_equal(inp$obs$age_max, c(5L, 6L))
+})
+
+test_that("'Youngest age'/'Oldest age' mean the age span on observations", {
+  skip_if_no_readxl()
+  skip_if_not_installed("writexl")
+  wb <- tempfile(fileext = ".xlsx")
+  writexl::write_xlsx(
+    list(
+      observations = data.frame(
+        Location = "A", "Reference cohort" = 3L, "Youngest age" = 5L,
+        "Oldest age" = 7L, Dose = 2L, Vaccinated = 3L, Sampled = 10L,
+        check.names = FALSE
+      ),
+      locations = data.frame(
+        Location = "A", "Parent location" = NA, check.names = FALSE
+      ),
+      target = data.frame(
+        Location = "A", "Reference cohort" = 5L, "Youngest age" = 1L,
+        "Oldest age" = 1L, check.names = FALSE
+      )
+    ),
+    wb
+  )
+  inp <- imurun::read_inputs(wb)
+  # The same friendly labels canonicalize differently per sheet: a sampled count
+  # spans age_min..age_max, a prediction request spans age_low..age_high.
+  expect_equal(inp$obs$age_min, 5L)
+  expect_equal(inp$obs$age_max, 7L)
+  expect_false("age_low" %in% names(inp$obs))
+  expect_equal(inp$target$age_low, 1L)
+  expect_equal(inp$target$age_high, 1L)
+  expect_false("age_min" %in% names(inp$target))
+  # "Reference cohort" is the current label for what was "Birth cohort".
+  expect_equal(inp$obs$cohort, 3L)
+})
+
+test_that("the former 'Birth cohort' header is still accepted", {
+  skip_if_no_readxl()
+  skip_if_not_installed("writexl")
+  wb <- tempfile(fileext = ".xlsx")
+  writexl::write_xlsx(
+    list(
+      observations = data.frame(
+        Location = "A", "Birth cohort" = 3L, Age = 5L, Dose = 2L,
+        Vaccinated = 3L, Sampled = 10L, check.names = FALSE
+      ),
+      locations = data.frame(
+        Location = "A", "Parent location" = NA, check.names = FALSE
+      ),
+      target = data.frame(
+        Location = "A", "Birth cohort" = 5L, "Youngest age" = 1L,
+        "Oldest age" = 1L, check.names = FALSE
+      )
+    ),
+    wb
+  )
+  inp <- imurun::read_inputs(wb)
+  expect_equal(inp$obs$cohort, 3L)
+  expect_equal(inp$target$cohort, 5L)
 })
 
 test_that("an instructions sheet is tolerated whether present or absent", {

@@ -2,22 +2,30 @@
 #'
 #' @description The column schema that imurun targets for each of its two
 #' inputs. imurun simplifies imuGAP's inputs: rather than a separate populations
-#' sheet, each observation row carries its own `loc_id`/`cohort`/`age`/`dose`,
-#' and imurun constructs the imuGAP populations from the observations (one
-#' `weight = 1` row per observation). This trades imuGAP's multi-row weighted
-#' populations for a simpler one-sheet input; a future version may add an
-#' optional populations sheet as a pure expansion. Extra columns are permitted
-#' and ignored; only the required columns are enforced.
+#' sheet, each observation row carries its own
+#' `loc_id`/`cohort`/`age_min`/`age_max`/`dose`, and imurun constructs the
+#' imuGAP populations from the observations (see [build_populations()]). This
+#' trades imuGAP's fully general weighted populations for a simpler one-sheet
+#' input; a future version may add an optional populations sheet as a pure
+#' expansion. Extra columns are permitted and ignored; only the required columns
+#' are enforced.
 #'
 #' Each element of `IMURUN_SCHEMA` describes one sheet/input:
 #' \describe{
 #'   \item{observations}{One row per observation. Columns: `obs_id` (a unique
 #'     identifier -- the loader assigns one automatically if you omit it, so it
 #'     is not a user column), `loc_id` (must exist in locations),
-#'     `cohort` (positive integer), `age` (positive integer), `dose` (integer in
-#'     `1:max_dose`), `positive` (non-negative integer count of positive
-#'     results), `sample_n` (positive integer sample size, with
-#'     `positive <= sample_n`). Optional: `censored` (`NA` or `1`).}
+#'     `cohort` (positive integer; the **reference cohort**, i.e. the cohort of
+#'     `age_max` -- see [build_populations()]), `age_min` and `age_max`
+#'     (positive integers giving the inclusive age span the count was drawn
+#'     over, with `age_min <= age_max`), `dose` (integer in `1:max_dose`),
+#'     `positive` (non-negative integer count of positive results), `sample_n`
+#'     (positive integer sample size, with `positive <= sample_n`). Optional:
+#'     `censored` (`NA` or `1`).
+#'
+#'     A single-age observation may be written with one `age` column instead of
+#'     `age_min`/`age_max`; the loader expands it to `age_min = age_max = age`
+#'     (see [expand_obs_age()]).}
 #'   \item{locations}{The location hierarchy. Required columns: `loc_id`
 #'     (unique identifier), `parent_id` (the parent's `loc_id`, or `NA` for the
 #'     single root).}
@@ -35,7 +43,8 @@
 #' @export
 IMURUN_SCHEMA <- list(
   observations = c(
-    "obs_id", "loc_id", "cohort", "age", "dose", "positive", "sample_n"
+    "obs_id", "loc_id", "cohort", "age_min", "age_max", "dose",
+    "positive", "sample_n"
   ),
   locations = c("loc_id", "parent_id")
 )
@@ -102,22 +111,51 @@ IMURUN_TARGET_SHEET <- "target"
 #' canonical name (case-insensitively) and renames friendly headers to canonical
 #' before validation, so the rest of imurun only ever sees canonical names.
 #'
-#' Names are the friendly headers; values are the canonical names. Friendly
+#' Names are the friendly headers; values are the canonical names. Most friendly
 #' labels are unambiguous across sheets (e.g. "Location" always means `loc_id`),
-#' so a single flat map serves every sheet.
+#' so this flat map serves every sheet; the few that are sheet-specific live in
+#' [IMURUN_SHEET_ALIASES] and take precedence over this map.
+#'
+#' "Birth cohort" is the former label for what is now "Reference cohort"; both
+#' are accepted so workbooks written against the earlier template keep loading.
 #'
 #' @keywords internal
 IMURUN_HEADER_ALIASES <- c(
-  "Observation ID"  = "obs_id",
-  "Location"        = "loc_id",
-  "Parent location" = "parent_id",
-  "Birth cohort"    = "cohort",
-  "Age"             = "age",
-  "Dose"            = "dose",
-  "Vaccinated"      = "positive",
-  "Sampled"         = "sample_n",
-  "Censored"        = "censored",
-  "Youngest age"    = "age_low",
-  "Oldest age"      = "age_high",
-  "Label"           = "target_id"
+  "Observation ID"   = "obs_id",
+  "Location"         = "loc_id",
+  "Parent location"  = "parent_id",
+  "Reference cohort" = "cohort",
+  "Birth cohort"     = "cohort",
+  "Age"              = "age",
+  "Dose"             = "dose",
+  "Vaccinated"       = "positive",
+  "Sampled"          = "sample_n",
+  "Censored"         = "censored",
+  "Youngest age"     = "age_low",
+  "Oldest age"       = "age_high",
+  "Label"            = "target_id"
+)
+
+#' Sheet-specific column-header aliases
+#'
+#' @description Friendly headers whose canonical name depends on which sheet
+#' they appear on, overriding [IMURUN_HEADER_ALIASES] for that sheet.
+#'
+#' The `observations` and `target` sheets both express an inclusive age span and
+#' so both want the labels "Youngest age" / "Oldest age", but they canonicalize
+#' to different names (`age_min`/`age_max` for a sampled count,
+#' `age_low`/`age_high` for a prediction request). Keeping the user-facing
+#' labels identical while the canonical names stay distinct is the reason this
+#' second map exists.
+#'
+#' @keywords internal
+IMURUN_SHEET_ALIASES <- list(
+  observations = c(
+    "Youngest age" = "age_min",
+    "Oldest age"   = "age_max"
+  ),
+  target = c(
+    "Youngest age" = "age_low",
+    "Oldest age"   = "age_high"
+  )
 )

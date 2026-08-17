@@ -13,8 +13,9 @@
 #   - Columns use human-readable headers ("Location", "Birth cohort", ...). The
 #     loader (R/loaders.R canonicalize_headers) maps them back to imuGAP's
 #     canonical names, accepting either form.
-#   - No populations sheet: each observation carries its own location/cohort/
-#     age/dose and imurun derives one weight-1 population per observation (#26).
+#   - No populations sheet: each observation carries its own location/reference
+#     cohort/age span/dose and imurun derives the populations from it (#26, #36)
+#     -- one equally-weighted row per age in the span.
 #   - obs_id is not a user column -- it is irrelevant to the input and is
 #     assigned automatically by the loader.
 #   - A target sheet drives by-target predictions (#14); target_id is an
@@ -43,12 +44,13 @@ suppressMessages({
 # Canonical -> human-readable header maps. Keep in lock-step with
 # R/schema.R::IMURUN_HEADER_ALIASES (which maps the friendly labels back).
 obs_headers <- c(
-  loc_id = "Location", cohort = "Birth cohort", age = "Age", dose = "Dose",
-  positive = "Vaccinated", sample_n = "Sampled", censored = "Censored"
+  loc_id = "Location", cohort = "Reference cohort", age_min = "Youngest age",
+  age_max = "Oldest age", dose = "Dose", positive = "Vaccinated",
+  sample_n = "Sampled", censored = "Censored"
 )
 loc_headers <- c(loc_id = "Location", parent_id = "Parent location")
 tgt_headers <- c(
-  loc_id = "Location", cohort = "Birth cohort", age_low = "Youngest age",
+  loc_id = "Location", cohort = "Reference cohort", age_low = "Youngest age",
   age_high = "Oldest age", dose = "Dose", target_id = "Label"
 )
 
@@ -93,12 +95,16 @@ instructions_lines <- c(
   "",
   "observations sheet -- one row per sampled count:",
   "  Location          the location of this count (must match a Location in the locations sheet)",
-  "  Birth cohort      positive whole-number birth-cohort index",
-  "  Age               positive whole-number age",
+  "  Reference cohort  positive whole-number cohort index, for the OLDEST age in the row",
+  "  Youngest age      youngest age this count covers",
+  "  Oldest age        oldest age this count covers (put the same age in both for a single age)",
   "  Dose              which dose this count is for: 1 or 2",
   "  Vaccinated        how many were found vaccinated",
   "  Sampled           how many were sampled (Vaccinated must be <= Sampled)",
   "  Censored          optional; leave blank, or put 1 for a right-censored observation",
+  "  A count covering several ages is split evenly across them, and the cohort of each younger",
+  "  age is stepped up so that age + cohort stays constant (a snapshot in time). If you prefer,",
+  "  you may use a single 'Age' column instead of the two age columns.",
   "",
   "locations sheet -- your location hierarchy, written as a tree:",
   "  Location          a unique name for the location (you choose the names)",
@@ -109,7 +115,7 @@ instructions_lines <- c(
   "",
   "target sheet -- the populations to predict coverage for (required):",
   "  Location          one or more locations to predict, ';'-separated",
-  "  Birth cohort      reference cohort index for the oldest age in the span",
+  "  Reference cohort  cohort index for the oldest age in the span",
   "  Youngest age      youngest age to predict",
   "  Oldest age        oldest age to predict",
   "  Dose              optional; leave blank to default to the final dose",
@@ -198,13 +204,25 @@ obs_sim <- as.data.table(observations_sim)
 pop_sim <- as.data.table(populations_sim)
 loc_sim <- as.data.table(locations_sim)
 
-# imurun's limited model is one population row per observation: take the first
-# population row per obs_id and merge its loc/cohort/age/dose onto the counts.
+# Collapse each observation's population rows to the age span imurun's
+# observations sheet carries (#36): the reference cohort is the cohort of the
+# OLDEST age, and the span runs age_min..age_max. imuGAP's simulated populations
+# are exactly this shape already -- every obs_id spans a contiguous age range at
+# one location and dose, with equal weights and `age + cohort` held constant --
+# so this is lossless, and build_populations() reconstructs populations_sim from
+# it row for row (asserted below). Earlier revisions had to drop the multi-age
+# observations (`.SD[1L]`) because the sheet could only express a single age.
 # Use ALL observations and ALL locations -- do not subset (keep the real trends).
-pop_one <- pop_sim[, .SD[1L], by = obs_id]
+pop_span <- pop_sim[, .(
+  loc_id = loc_id[1L],
+  cohort = cohort[which.max(age)],
+  age_min = min(age),
+  age_max = max(age),
+  dose = dose[1L]
+), by = obs_id]
 ex_obs <- merge(
   obs_sim[, .(obs_id, positive, sample_n)],
-  pop_one[, .(obs_id, loc_id, cohort, age, dose)],
+  pop_span,
   by = "obs_id"
 )
 setorder(ex_obs, obs_id)
@@ -212,16 +230,35 @@ ex_obs <- as.data.frame(ex_obs, stringsAsFactors = FALSE)
 ex_loc <- as.data.frame(loc_sim[, .(loc_id, parent_id)], stringsAsFactors = FALSE)
 
 # Sanity check: the example must pass canonicalization the way imurun runs it
-# (obs_id auto-assigned here mirrors the loader's ensure_obs_id()).
+# (obs_id auto-assigned here mirrors the loader's ensure_obs_id()). Use imurun's
+# own build_populations() rather than a local copy of the expansion, so the
+# shipped example is verified by the exact code that will later read it.
+source(file.path("R", "schema.R"))
+source(file.path("R", "loaders.R"))
+source(file.path("R", "validate.R"))
+
+ex_pops <- build_populations(ex_obs)
+stopifnot(
+  "expansion must round-trip imuGAP's simulated populations" = isTRUE(
+    all.equal(
+      as.data.frame(setorder(as.data.table(ex_pops), obs_id, age)),
+      as.data.frame(
+        setorder(copy(pop_sim), obs_id, age)[, .(
+          obs_id = as.numeric(obs_id), loc_id = as.character(loc_id),
+          cohort = as.numeric(cohort), age = as.numeric(age),
+          dose = as.numeric(dose), weight = as.numeric(weight)
+        )]
+      ),
+      check.attributes = FALSE
+    )
+  )
+)
+
 loc_c <- imuGAP::canonicalize_locations(ex_loc)
 obs_c <- imuGAP::canonicalize_observations(ex_obs)
 imuGAP::canonicalize_populations(
-  data.frame(
-    ex_obs[, c("obs_id", "loc_id", "cohort", "age", "dose")],
-    weight = 1, stringsAsFactors = FALSE
-  ),
-  obs_c, loc_c,
-  max_cohort = max(ex_obs$cohort), max_age = max(ex_obs$age)
+  ex_pops, obs_c, loc_c,
+  max_cohort = max(ex_pops$cohort), max_age = max(ex_pops$age)
 )
 
 # A small target example: a multi-location request plus a location-only row
@@ -230,10 +267,12 @@ imuGAP::canonicalize_populations(
 # age_high] reaches reference_cohort + (age_high - age_low) at its youngest age.
 # Pick the reference cohort so the whole span stays within the observed cohort
 # range, otherwise predict() fails on cohorts the model was never fit for (#38).
+# Bound against the EXPANDED populations, which is what sizes the model: a
+# multi-age observation derives cohorts above its own reference cohort.
 some_locs <- unique(ex_loc$loc_id[!is.na(ex_loc$parent_id)])
 tgt_age_low <- 1L
-tgt_age_high <- min(5L, max(ex_obs$age))
-tgt_ref_cohort <- max(ex_obs$cohort) - (tgt_age_high - tgt_age_low)
+tgt_age_high <- min(5L, max(ex_pops$age))
+tgt_ref_cohort <- max(ex_pops$cohort) - (tgt_age_high - tgt_age_low)
 ex_target <- data.frame(
   loc_id = c(paste(utils::head(some_locs, 2L), collapse = "; "), some_locs[3L]),
   cohort = c(tgt_ref_cohort, NA),
@@ -263,7 +302,9 @@ message("Wrote ", out_example,
 csv_dir <- file.path("tests", "testthat", "fixtures", "example_dir")
 dir.create(csv_dir, recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(
-  ex_obs[, c("loc_id", "cohort", "age", "dose", "positive", "sample_n")],
+  ex_obs[, c(
+    "loc_id", "cohort", "age_min", "age_max", "dose", "positive", "sample_n"
+  )],
   file.path(csv_dir, "observations.csv"), row.names = FALSE
 )
 utils::write.csv(
@@ -283,7 +324,7 @@ file.copy(out_example, file.path(fixture_dir, "example.xlsx"), overwrite = TRUE)
 # exercises the structural and numeric validation branches at once.
 bad_obs <- to_friendly(ex_obs, obs_headers)
 names(bad_obs)[names(bad_obs) == "Sampled"] <- "Sampl3d"  # unrecognized header
-bad_obs[["Birth cohort"]][1] <- "abc"                     # non-numeric
+bad_obs[["Reference cohort"]][1] <- "abc"                 # non-numeric
 wb_corrupt <- openxlsx2::wb_workbook()
 add_instructions_sheet(wb_corrupt)
 add_data_sheet(wb_corrupt, "observations", bad_obs, valid_rows = nrow(bad_obs))
