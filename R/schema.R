@@ -103,6 +103,16 @@ IMURUN_TARGET_OPTIONAL <- c("dose", "target_id")
 #' @keywords internal
 IMURUN_TARGET_SHEET <- "target"
 
+#' Name and columns of the workbook sampler-configuration sheet
+#'
+#' @description Generated workbooks include this sheet so sampler settings can
+#' be edited in the same place as the data. Older workbooks without it continue
+#' to use [IMURUN_SAMPLER_DEFAULTS].
+#'
+#' @keywords internal
+IMURUN_CONFIG_SHEET <- "configuration"
+IMURUN_CONFIG_FIELDS <- c("setting", "value")
+
 #' Human-readable column-header aliases
 #'
 #' @description Maps friendly, human-readable column headers (as shipped in the

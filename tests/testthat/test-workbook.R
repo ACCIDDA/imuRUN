@@ -6,7 +6,7 @@
 test_that("read_workbook returns the expected frames (incl. the target sheet)", {
   skip_if_no_readxl()
   inputs <- imurun::read_workbook(example_wb())
-  expect_named(inputs, c("obs", "locs", "target"))
+  expect_named(inputs, c("obs", "locs", "target", "config"))
   expect_s3_class(inputs$obs, "data.frame")
   expect_true(all(
     c(
@@ -18,6 +18,32 @@ test_that("read_workbook returns the expected frames (incl. the target sheet)", 
   expect_true(all(c("loc_id", "parent_id") %in% names(inputs$locs)))
   expect_gt(nrow(inputs$obs), 0)
   expect_gt(nrow(inputs$locs), 0)
+  expect_identical(
+    imurun:::parse_sampler_config(inputs$config),
+    list(iter = 2000L, chains = 4L)
+  )
+})
+
+test_that("workbook configuration is optional for older input files", {
+  skip_if_no_readxl()
+  skip_if_not_installed("writexl")
+  wb <- tempfile(fileext = ".xlsx")
+  writexl::write_xlsx(
+    list(
+      observations = data.frame(
+        loc_id = "A", cohort = 1L, age = 1L, dose = 1L,
+        positive = 1L, sample_n = 10L
+      ),
+      locations = data.frame(loc_id = "A", parent_id = NA),
+      target = data.frame(
+        loc_id = "A", cohort = 1L, age_low = 1L, age_high = 1L
+      )
+    ),
+    wb
+  )
+  inputs <- imurun::read_workbook(wb)
+  expect_null(inputs$config)
+  expect_identical(imurun:::parse_sampler_config(inputs$config), list())
 })
 
 test_that("read_inputs dispatches on .xlsx extension", {

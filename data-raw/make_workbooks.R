@@ -20,18 +20,20 @@
 #     assigned automatically by the loader.
 #   - A target sheet drives by-target predictions (#14); target_id is an
 #     optional free-text label.
+#   - A configuration sheet carries the sampler settings a user is likely to
+#     change, so they do not need to translate workbook choices into shell flags.
 #   - The example uses the FULL *_sim data (not a subset) so the real trends
 #     survive (@pearsonca, make_workbooks.R:125).
 #
 # Structure (openxlsx2): each data sheet gets an AutoFilter, a frozen header
 # row, auto-fit column widths, and a Dose dropdown (1/2). These are cosmetic --
 # the loader reads values with readxl and is blind to filters/freeze/validation
-# -- so they never affect parsing, only human usability. openxlsx2 is used only
-# here at build time; the shipped .xlsx are committed, so it is a dev-only
-# dependency (the runtime writer, R/loaders.R::write_workbook(), stays writexl).
+# -- so they never affect parsing, only human usability. The runtime results
+# writer also uses openxlsx2 to preserve these workbook features when adding the
+# results sheet.
 #
 # Run from the package root with:  Rscript data-raw/make_workbooks.R
-# Requires the 'openxlsx2' package (dev-only; see DESCRIPTION Suggests).
+# Requires the runtime 'openxlsx2' package (see DESCRIPTION Imports).
 
 if (!requireNamespace("openxlsx2", quietly = TRUE)) {
   stop("data-raw/make_workbooks.R needs the 'openxlsx2' package.")
@@ -52,6 +54,18 @@ loc_headers <- c(loc_id = "Location", parent_id = "Parent location")
 tgt_headers <- c(
   loc_id = "Location", cohort = "Reference cohort", age_low = "Youngest age",
   age_high = "Oldest age", dose = "Dose", target_id = "Label"
+)
+sampler_config <- data.frame(
+  Setting = c("iter", "chains", "seed", "warmup"),
+  Value = c("2000", "4", "", ""),
+  Description = c(
+    "Total iterations per chain",
+    "Number of chains",
+    "Optional random seed for reproducibility",
+    "Optional warmup iterations per chain"
+  ),
+  stringsAsFactors = FALSE,
+  check.names = FALSE
 )
 
 # Rename a frame's canonical columns to friendly headers, keeping map order and
@@ -85,13 +99,21 @@ instructions_lines <- c(
   "  1. Fill in the data sheets below (the tabs at the bottom): one row per record.",
   "  2. Keep the header row on each sheet. You may use these friendly headers or",
   "     imuGAP's own names (loc_id, cohort, ...); either works.",
-  "  3. Save the file, then check it:   imurun -h yourfile.xlsx",
-  "  4. Fix anything it flags, then fit: imurun yourfile.xlsx",
+  "  3. Review the configuration sheet, then save the file.",
+  "  4. From R, check it: imurun::run_fit(c('-h', 'yourfile.xlsx'))",
+  "  5. Fix anything it flags, then fit: imurun::run_fit('yourfile.xlsx')",
   "  A bad edit fails the check with a clear message -- it cannot silently produce a wrong result.",
   "",
   "This 'instructions' sheet is optional: imurun reads only the data sheets by name, so you may",
   "delete it. Do not add a populations sheet or an observation-id column -- imurun handles both",
   "for you. Extra columns you add for your own notes are ignored.",
+  "",
+  "configuration sheet -- sampler settings used for the fit:",
+  "  iter              total iterations per chain (default 2000)",
+  "  chains            number of chains (default 4)",
+  "  seed              optional random seed for reproducibility",
+  "  warmup            optional warmup iterations per chain",
+  "  Leave seed/warmup blank to use the model defaults.",
   "",
   "observations sheet -- one row per sampled count:",
   "  Location          the location of this count (must match a Location in the locations sheet)",
@@ -122,8 +144,9 @@ instructions_lines <- c(
   "  Label             optional; free-text label echoed into the results",
   "  A Location-only row (cohort/ages/dose left blank) inherits those from the row above it.",
   "",
-  "Check with: imurun -h yourfile.xlsx",
-  "Fit with:   imurun yourfile.xlsx"
+  "Check from R: imurun::run_fit(c('-h', 'yourfile.xlsx'))",
+  "Fit from R:   imurun::run_fit('yourfile.xlsx')",
+  "If you installed the optional command wrapper, 'imurun yourfile.xlsx' also works."
 )
 
 # --- openxlsx2 workbook assembly ---------------------------------------------
@@ -168,12 +191,13 @@ add_data_sheet <- function(wb, sheet, df, valid_rows) {
   invisible(wb)
 }
 
-# Build a whole workbook: instructions tab + the three data sheets. `valid_rows`
-# is how many data rows the Dose dropdown should cover (a generous span for the
-# blank template, the actual row count for filled workbooks).
+# Build a whole workbook: instructions, configuration, and the three data
+# sheets. `valid_rows` is how many data rows the Dose dropdown should cover (a
+# generous span for the blank template, the actual row count for filled files).
 build_workbook <- function(observations, locations, target, valid_rows) {
   wb <- openxlsx2::wb_workbook()
   add_instructions_sheet(wb)
+  add_data_sheet(wb, "configuration", sampler_config, valid_rows = 0L)
   add_data_sheet(wb, "observations", observations, valid_rows)
   add_data_sheet(wb, "locations", locations, valid_rows)
   add_data_sheet(wb, "target", target, valid_rows)
@@ -327,6 +351,7 @@ names(bad_obs)[names(bad_obs) == "Sampled"] <- "Sampl3d"  # unrecognized header
 bad_obs[["Reference cohort"]][1] <- "abc"                 # non-numeric
 wb_corrupt <- openxlsx2::wb_workbook()
 add_instructions_sheet(wb_corrupt)
+add_data_sheet(wb_corrupt, "configuration", sampler_config, valid_rows = 0L)
 add_data_sheet(wb_corrupt, "observations", bad_obs, valid_rows = nrow(bad_obs))
 add_data_sheet(wb_corrupt, "locations", ex_loc_friendly, valid_rows = nrow(ex_loc_friendly))
 # target is required, so include a valid one -- the corruption is in the

@@ -23,21 +23,38 @@ A directory must contain:
 A workbook must have one sheet per input with the same column names
 (run 'imurun init' to get a correctly-headed template).
 
-Sampler options (each takes a positive whole number; an explicit flag overrides
-the default, otherwise the imuGAP defaults are used):
+Sampler options belong in the workbook's 'configuration' sheet. The generated
+template supplies iter=2000 and chains=4; seed and warmup may be left blank.
+For automation and older workflows, these flags override the sheet:
   --iter N        total iterations per chain (default 2000)
   --chains N      number of chains (default 4)
   --seed N        random seed for reproducibility
   --warmup N      warmup iterations per chain
 Flags may appear anywhere and may be written --iter N or --iter=N.
 
-Output: fit.rds (raw stanfit object for post-processing).
-output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
+Output options:
+  --results PATH  write an amended copy instead of updating the input workbook
+  --csv PATH      also write a results-only CSV
+  --overwrite     replace existing output files (otherwise imurun refuses)
+
+Output: for workbook input, a 'results' sheet of per-target medians and credible
+intervals is added to that workbook; directory input writes results.xlsx.
+fit.rds is also written for post-processing. output_dir defaults to input_dir.
+Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
 "
 
-# imurun's sampler defaults. Overridable per-run via CLI flags (see
-# parse_sampler_options()); chains matches imuGAP::stan_options()'s default and
-# iter matches rstan's, so `imurun <input>` with no flags fits as before.
+# Credible-interval level for the reported target estimates. imuGAP returns
+# draws; the median and this interval are the reduction imurun reports.
+IMURUN_CI_LEVEL <- 0.95
+
+# The imuGAP model options imurun fits with. Hoisted out of run_fit() so the
+# dose schedule has one definition: its length is the model's dose count, which
+# is both the default dose for a blank `target` cell and the upper bound
+# validate_targets() checks against.
+IMURUN_IMUGAP_ARGS <- list(df = 5L, dose_schedule = c(1L, 4L))
+
+# imurun's sampler defaults. The generated workbook repeats these values in its
+# configuration sheet, and CLI flags remain a compatibility/automation override.
 IMURUN_SAMPLER_DEFAULTS <- list(iter = 2000L, chains = 4L)
 
 #' Coerce a command-line flag value to a whole number
@@ -81,7 +98,7 @@ assert_flag_int <- function(val, flag, min = 1L) {
 
 #' Pull sampler-option overrides out of the command-line arguments
 #'
-#' @description Lets a non-R user set 'Stan' sampler settings without editing R:
+#' @description Lets a user set 'Stan' sampler settings from a command wrapper:
 #' it scans `args` for the recognized sampler flags (`--iter`, `--chains`,
 #' `--seed`, `--warmup`), each written `--iter N` or `--iter=N`, validates their
 #' values, and returns them separated from the remaining (positional) arguments.
@@ -146,13 +163,89 @@ parse_sampler_options <- function(args) {
   list(overrides = overrides, rest = args[keep])
 }
 
+#' Read sampler settings from a workbook configuration sheet
+#'
+#' @description Parses the `Setting`/`Value` rows supplied in generated imurun
+#' workbooks. Recognized settings are `iter`, `chains`, `seed`, and `warmup`;
+#' blank values use the package/default value. The same whole-number rules as
+#' the compatibility CLI flags apply. Unknown or repeated populated settings
+#' are reported rather than silently ignored.
+#'
+#' @param config optional data.frame read from the `configuration` sheet.
+#'
+#' @return A named list of sampler-option overrides.
+#'
+#' @keywords internal
+parse_sampler_config <- function(config) {
+  if (is.null(config) || nrow(config) == 0L) {
+    return(list())
+  }
+  names_lower <- tolower(trimws(names(config)))
+  setting_col <- match("setting", names_lower)
+  value_col <- match("value", names_lower)
+  if (is.na(setting_col) || is.na(value_col)) {
+    stop(
+      "[configuration] expected columns 'Setting' and 'Value'.",
+      call. = FALSE
+    )
+  }
+
+  settings <- tolower(trimws(as.character(config[[setting_col]])))
+  raw_values <- config[[value_col]]
+  values <- trimws(as.character(raw_values))
+  populated <- !is.na(raw_values) & nzchar(values)
+  missing_name <- which(populated & (is.na(settings) | !nzchar(settings)))
+  if (length(missing_name) > 0L) {
+    stop(
+      sprintf(
+        "[configuration] missing Setting at row(s): %s",
+        paste(utils::head(missing_name, 20L), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  allowed <- c("iter", "chains", "seed", "warmup")
+  unknown <- which(populated & !settings %in% allowed)
+  if (length(unknown) > 0L) {
+    stop(
+      sprintf(
+        "[configuration] unknown setting(s): %s",
+        paste(unique(settings[unknown]), collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+  duplicate <- unique(settings[populated & duplicated(settings)])
+  if (length(duplicate) > 0L) {
+    stop(
+      sprintf(
+        "[configuration] setting(s) repeated: %s",
+        paste(duplicate, collapse = ", ")
+      ),
+      call. = FALSE
+    )
+  }
+
+  mins <- c(iter = 1L, chains = 1L, seed = 0L, warmup = 1L)
+  overrides <- list()
+  for (i in which(populated)) {
+    setting <- settings[[i]]
+    overrides[[setting]] <- assert_flag_int(
+      values[[i]], sprintf("[configuration] %s", setting), mins[[setting]]
+    )
+  }
+  overrides
+}
+
 #' Run the imurun fitting pipeline
 #'
-#' @description The core engine behind the `imurun` command-line interface,
-#' exposed as an ordinary R function. Given a directory of inputs it loads the
-#' `observations` and `locations` files (CSV or RDS), validates
-#' them against the canonical 'imuGAP' schema, fits the model with
-#' `imuGAP::sampling()`, and writes `fit.rds` to the output directory.
+#' @description The spreadsheet-first fitting entry point, also used by the
+#' optional `imurun` command wrapper. Given a workbook or directory of inputs,
+#' it validates the observations, locations, target requests, and workbook
+#' configuration; fits with `imuGAP::sampling()`; writes `fit.rds`; and adds a
+#' human-readable `results` sheet to the supplied workbook (or creates
+#' `results.xlsx` for directory input).
 #'
 #' The function never throws for expected failure modes; instead it prints a
 #' human-readable message and returns an integer exit code, so it can drive a
@@ -166,13 +259,12 @@ parse_sampler_options <- function(args) {
 #'     files).}
 #' }
 #'
-#' @param args character vector of command-line style arguments. The first
-#'   non-flag argument is the input directory; an optional second is the output
-#'   directory (defaults to the input directory). A leading `-h`/`--help`
-#'   either prints usage (when alone) or requests validation-only mode (when
-#'   followed by an input directory). Sampler options (`--iter`, `--chains`,
-#'   `--seed`, `--warmup`) may appear anywhere and override the defaults for the
-#'   fit; see [parse_sampler_options()].
+#' @param args character vector whose first non-flag value is the input workbook
+#'   or directory and whose optional second value is the output directory. A
+#'   leading `-h`/`--help` either prints usage (when alone) or requests
+#'   validation-only mode. Workbook sampler settings come from its
+#'   `configuration` sheet; `--iter`, `--chains`, `--seed`, and `--warmup` may
+#'   override them for automation. See [parse_sampler_options()].
 #'
 #' @return Invisibly, an integer exit code (see Description).
 #'
@@ -184,7 +276,7 @@ parse_sampler_options <- function(args) {
 #' dir <- tempfile("imurun_validate_")
 #' dir.create(dir)
 #' \dontrun{
-#' # Fit and write fit.rds (requires a working Stan toolchain):
+#' # Fit, amend the workbook, and write fit.rds (requires a Stan toolchain):
 #' run_fit("path/to/inputs")
 #' }
 #'
@@ -200,6 +292,17 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   sampler_overrides <- parsed$overrides
   args <- parsed$rest
+
+  # Same treatment for the output flags, so they are stripped before the
+  # positional input/output parsing and a missing value fails early.
+  out_parsed <- tryCatch(parse_output_options(args), error = identity)
+  if (inherits(out_parsed, "error")) {
+    message("ERROR: ", conditionMessage(out_parsed))
+    return(invisible(1L))
+  }
+  output_opts <- out_parsed$options
+  overwrite <- isTRUE(output_opts$overwrite)
+  args <- out_parsed$rest
 
   # Reject a mistyped or unknown option instead of silently treating it as a
   # path. The only options imurun accepts are the sampler flags (stripped
@@ -275,6 +378,19 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   message("[OK] Inputs loaded.")
 
+  # Workbook configuration is the primary sampler-option surface. Keep the
+  # already-supported flags as explicit overrides for scripts and existing
+  # callers: defaults < workbook < command line.
+  config_overrides <- tryCatch(
+    parse_sampler_config(inputs$config),
+    error = identity
+  )
+  if (inherits(config_overrides, "error")) {
+    message("ERROR: ", conditionMessage(config_overrides))
+    return(invisible(1L))
+  }
+  sampler_settings <- utils::modifyList(config_overrides, sampler_overrides)
+
   message("[->] Validating schema...")
   validated <- tryCatch(validate_inputs(inputs), error = identity)
   if (inherits(validated, "error")) {
@@ -297,12 +413,19 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
       pops_raw <- build_populations(
         as.data.frame(inputs$obs, stringsAsFactors = FALSE)
       )
+      max_cohort <- max(as.integer(pops_raw$cohort))
+      max_age <- max(as.integer(pops_raw$age))
       pops <- imuGAP::canonicalize_populations(
         pops_raw, obs, locs,
-        max_cohort = max(as.integer(pops_raw$cohort)),
-        max_age = max(as.integer(pops_raw$age))
+        max_cohort = max_cohort,
+        max_age = max_age
       )
-      list(locs = locs, obs = obs, pops = pops)
+      # Carry the bounds out: the target sheet is validated against the same
+      # cohort/age extent the model was actually fit over.
+      list(
+        locs = locs, obs = obs, pops = pops,
+        max_cohort = max_cohort, max_age = max_age
+      )
     },
     error = identity
   )
@@ -313,8 +436,33 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
 
   stan_opts <- do.call(
     imuGAP::stan_options,
-    utils::modifyList(IMURUN_SAMPLER_DEFAULTS, sampler_overrides)
+    utils::modifyList(IMURUN_SAMPLER_DEFAULTS, sampler_settings)
   )
+
+  # The model's dose count: the default for a blank `target` dose cell and the
+  # upper bound the target sheet is checked against.
+  n_doses <- length(IMURUN_IMUGAP_ARGS$dose_schedule)
+
+  # Validate the target sheet BEFORE fitting. A typo in a target row is a
+  # spreadsheet mistake, and finding it after a half-hour fit would be a poor
+  # trade when the check costs nothing.
+  target_err <- tryCatch(
+    {
+      validate_targets(
+        inputs$target,
+        loc_ids = as.character(inputs$locs$loc_id),
+        max_cohort = canonical$max_cohort,
+        max_age = canonical$max_age,
+        max_dose = n_doses
+      )
+      NULL
+    },
+    error = identity
+  )
+  if (!is.null(target_err)) {
+    message("ERROR: ", conditionMessage(target_err))
+    return(invisible(1L))
+  }
 
   if (!dir.exists(output_dir)) {
     ok <- dir.create(output_dir, recursive = TRUE)
@@ -324,13 +472,41 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     }
   }
 
+  # Workbook inputs are amended in place by default, per the spreadsheet-first
+  # workflow. --results requests an amended copy instead; directory inputs have
+  # no source workbook and continue to produce results.xlsx.
+  results_source <- if (is_workbook) input else NULL
+  results_path <- if (!is.null(output_opts$results)) {
+    output_opts$results
+  } else if (is_workbook) {
+    input
+  } else {
+    file.path(output_dir, "results.xlsx")
+  }
+  csv_path <- output_opts$csv
+  fit_path <- file.path(output_dir, "fit.rds")
+  clobber_err <- tryCatch(
+    {
+      for (p in c(fit_path, csv_path)) {
+        assert_no_clobber(p, overwrite)
+      }
+      assert_results_destination(results_source, results_path, overwrite)
+      NULL
+    },
+    error = identity
+  )
+  if (!is.null(clobber_err)) {
+    message("ERROR: ", conditionMessage(clobber_err))
+    return(invisible(3L))
+  }
+
   message("[->] Launching imuGAP...")
   fit <- tryCatch(
     imuGAP::sampling(
       observations = canonical$obs,
       populations = canonical$pops,
       locations = canonical$locs,
-      imugap_opts = imuGAP::imugap_options(df = 5L, dose_schedule = c(1L, 4L)),
+      imugap_opts = do.call(imuGAP::imugap_options, IMURUN_IMUGAP_ARGS),
       stan_opts = stan_opts
     ),
     error = identity
@@ -341,7 +517,6 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   }
   message("[OK] Model complete.")
 
-  fit_path <- file.path(output_dir, "fit.rds")
   save_err <- tryCatch(
     {
       saveRDS(fit, fit_path)
@@ -359,6 +534,56 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(3L))
   }
   message("[OK] Wrote ", fit_path)
+
+  # By-target predictions. fit.rds is the raw fit object; the amended workbook
+  # is the practical deliverable for a user who does not want to post-process
+  # the fit in R.
+  message("[->] Predicting targets...")
+  results <- tryCatch(
+    {
+      targets <- expand_targets(inputs$target, default_dose = n_doses)
+      if (nrow(targets) == 0L) {
+        stop("the target sheet expanded to no targets.", call. = FALSE)
+      }
+      draws <- as_target_draws(stats::predict(fit, target = targets))
+      # predict() echoes imuGAP's own identity columns (loc_id/cohort/age/dose)
+      # but not `target_id`, which is imurun's label from the target sheet.
+      # Carry it across on obs_id so each result row names the request it came
+      # from; summarize_targets() then keeps it as an identity column.
+      draws$target_id <- targets$target_id[match(draws$obs_id, targets$obs_id)]
+      summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
+    },
+    error = identity
+  )
+  if (inherits(results, "error")) {
+    message("ERROR: ", conditionMessage(results))
+    return(invisible(2L))
+  }
+  message("[OK] Summarized ", nrow(results), " target(s).")
+
+  # Outputs. The clobber checks already ran before the fit, so pass
+  # overwrite = TRUE here: refusing now would discard a completed fit.
+  write_err <- tryCatch(
+    {
+      write_results_workbook(
+        inputs, results, results_path,
+        overwrite = TRUE, source = results_source
+      )
+      if (!is.null(csv_path)) {
+        write_results_csv(results, csv_path, overwrite = TRUE)
+      }
+      NULL
+    },
+    error = identity
+  )
+  if (!is.null(write_err)) {
+    message("ERROR: ", conditionMessage(write_err))
+    return(invisible(3L))
+  }
+  message("[OK] Wrote ", results_path)
+  if (!is.null(csv_path)) {
+    message("[OK] Wrote ", csv_path)
+  }
 
   invisible(0L)
 }

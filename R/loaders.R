@@ -243,13 +243,14 @@ normalize_inputs <- function(result) {
 #' an informative error is raised if it is not installed.
 #'
 #' A `target` sheet ([IMURUN_TARGET_SHEET]) is also required and returned as a
-#' `target` element: imurun always predicts coverage for named populations, so
-#' there is no such thing as a target-less input.
+#' `target` element. Generated workbooks additionally include a `configuration`
+#' sheet containing sampler settings; it is returned as `config` when present.
+#' Older workbooks without it retain the package defaults.
 #'
 #' @param path character; path to a `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs`, `locs`, and `target` (each a
-#'   `data.frame`).
+#' @return A named list with elements `obs`, `locs`, and `target`, plus `config`
+#'   when the workbook has a configuration sheet (each a `data.frame`).
 #'
 #' @examples
 #' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
@@ -288,6 +289,7 @@ read_workbook <- function(path) {
   # The target sheet is required: imurun always predicts coverage for named
   # populations, so there is no such thing as a target-less input.
   tgt_idx <- match(tolower(IMURUN_TARGET_SHEET), tolower(present))
+  config_idx <- match(tolower(IMURUN_CONFIG_SHEET), tolower(present))
   if (is.na(tgt_idx)) {
     missing <- c(missing, IMURUN_TARGET_SHEET)
   }
@@ -346,6 +348,25 @@ read_workbook <- function(path) {
       )
     }
   )
+  if (!is.na(config_idx)) {
+    result$config <- tryCatch(
+      as.data.frame(
+        readxl::read_excel(path, sheet = present[config_idx]),
+        stringsAsFactors = FALSE
+      ),
+      error = function(e) {
+        stop(
+          "Failed to read sheet '",
+          present[config_idx],
+          "' from '",
+          basename(path),
+          "': ",
+          e$message,
+          call. = FALSE
+        )
+      }
+    )
+  }
   normalize_inputs(result)
 }
 
@@ -365,12 +386,14 @@ read_workbook <- function(path) {
 #'
 #' Missing inputs (files or sheets) are all reported at once. A `target` sheet
 #' (in a workbook) or `target.csv`/`target.rds` (in a directory) is required and
-#' returned as a `target` element (issue #14).
+#' returned as a `target` element (issue #14). Workbook configuration is
+#' returned as `config` when its sheet is present.
 #'
 #' @param path character; a directory of CSV/RDS files, or the path to a single
 #'   `.xlsx` workbook.
 #'
-#' @return A named list with elements `obs`, `locs`, and `target`.
+#' @return A named list with elements `obs`, `locs`, and `target`, and optionally
+#'   `config` for workbook input.
 #'
 #' @examples
 #' dir <- tempfile("imurun_read_")
@@ -407,8 +430,8 @@ read_inputs <- function(path) {
 #'
 #' @description The inverse of [read_workbook()]: writes an inputs list (as
 #' returned by [read_inputs()]) back to a single `.xlsx` workbook, one sheet per
-#' element (`observations`, `locations`, and `target` when present). Uses the
-#' 'writexl' package.
+#' element (`observations`, `locations`, `configuration`, and `target` when
+#' present). Uses the 'writexl' package.
 #'
 #' @param inputs a list with `obs` and `locs` (and optionally `target`) data
 #'   frames, e.g. the result of [read_inputs()].
@@ -430,6 +453,7 @@ write_workbook <- function(inputs, path) {
   sheets <- list()
   if (!is.null(inputs$obs)) sheets$observations <- inputs$obs
   if (!is.null(inputs$locs)) sheets$locations <- inputs$locs
+  if (!is.null(inputs$config)) sheets$configuration <- inputs$config
   if (!is.null(inputs$target)) sheets$target <- inputs$target
   if (length(sheets) == 0L) {
     stop("'inputs' has no observations/locations/target to write.", call. = FALSE)
