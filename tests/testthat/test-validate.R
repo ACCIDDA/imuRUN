@@ -168,6 +168,41 @@ test_that("validate_inputs rejects an inverted age span, naming the row", {
   expect_match(err$message, "row\\(s\\): 2")
 })
 
+test_that("validate_inputs rejects fractional age endpoints before coercion", {
+  obs <- data.frame(
+    obs_id = 1, loc_id = "A", cohort = 1,
+    age_min = 5.9, age_max = 7.9,
+    dose = 1, positive = 1, sample_n = 10
+  )
+  locs <- data.frame(loc_id = "A", parent_id = NA)
+
+  err <- tryCatch(
+    imurun::validate_inputs(list(obs = obs, locs = locs)),
+    error = identity
+  )
+  expect_true(inherits(err, "error"))
+  expect_match(err$message, "age_min.*whole numbers")
+  expect_match(err$message, "age_max.*whole numbers")
+})
+
+test_that("validate_inputs bounds age spans before allocating populations", {
+  obs <- data.frame(
+    obs_id = 1, loc_id = "A", cohort = 1,
+    age_min = 1, age_max = 1000000000,
+    dose = 1, positive = 1, sample_n = 10
+  )
+  locs <- data.frame(loc_id = "A", parent_id = NA)
+
+  expect_error(
+    imurun::validate_inputs(list(obs = obs, locs = locs), max_age = 100),
+    "age span out of range"
+  )
+  expect_error(
+    imurun::validate_inputs(list(obs = obs, locs = locs)),
+    "more than 1000000 population rows"
+  )
+})
+
 test_that("validate_inputs accepts the single-age `age` shorthand", {
   obs <- data.frame(
     obs_id = 1, loc_id = "A", cohort = 1, age = 1, dose = 1,

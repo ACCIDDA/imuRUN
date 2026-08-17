@@ -60,6 +60,39 @@ check_numeric_column <- function(df, sheet, col) {
   )
 }
 
+#' Check that a numeric column contains only whole numbers
+#'
+#' @param df data.frame; sheet contents.
+#' @param sheet character; sheet name (for messages).
+#' @param col character; column to check.
+#'
+#' @return character vector of problem messages (possibly length zero).
+#'
+#' @keywords internal
+check_whole_number_column <- function(df, sheet, col) {
+  if (!col %in% names(df)) {
+    return(character(0))
+  }
+  values <- suppressWarnings(as.numeric(as.character(df[[col]])))
+  bad_rows <- which(is.finite(values) & values != trunc(values))
+  if (length(bad_rows) == 0) {
+    return(character(0))
+  }
+  sprintf(
+    "[%s] column '%s' must contain whole numbers; fractional value(s) at row(s): %s",
+    sheet,
+    col,
+    paste(utils::head(bad_rows, 20L), collapse = ", ")
+  )
+}
+
+# Expanding a malformed workbook must not be able to exhaust the R process
+# before validation can report the problem. A million derived population rows
+# is already far beyond a practical interactive imurun fit; keep the guard
+# separate from model age bounds because callers may intentionally derive those
+# bounds from otherwise-valid input.
+MAX_EXPANDED_POPULATION_ROWS <- 1000000
+
 #' Translate an 'imuGAP' canonicalizer error into a friendly message
 #'
 #' @param sheet character; which sheet the canonicalizer was checking.
@@ -180,7 +213,10 @@ build_populations <- function(obs) {
 #'   \item missing or renamed required columns (per [IMURUN_SCHEMA]);
 #'   \item non-numeric count columns (`positive`, `sample_n`, `cohort`,
 #'     `age_min`, `age_max`, `dose`);
+#'   \item fractional age-span endpoints;
 #'   \item an inverted age span (`age_min > age_max`);
+#'   \item age spans outside an explicit `max_age` or too large to expand
+#'     safely;
 #'   \item `loc_id` values in `observations` but absent from `locations`;
 #'   \item `dose`, `cohort`, and `age` values out of range;
 #'   \item structural location problems (duplicate or missing root, cycles).
@@ -253,20 +289,74 @@ validate_inputs <- function(
     problems <- c(problems, check_numeric_column(obs, "observations", col))
   }
 
-  # 3. The age span must run forwards. Checked here, before the expansion, so
-  #    the user is told which rows are inverted rather than being shown whatever
-  #    the canonicalizer makes of a collapsed span.
+  # 3. Age-span checks must all happen before build_populations(). In
+  #    particular, coercing fractional endpoints would silently change the
+  #    requested mixture, while expanding an unbounded typo could exhaust
+  #    memory before the canonicalizer sees it.
   if (all(c("age_min", "age_max") %in% names(obs))) {
-    inverted <- which(
-      suppressWarnings(as.integer(obs$age_min)) >
-        suppressWarnings(as.integer(obs$age_max))
+    problems <- c(
+      problems,
+      check_whole_number_column(obs, "observations", "age_min"),
+      check_whole_number_column(obs, "observations", "age_max")
     )
+
+    age_min <- suppressWarnings(as.numeric(as.character(obs$age_min)))
+    age_max <- suppressWarnings(as.numeric(as.character(obs$age_max)))
+    whole <- is.finite(age_min) & is.finite(age_max) &
+      age_min == trunc(age_min) & age_max == trunc(age_max)
+
+    inverted <- which(whole & age_min > age_max)
     if (length(inverted) > 0) {
       problems <- c(
         problems,
         sprintf(
           "[observations] age_min must be <= age_max at row(s): %s",
           paste(utils::head(inverted, 20L), collapse = ", ")
+        )
+      )
+    }
+
+    bounded <- whole & age_min <= age_max
+    if (!is.null(max_age) && length(max_age) == 1L &&
+          is.numeric(max_age) && is.finite(max_age)) {
+      outside <- which(bounded & (age_min < 1 | age_max > max_age))
+      if (length(outside) > 0) {
+        problems <- c(
+          problems,
+          sprintf(
+            "[observations] age span out of range [1, %d] at row(s): %s",
+            as.integer(max_age),
+            paste(utils::head(outside, 20L), collapse = ", ")
+          )
+        )
+      }
+      bounded[outside] <- FALSE
+    } else {
+      nonpositive <- which(bounded & age_min < 1)
+      if (length(nonpositive) > 0) {
+        problems <- c(
+          problems,
+          sprintf(
+            "[observations] age span must start at 1 or greater at row(s): %s",
+            paste(utils::head(nonpositive, 20L), collapse = ", ")
+          )
+        )
+      }
+      bounded[nonpositive] <- FALSE
+    }
+
+    spans <- age_max[bounded] - age_min[bounded] + 1
+    if (length(spans) > 0 &&
+          (any(spans > MAX_EXPANDED_POPULATION_ROWS) ||
+             sum(spans) > MAX_EXPANDED_POPULATION_ROWS)) {
+      problems <- c(
+        problems,
+        sprintf(
+          paste0(
+            "[observations] age spans expand to more than %d population rows; ",
+            "check age_min and age_max"
+          ),
+          MAX_EXPANDED_POPULATION_ROWS
         )
       )
     }
