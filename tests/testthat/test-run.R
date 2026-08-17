@@ -51,6 +51,27 @@ test_that("run_fit returns 1 for a malformed sampler flag", {
   expect_equal(result, 1L)
 })
 
+test_that("run_fit validates workbook sampler configuration before fitting", {
+  skip_if_not_installed("writexl")
+  wb <- tempfile(fileext = ".xlsx")
+  writexl::write_xlsx(
+    list(
+      configuration = data.frame(Setting = "iter", Value = "not a number"),
+      observations = data.frame(
+        loc_id = "A", cohort = 1L, age_min = 1L, age_max = 1L,
+        dose = 1L, positive = 1L, sample_n = 10L
+      ),
+      locations = data.frame(loc_id = "A", parent_id = NA),
+      target = data.frame(
+        loc_id = "A", cohort = 1L, age_low = 1L, age_high = 1L
+      )
+    ),
+    wb
+  )
+  result <- suppressMessages(imurun::run_fit(c("-h", wb)))
+  expect_identical(result, 1L)
+})
+
 test_that("run_fit rejects an unknown/mistyped option instead of pathifying it", {
   # `--iters` is a typo (not `--iter`); it must error (exit 1) rather than
   # silently becoming the output directory with the override dropped.

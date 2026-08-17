@@ -1,9 +1,8 @@
-# Output artifacts for the fit command (issue #14). imurun's raison d'etre is
-# that its user is not an R user, so `fit.rds` alone is not a result: the
-# human-readable companion is. Per the design settled on #14, the primary output
-# is an amended copy of the input workbook carrying the by-target estimates, with
-# a results-only CSV as an option. Everything here is plain file writing, so it
-# is unit-testable without a Stan toolchain.
+# Output artifacts for the fit command (issue #14). imurun is for people who
+# are comfortable running an R command but do not want to post-process a model
+# fit, so `fit.rds` alone is not a useful result. The primary output is the
+# supplied workbook amended in place with by-target estimates; a results-only
+# CSV and an amended copy at another path remain available as options.
 
 #' Normalize imuGAP prediction draws before summarizing them
 #'
@@ -49,6 +48,52 @@ assert_no_clobber <- function(path, overwrite = FALSE) {
   invisible(path)
 }
 
+#' Check whether an amended workbook destination is safe to write
+#'
+#' @description A source workbook may also be the destination: that is the
+#' normal workbook workflow, where imurun adds a `results` sheet to the file the
+#' user supplied. In that case the input file's existence is expected, and the
+#' clobber check applies to an existing `results` sheet instead. For a distinct
+#' destination, the ordinary file-level clobber rule still applies.
+#'
+#' @param source optional path to the workbook being amended.
+#' @param path destination workbook path.
+#' @param overwrite logical; whether an existing destination/results sheet may
+#'   be replaced.
+#'
+#' @return Invisibly, `path`.
+#'
+#' @keywords internal
+assert_results_destination <- function(source, path, overwrite = FALSE) {
+  if (is.null(source)) {
+    return(assert_no_clobber(path, overwrite))
+  }
+  if (!file.exists(source)) {
+    stop("Source workbook not found: ", source, call. = FALSE)
+  }
+
+  same_path <- identical(
+    normalizePath(source, mustWork = FALSE),
+    normalizePath(path, mustWork = FALSE)
+  )
+  if (!same_path) {
+    assert_no_clobber(path, overwrite)
+  }
+
+  sheets <- readxl::excel_sheets(source)
+  has_results <- any(tolower(sheets) == "results")
+  if (same_path && has_results && !isTRUE(overwrite)) {
+    stop(
+      sprintf(
+        "%s already contains a results sheet; pass --overwrite to replace it.",
+        source
+      ),
+      call. = FALSE
+    )
+  }
+  invisible(path)
+}
+
 #' Write the by-target results to a CSV
 #'
 #' @description The results-only output: one row per target with its posterior
@@ -84,12 +129,13 @@ write_results_csv <- function(results, path, overwrite = FALSE) {
   invisible(path)
 }
 
-#' Write an amended workbook: the inputs plus a results sheet
+#' Add results to the supplied workbook
 #'
-#' @description The primary human-readable output. Writes a copy of the input
-#' workbook (`observations`, `locations`, `target`) with a `results` sheet added,
-#' so the estimates travel alongside the request that produced them and the
-#' original input file is left untouched.
+#' @description The primary human-readable output. When `source` is supplied,
+#' its worksheets, formatting, validation, and notes are preserved and a
+#' `results` sheet is added. `path` may be the same as `source` (the default fit
+#' workflow, which updates the supplied workbook) or a different path. Without
+#' `source`, a new workbook is constructed from `inputs` for directory inputs.
 #'
 #' @details Each results row carries the `target_id` label and the resolved
 #' `loc_id`/`cohort`/`age`/`dose` identity, so a reader can trace it back to the
@@ -104,6 +150,7 @@ write_results_csv <- function(results, path, overwrite = FALSE) {
 #'   [summarize_targets()].
 #' @param path character; destination `.xlsx` path.
 #' @param overwrite logical; `TRUE` to replace an existing file.
+#' @param source optional character path to an existing input workbook to amend.
 #'
 #' @return Invisibly, `path`.
 #'
@@ -126,14 +173,49 @@ write_results_csv <- function(results, path, overwrite = FALSE) {
 #' write_results_workbook(inputs, res, out, overwrite = TRUE)
 #'
 #' @export
-write_results_workbook <- function(inputs, results, path, overwrite = FALSE) {
-  assert_no_clobber(path, overwrite)
-  sheets <- list()
-  if (!is.null(inputs$obs)) sheets$observations <- inputs$obs
-  if (!is.null(inputs$locs)) sheets$locations <- inputs$locs
-  if (!is.null(inputs$target)) sheets$target <- inputs$target
-  sheets$results <- as.data.frame(results, stringsAsFactors = FALSE)
-  writexl::write_xlsx(sheets, path = path)
+write_results_workbook <- function(
+  inputs,
+  results,
+  path,
+  overwrite = FALSE,
+  source = NULL
+) {
+  assert_results_destination(source, path, overwrite)
+
+  if (is.null(source)) {
+    sheets <- list()
+    if (!is.null(inputs$obs)) sheets$observations <- inputs$obs
+    if (!is.null(inputs$locs)) sheets$locations <- inputs$locs
+    if (!is.null(inputs$config)) sheets$configuration <- inputs$config
+    if (!is.null(inputs$target)) sheets$target <- inputs$target
+    sheets$results <- as.data.frame(results, stringsAsFactors = FALSE)
+    writexl::write_xlsx(sheets, path = path)
+    return(invisible(path))
+  }
+
+  wb <- openxlsx2::wb_load(source)
+  sheet_names <- readxl::excel_sheets(source)
+  result_idx <- match("results", tolower(sheet_names))
+  if (!is.na(result_idx)) {
+    wb$remove_worksheet(sheet_names[result_idx])
+  }
+  result_data <- as.data.frame(results, stringsAsFactors = FALSE)
+  wb$add_worksheet("results")
+  wb$add_data("results", result_data)
+  wb$add_filter("results", rows = 1, cols = seq_len(ncol(result_data)))
+  wb$freeze_pane("results", first_active_row = 2)
+  wb$set_col_widths(
+    "results", cols = seq_len(ncol(result_data)), widths = "auto"
+  )
+
+  # Save completely before replacing the user's file, so a serialization error
+  # cannot leave the original workbook half-written.
+  tmp <- tempfile("imurun_results_", tmpdir = dirname(path), fileext = ".xlsx")
+  on.exit(unlink(tmp), add = TRUE)
+  openxlsx2::wb_save(wb, tmp, overwrite = TRUE)
+  if (!file.copy(tmp, path, overwrite = TRUE)) {
+    stop("Could not write amended workbook: ", path, call. = FALSE)
+  }
   invisible(path)
 }
 

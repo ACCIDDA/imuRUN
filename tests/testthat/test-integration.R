@@ -7,10 +7,10 @@
 
 # --- Golden: read the shared example (workbook and CSV directory) -------------
 
-test_that("the example workbook reads into the three expected frames", {
+test_that("the example workbook reads data and sampler configuration", {
   skip_if_no_readxl()
   inputs <- imurun::read_inputs(example_wb())
-  expect_named(inputs, c("obs", "locs", "target"))
+  expect_named(inputs, c("obs", "locs", "target", "config"))
   expect_gt(nrow(inputs$obs), 0)
   expect_gt(nrow(inputs$locs), 0)
   expect_gt(nrow(inputs$target), 0)
@@ -87,26 +87,36 @@ test_that("the example fits end-to-end (gated)", {
   expect_true(lower_ok && upper_ok)
 })
 
-test_that("run_fit writes both fit.rds and the amended workbook (gated)", {
-  # The #14 deliverable, end to end through the actual CLI entry point: the raw
-  # fit for post-processing AND the human-readable artifact a non-R user needs.
+test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
+  # The #14 deliverable, end to end: the raw fit for post-processing and the
+  # human-readable artifact for a user who does not want to process draws in R.
   skip_on_cran()
   if (!nzchar(Sys.getenv("IMURUN_RUN_INTEGRATION"))) {
     skip("set IMURUN_RUN_INTEGRATION=1 to run the end-to-end fit")
   }
   skip_if_no_readxl()
   out <- withr::local_tempdir()
+  input <- file.path(out, "imurun_example.xlsx")
+  expect_true(file.copy(example_wb(), input))
+  # Exercise the user-facing configuration path rather than the compatibility
+  # flags: keep the gated fit deliberately tiny and deterministic.
+  wb <- openxlsx2::wb_load(input)
+  wb$add_data(
+    "configuration",
+    data.frame(Value = c(100L, 1L, 1L, NA_integer_)),
+    start_col = 2, start_row = 2, col_names = FALSE
+  )
+  openxlsx2::wb_save(wb, input, overwrite = TRUE)
   csv <- file.path(out, "results.csv")
 
   code <- imurun::run_fit(c(
-    example_wb(), out,
-    "--iter", "100", "--chains", "1", "--seed", "1",
+    input, out,
     "--csv", csv
   ))
   expect_identical(code, 0L)
 
   fit_path <- file.path(out, "fit.rds")
-  wb_path <- file.path(out, "results.xlsx")
+  wb_path <- input
   expect_true(file.exists(fit_path))
   expect_true(file.exists(wb_path))
   expect_true(file.exists(csv))
@@ -114,7 +124,10 @@ test_that("run_fit writes both fit.rds and the amended workbook (gated)", {
   # The workbook carries the request alongside the answer.
   expect_identical(
     readxl::excel_sheets(wb_path),
-    c("observations", "locations", "target", "results")
+    c(
+      "instructions", "configuration", "observations", "locations", "target",
+      "results"
+    )
   )
   res <- as.data.frame(readxl::read_excel(wb_path, sheet = "results"))
   expect_gt(nrow(res), 0L)
@@ -132,11 +145,9 @@ test_that("run_fit writes both fit.rds and the amended workbook (gated)", {
   expect_equal(from_csv$est_median, res$est_median, tolerance = 1e-8)
 
   # A second run must not silently replace results the user has not read.
-  again <- imurun::run_fit(c(example_wb(), out, "--iter", "100", "--chains", "1"))
+  again <- imurun::run_fit(c(input, out))
   expect_identical(again, 3L)
   # ... and --overwrite is the way through.
-  forced <- imurun::run_fit(c(
-    example_wb(), out, "--iter", "100", "--chains", "1", "--overwrite"
-  ))
+  forced <- imurun::run_fit(c(input, out, "--overwrite"))
   expect_identical(forced, 0L)
 })

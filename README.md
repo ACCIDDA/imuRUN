@@ -7,39 +7,34 @@
 [![Codecov test coverage](https://codecov.io/gh/ACCIDDA/imurun/graph/badge.svg)](https://app.codecov.io/gh/ACCIDDA/imurun)
 <!-- badges: end -->
 
-`imurun` is a lean, beginner-friendly command-line front-end to the
-[`imuGAP`](https://github.com/ACCIDDA/imuGAP) model-fitting package. You hand it
-your data — either a directory of `observations` / `populations` / `locations`
-files (CSV or RDS) or a single Excel workbook with one sheet per input — and it
-reads the inputs, validates them against imuGAP's canonical schema with
-friendly, spreadsheet-referenced error messages, fits the model with
-`imuGAP::sampling()`, and writes the result to `fit.rds`. No R scripting is
-required to run a fit, but every step of the engine is also exported as an
-ordinary R function, so the same pipeline works from a shell command, from a
-scripted R session, or anywhere in between.
+`imurun` is a spreadsheet-first front-end to the
+[`imuGAP`](https://github.com/ACCIDDA/imuGAP) model-fitting package. It is built
+for people who are comfortable running a command at the R prompt but are not
+power R users: describe the analysis in one Excel workbook, validate it with
+spreadsheet-referenced messages, fit with `imuGAP::sampling()`, and read the
+coverage estimates back in the same workbook.
 
 ## Features
 
-- **Two input modes.** Point `imurun` at a directory of `observations`,
-  `populations`, and `locations` files (CSV or RDS, CSV taking precedence), or
-  at a single `.xlsx` workbook with one sheet per input — convenient for people
-  who do not work in R.
-- **Bundled template and example workbooks.** `imurun init` drops a blank
-  template (correct headers plus an instructions sheet) into a directory;
-  `imurun example` drops a small, complete, runnable example derived from
-  imuGAP's `*_sim` data.
+- **Two input modes.** Use a single `.xlsx` workbook or a directory containing
+  `observations`, `locations`, and `target` files (CSV or RDS). imurun derives
+  imuGAP's population rows from each observation's location, reference cohort,
+  age span, and dose.
+- **Bundled template and example workbooks.** `imurun_init()` writes a blank
+  template with instructions and sampler configuration; `imurun_copy_example()`
+  writes a complete example derived from imuGAP's `*_sim` data.
 - **Friendly validation.** Inputs are checked against the canonical schema
   ([`IMURUN_SCHEMA`]) via a layer over imuGAP's canonicalizers that names the
   offending sheet, column, or row and collects *every* problem it can find
   rather than stopping at the first.
-- **Validate-only mode.** `imurun -h <input>` checks the inputs without fitting,
-  so you can confirm a workbook is well-formed before committing to a model run.
-- **Fits and saves.** On success it runs `imuGAP::sampling()` and writes
-  `fit.rds` (the raw `stanfit` object) to the output directory for
-  post-processing.
+- **Validate-only mode.** `run_fit(c("-h", <input>))` checks the workbook
+  without fitting.
+- **Human-readable results.** On success, the input workbook gains a `results`
+  sheet containing medians and credible intervals beside the request context;
+  `fit.rds` is also saved for advanced post-processing.
 - **Scriptable.** The engine functions (`run_fit()`, `read_inputs()`,
-  `validate_inputs()`, `read_workbook()`, and friends) are all exported for use
-  directly from R, and the CLI returns shell exit codes
+  `validate_inputs()`, `read_workbook()`, and friends) are exported for use
+  directly from R. The optional CLI wrapper returns shell exit codes
   (`0` success, `1` validation, `2` model, `3` I/O) for use in pipelines.
 
 ## Installation
@@ -62,8 +57,8 @@ delegated to `imuGAP::sampling()`, which requires imuGAP's Stan-based model
 backend (a working Stan toolchain). Reading `.xlsx` workbooks additionally uses
 [`readxl`](https://readxl.tidyverse.org).
 
-To make `imurun` available as a shell command, install the bundled CLI onto
-your `PATH`:
+The R functions are the primary interface. To additionally make `imurun`
+available as a shell command, install the bundled wrapper onto your `PATH`:
 
 ```r
 imurun::install_cli()          # symlinks into ~/.local/bin (Unix) or writes
@@ -76,43 +71,31 @@ from R with `imurun::run_fit(...)`.
 
 ## Usage
 
-The CLI takes an input path and an optional output directory:
-
-```
-imurun <input> [output_dir]
-imurun -h <input>              # validate only, no model fitting
-imurun init [dir]              # write a blank input template workbook
-imurun example [dir]           # write a filled example workbook
-imurun -h | --help             # show usage
-```
-
-`<input>` is either a directory of CSV/RDS files or a single `.xlsx` workbook.
-`output_dir` defaults to the input directory (or, for a workbook, the directory
-containing it), and the fit is written there as `fit.rds`.
+`run_fit()` accepts a workbook path (or a directory of CSV/RDS inputs). The
+generated workbook's `configuration` sheet holds `iter`, `chains`, `seed`, and
+`warmup`; automation flags may override those values.
 
 ### Walkthrough
 
 1. **Get a workbook to fill in.** Scaffold a blank template into the current
    directory:
 
-   ```
-   imurun init .
+   ```r
+   imurun::imurun_init(".")
    ```
 
-   This writes `imurun_template.xlsx` with one sheet each for `observations`,
-   `populations`, and `locations` (correct headers) plus an `instructions`
-   sheet. To start from a filled, runnable example instead, use
-   `imurun example .` to get `imurun_example.xlsx`.
+   This writes `imurun_template.xlsx` with `instructions`, `configuration`,
+   `observations`, `locations`, and `target` sheets. To start from a filled,
+   runnable example, use `imurun::imurun_copy_example(".")`.
 
-2. **Fill it in.** Open the workbook and enter your data on the three sheets.
-   The required columns are `obs_id, positive, sample_n` (observations);
-   `obs_id, loc_id, cohort, age, dose` (populations); and `loc_id, parent_id`
-   (locations). Extra columns are ignored.
+2. **Fill it in.** Enter sampled counts on `observations`, the hierarchy on
+   `locations`, and prediction requests on `target`. Review the sampler values
+   on `configuration`. The workbook instructions define every column.
 
 3. **Validate.** Check the inputs without fitting:
 
-   ```
-   imurun -h imurun_template.xlsx
+   ```r
+   imurun::run_fit(c("-h", "imurun_template.xlsx"))
    ```
 
    Any problems are reported all at once, in spreadsheet terms. Validation
@@ -120,17 +103,17 @@ containing it), and the fit is written there as `fit.rds`.
 
 4. **Fit.** Once validation passes, run the model:
 
-   ```
-   imurun imurun_template.xlsx
+   ```r
+   imurun::run_fit("imurun_template.xlsx")
    ```
 
-   `imurun` loads the inputs, validates them, runs `imuGAP::sampling()`, and
-   writes **`fit.rds`** (the raw `stanfit` object) to the output directory —
-   next to the workbook by default, or into `output_dir` if you supply one.
+   imurun adds a **`results`** sheet to that workbook and writes **`fit.rds`**
+   beside it. It refuses to replace existing results unless `--overwrite` is
+   supplied.
 
 The same steps work with a directory of CSV/RDS files in place of the workbook,
-for example `imurun data/` where `data/` contains `observations.csv`,
-`populations.csv`, and `locations.csv`.
+for example `run_fit("data")` where `data/` contains `observations.csv`,
+`locations.csv`, and `target.csv`.
 
 ### From R
 
@@ -147,7 +130,7 @@ example <- imurun_copy_example(tempdir())
 inputs <- read_inputs(example)
 validate_inputs(inputs)
 
-# Or run the whole pipeline (writes fit.rds), returning a shell exit code
+# Or run the whole pipeline (amends the workbook and writes fit.rds)
 run_fit(example)
 ```
 

@@ -1,7 +1,52 @@
-# Tests for the sampler-option override channel (issue #15): CLI flags that let
-# a non-R user set Stan sampler settings without editing R. All toolchain-free
-# (no real fit): they exercise flag parsing, validation, and that the overrides
-# reach the constructed stan_options().
+# Tests for sampler-option configuration (issue #15): workbook settings are the
+# primary user surface, while CLI flags remain an automation/compatibility
+# override. All toolchain-free (no real fit).
+
+# --- workbook configuration --------------------------------------------------
+
+test_that("parse_sampler_config reads populated settings and skips blanks", {
+  config <- data.frame(
+    Setting = c("iter", "chains", "seed", "warmup"),
+    Value = c("1500", "2", "", NA),
+    stringsAsFactors = FALSE
+  )
+  expect_identical(
+    parse_sampler_config(config),
+    list(iter = 1500L, chains = 2L)
+  )
+})
+
+test_that("parse_sampler_config validates the sheet structure and values", {
+  expect_error(
+    parse_sampler_config(data.frame(option = "iter", value = 10)),
+    "Setting.*Value"
+  )
+  expect_error(
+    parse_sampler_config(data.frame(Setting = "iters", Value = 10)),
+    "unknown setting"
+  )
+  expect_error(
+    parse_sampler_config(data.frame(Setting = "iter", Value = "2.5")),
+    "whole number"
+  )
+  expect_error(
+    parse_sampler_config(data.frame(
+      Setting = c("iter", "iter"), Value = c(10, 20)
+    )),
+    "repeated"
+  )
+})
+
+test_that("CLI settings override the workbook and both override defaults", {
+  config <- data.frame(
+    Setting = c("iter", "chains"), Value = c(1000, 2)
+  )
+  from_workbook <- parse_sampler_config(config)
+  from_cli <- parse_sampler_options(c("--iter", "500"))$overrides
+  combined <- utils::modifyList(from_workbook, from_cli)
+  actual <- utils::modifyList(IMURUN_SAMPLER_DEFAULTS, combined)
+  expect_identical(actual, list(iter = 500L, chains = 2L))
+})
 
 # --- parse_sampler_options: extraction ---------------------------------------
 

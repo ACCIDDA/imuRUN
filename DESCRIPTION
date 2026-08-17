@@ -1,5 +1,5 @@
 Package: imurun
-Title: Beginner-Friendly Command-Line Front-End for 'imuGAP'
+Title: Spreadsheet-First Front-End for 'imuGAP'
 Version: 0.1.0
 Authors@R:
     c(person("Carl", "Pearson", email = "carl.ab.pearson@gmail.com", role = c("aut", "cre"),
@@ -7,12 +7,13 @@ Authors@R:
       person("Claire Perrin", "Smith", role = "aut",
            comment = c(ORCID = "0000-0003-1069-9460")),
       person("Weston", "Voglesonger", email = "westonvogle@gmail.com", role = "ctb"))
-Description: A lean command-line front-end to the 'imuGAP' model-fitting
-    package. Reads model inputs (observations and locations) from a
-    directory of CSV or RDS files or from a single 'xlsx' workbook,
-    validates them against the canonical 'imuGAP' schema, runs a fit, and
-    writes the result out. The helper functions are exported so they can be
-    used directly from R as well as from the bundled command-line script.
+Description: A spreadsheet-first front-end to the 'imuGAP' model-fitting
+    package for users who are comfortable at the R prompt without being power
+    R users. Reads model inputs and sampler configuration from an 'xlsx'
+    workbook (or data frames from CSV or RDS files), validates them against the
+    canonical 'imuGAP' schema, runs a fit, and writes summarized estimates back
+    into the workbook. The engine functions are exported for direct R use, with
+    an optional bundled command-line wrapper.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Language: en-US
@@ -22,13 +23,13 @@ Depends:
     R (>= 4.1.0)
 Imports:
     imuGAP (>= 0.1.0),
+    openxlsx2,
     readxl,
     tools,
     utils,
     writexl
 Suggests:
     knitr,
-    openxlsx2,
     rmarkdown,
     spelling,
     testthat (>= 3.0.0)

@@ -133,6 +133,51 @@ test_that("write_results_workbook leaves the original input sheets intact", {
   expect_identical(as.integer(back$age_high), as.integer(inputs$target$age_high))
 })
 
+test_that("write_results_workbook amends the supplied workbook in place", {
+  skip_if_no_readxl()
+  skip_if_not_installed("openxlsx2")
+  skip_if_not_installed("writexl")
+  dir <- withr::local_tempdir()
+  path <- file.path(dir, "input.xlsx")
+  inputs <- fake_inputs()
+  writexl::write_xlsx(
+    list(
+      instructions = data.frame(Note = "keep this sheet and its content"),
+      observations = inputs$obs,
+      locations = inputs$locs,
+      configuration = data.frame(
+        Setting = c("iter", "chains"), Value = c(2000L, 4L)
+      ),
+      target = inputs$target
+    ),
+    path
+  )
+
+  expect_identical(
+    write_results_workbook(inputs, fake_results(), path, source = path),
+    path
+  )
+  expect_identical(
+    readxl::excel_sheets(path),
+    c(
+      "instructions", "observations", "locations", "configuration", "target",
+      "results"
+    )
+  )
+  note <- readxl::read_excel(path, sheet = "instructions")
+  expect_identical(note$Note, "keep this sheet and its content")
+  result <- readxl::read_excel(path, sheet = "results")
+  expect_equal(result$est_median, fake_results()$est_median)
+
+  expect_error(
+    write_results_workbook(inputs, fake_results(), path, source = path),
+    "already contains a results sheet"
+  )
+  expect_no_error(write_results_workbook(
+    inputs, fake_results(), path, overwrite = TRUE, source = path
+  ))
+})
+
 test_that("write_results_workbook refuses to clobber unless asked", {
   dir <- withr::local_tempdir()
   path <- file.path(dir, "results.xlsx")

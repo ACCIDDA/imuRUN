@@ -11,34 +11,33 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-imurun is a beginner-friendly, command-line front-end to the
-[imuGAP](https://github.com/ACCIDDA/imuGAP) vaccine-coverage model. You describe
-your data in a spreadsheet; imurun validates it, fits the model, and writes back
-coverage estimates. No R knowledge is required.
+imurun is a spreadsheet-first front-end to the
+[imuGAP](https://github.com/ACCIDDA/imuGAP) vaccine-coverage model. It is aimed
+at people who are comfortable running a command at the R prompt but are not
+power R users: describe the analysis in a workbook, run one function, and read
+the coverage estimates back in that workbook.
 
 This guide walks the whole happy path: install, try the shipped example,
 prepare your own workbook, validate, fit, and read the results.
 
 ## Install
 
-```sh
-Rscript -e 'remotes::install_github("ACCIDDA/imurun")'
+```{r, eval = FALSE}
+remotes::install_github("ACCIDDA/imurun")
 ```
 
 Once imurun is on CRAN you will be able to `install.packages("imurun")`.
 
-To call `imurun` as a bare command on your `PATH` (instead of typing
-`Rscript -e ...` every time), follow the one-time CLI setup in
-[issue #16](https://github.com/ACCIDDA/imurun/issues/16). The commands below are
-written as if `imurun` is on your `PATH`.
+An optional command wrapper is also available via `install_cli()`, but it is not
+required for this guide.
 
 ## 1. Run the shipped example first
 
 imurun ships a complete, ready-to-run example so you can see a fit before
 preparing your own data. Write a copy into the current folder:
 
-```sh
-imurun example .        # writes imurun_example.xlsx
+```{r, eval = FALSE}
+imurun::imurun_copy_example(".") # writes imurun_example.xlsx
 ```
 
 The example is a real, fittable dataset carved from imuGAP's simulated data.
@@ -48,15 +47,15 @@ From R, its installed location is:
 imurun::imurun_example()
 ```
 
-Open it in your spreadsheet program. The first tab is **instructions**; then
-come **observations**, **locations**, and an optional **target** tab.
+Open it in your spreadsheet program. The first tabs are **instructions** and
+**configuration**; then come **observations**, **locations**, and **target**.
 
 ## 2. Prepare your own workbook
 
 Start from a blank, correctly-headed template:
 
-```sh
-imurun init .           # writes imurun_template.xlsx
+```{r, eval = FALSE}
+imurun::imurun_init(".") # writes imurun_template.xlsx
 ```
 
 Fill the tabs (the instructions tab explains every column). imurun uses plain,
@@ -67,7 +66,7 @@ human-readable headers:
   an optional *Censored*).
 - **locations** -- the location hierarchy: *Location* and *Parent location*
   (leave *Parent location* blank for the single top-level location).
-- **target** (optional) -- the populations you want coverage predicted for:
+- **target** -- the populations you want coverage predicted for:
   *Location*, *Reference cohort*, *Youngest age*, *Oldest age* (and optional
   *Dose* and *Label*).
 
@@ -80,6 +79,21 @@ Two things imurun handles for you, so you never fill them in:
 If you prefer imuGAP's own column names (`loc_id`, `cohort`, ...), those work
 too; and you may delete the instructions tab -- imurun only reads the data
 sheets.
+
+### Configure the fit
+
+The **configuration** sheet keeps the common sampler settings next to the data:
+
+| Setting | Default | Meaning |
+|:---|:---|:---|
+| `iter` | 2000 | total iterations per chain |
+| `chains` | 4 | number of chains |
+| `seed` | blank | optional random seed for reproducibility |
+| `warmup` | blank | optional warmup iterations per chain |
+
+Edit the Value column as needed. Command-line flags remain available for
+automation and override the workbook when supplied, but most workbook users do
+not need them.
 
 ### Counts that cover a range of ages
 
@@ -105,8 +119,8 @@ thing.
 
 Check a workbook without fitting anything:
 
-```sh
-imurun -h imurun_example.xlsx
+```{r, eval = FALSE}
+imurun::run_fit(c("-h", "imurun_example.xlsx"))
 ```
 
 From R, that is `read_inputs()` followed by `validate_inputs()`:
@@ -131,27 +145,29 @@ Fix the flagged cell(s) in your spreadsheet and validate again.
 
 ## 4. Fit the model
 
-```sh
-imurun imurun_example.xlsx
+```{r, eval = FALSE}
+imurun::run_fit("imurun_example.xlsx")
 ```
 
-This fits the imuGAP model and writes two files next to your input:
+This fits the imuGAP model and produces two artifacts:
 
-- **`results.xlsx`** -- a copy of your workbook with a `results` sheet added.
-  This is the one most people want.
+- **your input workbook** gains a `results` sheet. This is the artifact most
+  people want; the existing sheets and formatting are preserved.
 - **`fit.rds`** -- the raw fitted model, for post-processing in R.
 
 Fitting compiles and runs a Stan model, so it can take several minutes. It is
 not run in this guide; on success the command exits with status `0`.
 
-imurun will not overwrite existing output: a second run into the same place
-stops with an error rather than replacing results you may not have read yet.
-Pass `--overwrite` when you do want to replace them. Two other flags control
-where the output goes:
+imurun will not replace an existing `results` sheet or `fit.rds` silently. Pass
+`--overwrite` when you do want to replace them. You can also request an amended
+copy at another path, and optionally write a results-only CSV:
 
-```sh
-# put the amended workbook somewhere specific, and write a results-only CSV too
-imurun imurun_example.xlsx --results estimates.xlsx --csv estimates.csv
+```{r, eval = FALSE}
+imurun::run_fit(c(
+  "imurun_example.xlsx",
+  "--results", "estimates.xlsx",
+  "--csv", "estimates.csv"
+))
 ```
 
 Your target sheet is checked before fitting starts, so a typo in a target row
@@ -159,7 +175,7 @@ fails immediately instead of after a long fit.
 
 ## 5. Read the results
 
-Open `results.xlsx` and go to the **results** sheet. It has one row per
+Open your input workbook and go to the new **results** sheet. It has one row per
 requested population (each location, at each age in the span you asked for):
 
 | Column | Meaning |
@@ -171,9 +187,8 @@ requested population (each location, at each age in the span you asked for):
 | `ci_level` | the interval's level (0.95) |
 | `n_draws` | posterior draws behind the estimate |
 
-Your original `observations`, `locations`, and `target` sheets are copied over
-unchanged, so the request travels with the answer and your input file is left
-untouched.
+Your `instructions`, `configuration`, `observations`, `locations`, and `target`
+sheets remain intact, so the request and settings travel with the answer.
 
 `fit.rds` is the raw fitted model, for anyone who wants to post-process it in R:
 
@@ -183,7 +198,7 @@ fit <- readRDS("fit.rds")
 
 ## Where next
 
-- **Run `imurun` as a command** (PATH setup, or the `Rscript -e` fallback):
+- **Optional `imurun` command wrapper** (PATH setup):
   [issue #16](https://github.com/ACCIDDA/imurun/issues/16).
 - **The model itself**: see the [imuGAP](https://github.com/ACCIDDA/imuGAP)
   documentation.
