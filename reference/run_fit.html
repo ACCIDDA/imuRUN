@@ -11,7 +11,8 @@ shell command directly. The exit-code taxonomy is:
 Success (or usage/validation-only request).
 
 1
-Schema validation failed.
+Input validation failed: the schema, or an invalid or unknown
+command-line option.
 
 2
 Model fitting failed.
@@ -34,7 +35,8 @@ shell command directly. The exit-code taxonomy is:
 Success (or usage/validation-only request).
 
 1
-Schema validation failed.
+Input validation failed: the schema, or an invalid or unknown
+command-line option.
 
 2
 Model fitting failed.
@@ -101,7 +103,8 @@ shell command directly. The exit-code taxonomy is:</p><dl><dt>0</dt>
 <dd><p>Success (or usage/validation-only request).</p></dd>
 
 <dt>1</dt>
-<dd><p>Schema validation failed.</p></dd>
+<dd><p>Input validation failed: the schema, or an invalid or unknown
+command-line option.</p></dd>
 
 <dt>2</dt>
 <dd><p>Model fitting failed.</p></dd>
@@ -127,7 +130,9 @@ files).</p></dd>
 non-flag argument is the input directory; an optional second is the output
 directory (defaults to the input directory). A leading <code>-h</code>/<code>--help</code>
 either prints usage (when alone) or requests validation-only mode (when
-followed by an input directory).</p></dd>
+followed by an input directory). Sampler options (<code>--iter</code>, <code>--chains</code>,
+<code>--seed</code>, <code>--warmup</code>) may appear anywhere and override the defaults for the
+fit; see <code><a href="parse_sampler_options.html">parse_sampler_options()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -141,7 +146,7 @@ followed by an input directory).</p></dd>
 <span class="r-in"><span><span class="fu">run_fit</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> imurun.R -- Minimal CLI for imuGAP model fitting</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Usage: imurun &lt;input&gt; [output_dir]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Usage: imurun &lt;input&gt; [output_dir] [sampler options]</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        imurun -h &lt;input&gt;              (validate only, no model fitting)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        imurun init [dir]              (write a blank input template workbook)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        imurun example [dir]           (write a filled example workbook)</span>
@@ -150,11 +155,21 @@ followed by an input directory).</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;input&gt; is either a directory of CSV/RDS files or a single .xlsx workbook.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A directory must contain:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age, dose, positive, sample_n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age_min, age_max, dose,</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                      positive, sample_n. cohort is the reference cohort, that of</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                      age_max; a single 'age' column works for a one-age count.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> A workbook must have one sheet per input with the same column names</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> (run 'imurun init' to get a correctly-headed template).</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Sampler options (each takes a positive whole number; an explicit flag overrides</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> the default, otherwise the imuGAP defaults are used):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   --iter N        total iterations per chain (default 2000)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   --chains N      number of chains (default 4)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   --seed N        random seed for reproducibility</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   --warmup N      warmup iterations per chain</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Flags may appear anywhere and may be written --iter N or --iter=N.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Output: fit.rds (raw stanfit object for post-processing).</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.</span>

@@ -190,6 +190,8 @@ model-fitting package.
   : Install imurun CLI to PATH
 - [`load_by_ext()`](https://accidda.github.io/imurun/reference/load_by_ext.md)
   : Read a data file by its extension
+- [`parse_sampler_options()`](https://accidda.github.io/imurun/reference/parse_sampler_options.md)
+  : Pull sampler-option overrides out of the command-line arguments
 - [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md)
   : Read all imuGAP inputs from a directory or workbook
 - [`read_workbook()`](https://accidda.github.io/imurun/reference/read_workbook.md)

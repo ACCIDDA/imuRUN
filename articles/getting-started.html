@@ -103,7 +103,7 @@ folder:</p>
 simulated data. From R, its installed location is:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_example.html">imurun_example</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpaQDzck/temp_libpath18b66c20dba4/imurun/extdata/imurun_example.xlsx"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "/tmp/RtmpVwJXPn/temp_libpath1beb46fff4a6/imurun/extdata/imurun_example.xlsx"</span></span></code></pre></div>
 <p>Open it in your spreadsheet program. The first tab is
 <strong>instructions</strong>; then come <strong>observations</strong>,
 <strong>locations</strong>, and an optional <strong>target</strong>
@@ -119,16 +119,16 @@ uses plain, human-readable headers:</p>
 <ul>
 <li>
 <strong>observations</strong> – one row per sampled count:
-<em>Location</em>, <em>Birth cohort</em>, <em>Age</em>, <em>Dose</em>,
-<em>Vaccinated</em>, <em>Sampled</em> (and an optional
-<em>Censored</em>).</li>
+<em>Location</em>, <em>Reference cohort</em>, <em>Youngest age</em>,
+<em>Oldest age</em>, <em>Dose</em>, <em>Vaccinated</em>,
+<em>Sampled</em> (and an optional <em>Censored</em>).</li>
 <li>
 <strong>locations</strong> – the location hierarchy:
 <em>Location</em> and <em>Parent location</em> (leave <em>Parent
 location</em> blank for the single top-level location).</li>
 <li>
 <strong>target</strong> (optional) – the populations you want
-coverage predicted for: <em>Location</em>, <em>Birth cohort</em>,
+coverage predicted for: <em>Location</em>, <em>Reference cohort</em>,
 <em>Youngest age</em>, <em>Oldest age</em> (and optional <em>Dose</em>
 and <em>Label</em>).</li>
 </ul>
@@ -142,6 +142,28 @@ populations from your observations.</li>
 <p>If you prefer imuGAP’s own column names (<code>loc_id</code>,
 <code>cohort</code>, …), those work too; and you may delete the
 instructions tab – imurun only reads the data sheets.</p>
+<div class="section level3">
+<h3 id="counts-that-cover-a-range-of-ages">Counts that cover a range of ages<a class="anchor" aria-label="anchor" href="#counts-that-cover-a-range-of-ages"></a>
+</h3>
+<p>A count is often drawn from a band of ages rather than a single one,
+so an observation names an age range. For a single-age count put the
+same age in <em>Youngest age</em> and <em>Oldest age</em>, or simply use
+one <em>Age</em> column instead – imurun reads that as a one-age
+range.</p>
+<p>When a count does span several ages, imurun splits it evenly across
+them: each age contributes an equal share of that observation’s modeled
+coverage. The sheet carries no per-age denominators, so an even split is
+the only division the input can express; weighting by age-specific
+population sizes would need a further column and is not available
+yet.</p>
+<p><em>Reference cohort</em> is the cohort of the
+<strong>oldest</strong> age in the row. Younger ages in the same row
+belong to correspondingly later cohorts, so a row describes one moment
+in time rather than one cohort followed through life. The
+<em>target</em> sheet reads its age span exactly the same way, which is
+what lets you write a target over the same span as an observation and
+get back an estimate of the same thing.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="validate-before-you-fit">3. Validate before you fit<a class="anchor" aria-label="anchor" href="#validate-before-you-fit"></a>

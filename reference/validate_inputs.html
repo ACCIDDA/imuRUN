@@ -7,8 +7,12 @@ offending column or row – and collects all problems it can find rather
 than stopping at the first.
 Problems detected include:
 missing or renamed required columns (per IMURUN_SCHEMA);
-non-numeric count columns (positive, sample_n, cohort, age,
-dose);
+non-numeric count columns (positive, sample_n, cohort,
+age_min, age_max, dose);
+fractional age-span endpoints;
+an inverted age span (age_min &amp;gt; age_max);
+age spans outside an explicit max_age or too large to expand
+safely;
 loc_id values in observations but absent from locations;
 dose, cohort, and age values out of range;
 structural location problems (duplicate or missing root, cycles).
@@ -25,8 +29,12 @@ offending column or row – and collects all problems it can find rather
 than stopping at the first.
 Problems detected include:
 missing or renamed required columns (per IMURUN_SCHEMA);
-non-numeric count columns (positive, sample_n, cohort, age,
-dose);
+non-numeric count columns (positive, sample_n, cohort,
+age_min, age_max, dose);
+fractional age-span endpoints;
+an inverted age span (age_min &amp;gt; age_max);
+age spans outside an explicit max_age or too large to expand
+safely;
 loc_id values in observations but absent from locations;
 dose, cohort, and age values out of range;
 structural location problems (duplicate or missing root, cycles).
@@ -87,8 +95,12 @@ terms – naming the offending sheet and, where 'imuGAP' provides it, the
 offending column or row – and collects <em>all</em> problems it can find rather
 than stopping at the first.</p>
 <p>Problems detected include:</p><ul><li><p>missing or renamed required columns (per <a href="IMURUN_SCHEMA.html">IMURUN_SCHEMA</a>);</p></li>
-<li><p>non-numeric count columns (<code>positive</code>, <code>sample_n</code>, <code>cohort</code>, <code>age</code>,
-<code>dose</code>);</p></li>
+<li><p>non-numeric count columns (<code>positive</code>, <code>sample_n</code>, <code>cohort</code>,
+<code>age_min</code>, <code>age_max</code>, <code>dose</code>);</p></li>
+<li><p>fractional age-span endpoints;</p></li>
+<li><p>an inverted age span (<code>age_min &gt; age_max</code>);</p></li>
+<li><p>age spans outside an explicit <code>max_age</code> or too large to expand
+safely;</p></li>
 <li><p><code>loc_id</code> values in <code>observations</code> but absent from <code>locations</code>;</p></li>
 <li><p><code>dose</code>, <code>cohort</code>, and <code>age</code> values out of range;</p></li>
 <li><p>structural location problems (duplicate or missing root, cycles).</p></li>
@@ -113,10 +125,11 @@ single error is raised whose message lists every problem found.</p>
 
 
 <dt id="arg-max-cohort-max-age">max_cohort, max_age<a class="anchor" aria-label="anchor" href="#arg-max-cohort-max-age"></a></dt>
-<dd><p>integer upper bounds for the <code>cohort</code> and <code>age</code>
-columns. Default to the largest value present in <code>observations</code> so that
-validation does not impose a model configuration; supply explicit bounds to
-enforce a particular schedule.</p></dd>
+<dd><p>integer upper bounds for the derived <code>cohort</code> and
+<code>age</code> values. Default to the largest value present in the populations built
+from <code>observations</code> – which, for a multi-age observation, reaches past its
+own reference cohort – so that validation does not impose a model
+configuration; supply explicit bounds to enforce a particular schedule.</p></dd>
 
 
 <dt id="arg-max-dose">max_dose<a class="anchor" aria-label="anchor" href="#arg-max-dose"></a></dt>

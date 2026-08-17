@@ -83,7 +83,7 @@ Every pull request triggers four GitHub Actions workflows:
 | Workflow | What it does |
 |----|----|
 | **R-CMD-check** | Runs `R CMD check --as-cran` on Ubuntu (release, oldrel, devel) and Windows (release) — 4 jobs. The matrix is intentionally leaner than imuGAP’s because imurun is pure R (no compiled code). R-devel is allowed to fail without blocking the PR. |
-| **lint** | Runs [`lintr::lint_package()`](https://lintr.r-lib.org/reference/lint.html) and fails the build on any lint. |
+| **lint** | Runs `lintr::lint_package()` and fails the build on any lint. |
 | **test-coverage** | Runs the test suite under `covr` and uploads coverage to Codecov. |
 | **pkgdown** | Builds the documentation site. On PRs this is a build-only check (no deployment); the site is deployed to GitHub Pages on pushes to `main`, published releases, and manual workflow dispatches. |
 

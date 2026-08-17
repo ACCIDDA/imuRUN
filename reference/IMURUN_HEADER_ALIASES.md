@@ -7,9 +7,16 @@ accepts **either** the friendly header or the canonical name
 (case-insensitively) and renames friendly headers to canonical before
 validation, so the rest of imurun only ever sees canonical names.
 
-Names are the friendly headers; values are the canonical names. Friendly
-labels are unambiguous across sheets (e.g. "Location" always means
-`loc_id`), so a single flat map serves every sheet.
+Names are the friendly headers; values are the canonical names. Most
+friendly labels are unambiguous across sheets (e.g. "Location" always
+means `loc_id`), so this flat map serves every sheet; the few that are
+sheet-specific live in
+[IMURUN_SHEET_ALIASES](https://accidda.github.io/imurun/reference/IMURUN_SHEET_ALIASES.md)
+and take precedence over this map.
+
+"Birth cohort" is the former label for what is now "Reference cohort";
+both are accepted so workbooks written against the earlier template keep
+loading.
 
 ## Usage
 

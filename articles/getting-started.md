@@ -36,7 +36,7 @@ data. From R, its installed location is:
 ``` r
 
 imurun::imurun_example()
-#> [1] "/tmp/RtmpaQDzck/temp_libpath18b66c20dba4/imurun/extdata/imurun_example.xlsx"
+#> [1] "/tmp/RtmpVwJXPn/temp_libpath1beb46fff4a6/imurun/extdata/imurun_example.xlsx"
 ```
 
 Open it in your spreadsheet program. The first tab is **instructions**;
@@ -54,14 +54,14 @@ imurun init .           # writes imurun_template.xlsx
 Fill the tabs (the instructions tab explains every column). imurun uses
 plain, human-readable headers:
 
-- **observations** – one row per sampled count: *Location*, *Birth
-  cohort*, *Age*, *Dose*, *Vaccinated*, *Sampled* (and an optional
-  *Censored*).
+- **observations** – one row per sampled count: *Location*, *Reference
+  cohort*, *Youngest age*, *Oldest age*, *Dose*, *Vaccinated*, *Sampled*
+  (and an optional *Censored*).
 - **locations** – the location hierarchy: *Location* and *Parent
   location* (leave *Parent location* blank for the single top-level
   location).
 - **target** (optional) – the populations you want coverage predicted
-  for: *Location*, *Birth cohort*, *Youngest age*, *Oldest age* (and
+  for: *Location*, *Reference cohort*, *Youngest age*, *Oldest age* (and
   optional *Dose* and *Label*).
 
 Two things imurun handles for you, so you never fill them in:
@@ -73,6 +73,26 @@ Two things imurun handles for you, so you never fill them in:
 If you prefer imuGAP’s own column names (`loc_id`, `cohort`, …), those
 work too; and you may delete the instructions tab – imurun only reads
 the data sheets.
+
+### Counts that cover a range of ages
+
+A count is often drawn from a band of ages rather than a single one, so
+an observation names an age range. For a single-age count put the same
+age in *Youngest age* and *Oldest age*, or simply use one *Age* column
+instead – imurun reads that as a one-age range.
+
+When a count does span several ages, imurun splits it evenly across
+them: each age contributes an equal share of that observation’s modeled
+coverage. The sheet carries no per-age denominators, so an even split is
+the only division the input can express; weighting by age-specific
+population sizes would need a further column and is not available yet.
+
+*Reference cohort* is the cohort of the **oldest** age in the row.
+Younger ages in the same row belong to correspondingly later cohorts, so
+a row describes one moment in time rather than one cohort followed
+through life. The *target* sheet reads its age span exactly the same
+way, which is what lets you write a target over the same span as an
+observation and get back an estimate of the same thing.
 
 ## 3. Validate before you fit
 

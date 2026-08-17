@@ -4,16 +4,18 @@ the input sheets: it collects all problems and reports them at once in
 spreadsheet terms, naming the offending column and row. Problems detected
 include missing/renamed required columns (per IMURUN_TARGET_SCHEMA),
 non-numeric cohort/age_low/age_high/dose, loc_id values absent from
-the locations sheet, an inverted age span (age_low &amp;gt; age_high), and
-out-of-range cohort/age/dose.
+the locations sheet, an inverted age span (age_low &amp;gt; age_high),
+out-of-range cohort/age/dose, and a snapshot span whose expansion
+(cohort + (age_high - age_low)) reaches beyond the model's cohort count.
 On success the (unmodified) target frame is returned invisibly. On failure a
 single error is raised whose message lists every problem found."><meta property="og:description" content="Checks a target sheet the same way validate_inputs() checks
 the input sheets: it collects all problems and reports them at once in
 spreadsheet terms, naming the offending column and row. Problems detected
 include missing/renamed required columns (per IMURUN_TARGET_SCHEMA),
 non-numeric cohort/age_low/age_high/dose, loc_id values absent from
-the locations sheet, an inverted age span (age_low &amp;gt; age_high), and
-out-of-range cohort/age/dose.
+the locations sheet, an inverted age span (age_low &amp;gt; age_high),
+out-of-range cohort/age/dose, and a snapshot span whose expansion
+(cohort + (age_high - age_low)) reaches beyond the model's cohort count.
 On success the (unmodified) target frame is returned invisibly. On failure a
 single error is raised whose message lists every problem found."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -65,8 +67,9 @@ the input sheets: it collects <em>all</em> problems and reports them at once in
 spreadsheet terms, naming the offending column and row. Problems detected
 include missing/renamed required columns (per <a href="IMURUN_TARGET_SCHEMA.html">IMURUN_TARGET_SCHEMA</a>),
 non-numeric <code>cohort</code>/<code>age_low</code>/<code>age_high</code>/<code>dose</code>, <code>loc_id</code> values absent from
-the locations sheet, an inverted age span (<code>age_low &gt; age_high</code>), and
-out-of-range <code>cohort</code>/<code>age</code>/<code>dose</code>.</p>
+the locations sheet, an inverted age span (<code>age_low &gt; age_high</code>),
+out-of-range <code>cohort</code>/<code>age</code>/<code>dose</code>, and a snapshot span whose expansion
+(<code>cohort + (age_high - age_low)</code>) reaches beyond the model's cohort count.</p>
 <p>On success the (unmodified) target frame is returned invisibly. On failure a
 single error is raised whose message lists every problem found.</p>
     </div>

@@ -12,8 +12,14 @@ Problems detected include:
 - missing or renamed required columns (per
   [IMURUN_SCHEMA](https://accidda.github.io/imurun/reference/IMURUN_SCHEMA.md));
 
-- non-numeric count columns (`positive`, `sample_n`, `cohort`, `age`,
-  `dose`);
+- non-numeric count columns (`positive`, `sample_n`, `cohort`,
+  `age_min`, `age_max`, `dose`);
+
+- fractional age-span endpoints;
+
+- an inverted age span (`age_min > age_max`);
+
+- age spans outside an explicit `max_age` or too large to expand safely;
 
 - `loc_id` values in `observations` but absent from `locations`;
 
@@ -45,10 +51,12 @@ validate_inputs(inputs, max_cohort = NULL, max_age = NULL, max_dose = 2L)
 
 - max_cohort, max_age:
 
-  integer upper bounds for the `cohort` and `age` columns. Default to
-  the largest value present in `observations` so that validation does
-  not impose a model configuration; supply explicit bounds to enforce a
-  particular schedule.
+  integer upper bounds for the derived `cohort` and `age` values.
+  Default to the largest value present in the populations built from
+  `observations` – which, for a multi-age observation, reaches past its
+  own reference cohort – so that validation does not impose a model
+  configuration; supply explicit bounds to enforce a particular
+  schedule.
 
 - max_dose:
 

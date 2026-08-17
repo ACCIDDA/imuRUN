@@ -4,16 +4,22 @@ template and example workbooks) to imurun's canonical column names. The
 loader (read_inputs()) accepts either the friendly header or the
 canonical name (case-insensitively) and renames friendly headers to canonical
 before validation, so the rest of imurun only ever sees canonical names.
-Names are the friendly headers; values are the canonical names. Friendly
+Names are the friendly headers; values are the canonical names. Most friendly
 labels are unambiguous across sheets (e.g. &quot;Location&quot; always means loc_id),
-so a single flat map serves every sheet."><meta property="og:description" content="Maps friendly, human-readable column headers (as shipped in the
+so this flat map serves every sheet; the few that are sheet-specific live in
+IMURUN_SHEET_ALIASES and take precedence over this map.
+&quot;Birth cohort&quot; is the former label for what is now &quot;Reference cohort&quot;; both
+are accepted so workbooks written against the earlier template keep loading."><meta property="og:description" content="Maps friendly, human-readable column headers (as shipped in the
 template and example workbooks) to imurun's canonical column names. The
 loader (read_inputs()) accepts either the friendly header or the
 canonical name (case-insensitively) and renames friendly headers to canonical
 before validation, so the rest of imurun only ever sees canonical names.
-Names are the friendly headers; values are the canonical names. Friendly
+Names are the friendly headers; values are the canonical names. Most friendly
 labels are unambiguous across sheets (e.g. &quot;Location&quot; always means loc_id),
-so a single flat map serves every sheet."></head><body>
+so this flat map serves every sheet; the few that are sheet-specific live in
+IMURUN_SHEET_ALIASES and take precedence over this map.
+&quot;Birth cohort&quot; is the former label for what is now &quot;Reference cohort&quot;; both
+are accepted so workbooks written against the earlier template keep loading."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -63,9 +69,12 @@ template and example workbooks) to imurun's canonical column names. The
 loader (<code><a href="read_inputs.html">read_inputs()</a></code>) accepts <strong>either</strong> the friendly header or the
 canonical name (case-insensitively) and renames friendly headers to canonical
 before validation, so the rest of imurun only ever sees canonical names.</p>
-<p>Names are the friendly headers; values are the canonical names. Friendly
+<p>Names are the friendly headers; values are the canonical names. Most friendly
 labels are unambiguous across sheets (e.g. "Location" always means <code>loc_id</code>),
-so a single flat map serves every sheet.</p>
+so this flat map serves every sheet; the few that are sheet-specific live in
+<a href="IMURUN_SHEET_ALIASES.html">IMURUN_SHEET_ALIASES</a> and take precedence over this map.</p>
+<p>"Birth cohort" is the former label for what is now "Reference cohort"; both
+are accepted so workbooks written against the earlier template keep loading.</p>
     </div>
 
     <div class="section level2">

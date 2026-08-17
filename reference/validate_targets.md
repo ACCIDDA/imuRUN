@@ -8,7 +8,9 @@ detected include missing/renamed required columns (per
 [IMURUN_TARGET_SCHEMA](https://accidda.github.io/imurun/reference/IMURUN_TARGET_SCHEMA.md)),
 non-numeric `cohort`/`age_low`/`age_high`/`dose`, `loc_id` values absent
 from the locations sheet, an inverted age span (`age_low > age_high`),
-and out-of-range `cohort`/`age`/`dose`.
+out-of-range `cohort`/`age`/`dose`, and a snapshot span whose expansion
+(`cohort + (age_high - age_low)`) reaches beyond the model's cohort
+count.
 
 On success the (unmodified) target frame is returned invisibly. On
 failure a single error is raised whose message lists every problem

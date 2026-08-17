@@ -16,7 +16,8 @@ drive a shell command directly. The exit-code taxonomy is:
 
 - 1:
 
-  Schema validation failed.
+  Input validation failed: the schema, or an invalid or unknown
+  command-line option.
 
 - 2:
 
@@ -41,7 +42,10 @@ run_fit(args = commandArgs(trailingOnly = TRUE))
   argument is the input directory; an optional second is the output
   directory (defaults to the input directory). A leading `-h`/`--help`
   either prints usage (when alone) or requests validation-only mode
-  (when followed by an input directory).
+  (when followed by an input directory). Sampler options (`--iter`,
+  `--chains`, `--seed`, `--warmup`) may appear anywhere and override the
+  defaults for the fit; see
+  [`parse_sampler_options()`](https://accidda.github.io/imurun/reference/parse_sampler_options.md).
 
 ## Value
 
@@ -54,7 +58,7 @@ Invisibly, an integer exit code (see Description).
 run_fit(character(0))
 #> imurun.R -- Minimal CLI for imuGAP model fitting
 #> 
-#> Usage: imurun <input> [output_dir]
+#> Usage: imurun <input> [output_dir] [sampler options]
 #>        imurun -h <input>              (validate only, no model fitting)
 #>        imurun init [dir]              (write a blank input template workbook)
 #>        imurun example [dir]           (write a filled example workbook)
@@ -63,11 +67,21 @@ run_fit(character(0))
 #> <input> is either a directory of CSV/RDS files or a single .xlsx workbook.
 #> 
 #> A directory must contain:
-#>   observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age, dose, positive, sample_n
+#>   observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age_min, age_max, dose,
+#>                                      positive, sample_n. cohort is the reference cohort, that of
+#>                                      age_max; a single 'age' column works for a one-age count.
 #>   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
 #> 
 #> A workbook must have one sheet per input with the same column names
 #> (run 'imurun init' to get a correctly-headed template).
+#> 
+#> Sampler options (each takes a positive whole number; an explicit flag overrides
+#> the default, otherwise the imuGAP defaults are used):
+#>   --iter N        total iterations per chain (default 2000)
+#>   --chains N      number of chains (default 4)
+#>   --seed N        random seed for reproducibility
+#>   --warmup N      warmup iterations per chain
+#> Flags may appear anywhere and may be written --iter N or --iter=N.
 #> 
 #> Output: fit.rds (raw stanfit object for post-processing).
 #> output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
