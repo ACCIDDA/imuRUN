@@ -13,9 +13,10 @@ informative error is raised if it is not installed.
 
 A `target` sheet
 ([IMURUN_TARGET_SHEET](https://accidda.github.io/imurun/reference/IMURUN_TARGET_SHEET.md))
-is also required and returned as a `target` element: imurun always
-predicts coverage for named populations, so there is no such thing as a
-target-less input.
+is also required and returned as a `target` element. Generated workbooks
+additionally include a `configuration` sheet containing sampler
+settings; it is returned as `config` when present. Older workbooks
+without it retain the package defaults.
 
 ## Usage
 
@@ -31,8 +32,8 @@ read_workbook(path)
 
 ## Value
 
-A named list with elements `obs`, `locs`, and `target` (each a
-`data.frame`).
+A named list with elements `obs`, `locs`, and `target`, plus `config`
+when the workbook has a configuration sheet (each a `data.frame`).
 
 ## Examples
 
@@ -42,5 +43,5 @@ if (nzchar(wb) && requireNamespace("readxl", quietly = TRUE)) {
   inputs <- read_workbook(wb)
   names(inputs)
 }
-#> [1] "obs"    "locs"   "target"
+#> [1] "obs"    "locs"   "target" "config"
 ```

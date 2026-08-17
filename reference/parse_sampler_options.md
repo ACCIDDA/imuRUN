@@ -1,9 +1,9 @@
 # Pull sampler-option overrides out of the command-line arguments
 
-Lets a non-R user set 'Stan' sampler settings without editing R: it
-scans `args` for the recognized sampler flags (`--iter`, `--chains`,
-`--seed`, `--warmup`), each written `--iter N` or `--iter=N`, validates
-their values, and returns them separated from the remaining (positional)
+Lets a user set 'Stan' sampler settings from a command wrapper: it scans
+`args` for the recognized sampler flags (`--iter`, `--chains`, `--seed`,
+`--warmup`), each written `--iter N` or `--iter=N`, validates their
+values, and returns them separated from the remaining (positional)
 arguments. Precedence is simple: an explicit flag overrides the built-in
 default; unset options fall back to `imuGAP::stan_options()`'s defaults.
 Unknown flags are left untouched in `rest` so the caller can handle

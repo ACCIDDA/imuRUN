@@ -8,6 +8,7 @@
 <url><loc>https://accidda.github.io/imurun/authors.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/index.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/news/index.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/IMURUN_CONFIG_SHEET.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/IMURUN_HEADER_ALIASES.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/IMURUN_OPTIONAL.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/IMURUN_SCHEMA.html</loc></url>
@@ -18,7 +19,10 @@
 <url><loc>https://accidda.github.io/imurun/reference/IMURUN_TARGET_SHEET.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/SUPPORTED_EXT.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/USAGE.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/as_target_draws.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/assert_flag_int.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/assert_no_clobber.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/assert_results_destination.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/build_populations.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/canonicalize_headers.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/check_all_inputs.html</loc></url>
@@ -44,6 +48,8 @@
 <url><loc>https://accidda.github.io/imurun/reference/load_by_ext.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/normalize_inputs.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/parse_loc_list.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/parse_output_options.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/parse_sampler_config.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/parse_sampler_options.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/read_inputs.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/read_workbook.html</loc></url>
@@ -51,6 +57,8 @@
 <url><loc>https://accidda.github.io/imurun/reference/summarize_targets.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/validate_inputs.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/validate_targets.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/write_results_csv.html</loc></url>
+<url><loc>https://accidda.github.io/imurun/reference/write_results_workbook.html</loc></url>
 <url><loc>https://accidda.github.io/imurun/reference/write_workbook.html</loc></url>
 </urlset>
 

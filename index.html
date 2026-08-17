@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Beginner-Friendly Command-Line Front-End for imuGAP • imurun</title>
+<title>Spreadsheet-First Front-End for imuGAP • imurun</title>
 <script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Beginner-Friendly Command-Line Front-End for imuGAP">
-<meta name="description" content="A lean command-line front-end to the imuGAP model-fitting package. Reads model inputs (observations and locations) from a directory of CSV or RDS files or from a single xlsx workbook, validates them against the canonical imuGAP schema, runs a fit, and writes the result out. The helper functions are exported so they can be used directly from R as well as from the bundled command-line script.">
-<meta property="og:description" content="A lean command-line front-end to the imuGAP model-fitting package. Reads model inputs (observations and locations) from a directory of CSV or RDS files or from a single xlsx workbook, validates them against the canonical imuGAP schema, runs a fit, and writes the result out. The helper functions are exported so they can be used directly from R as well as from the bundled command-line script.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Spreadsheet-First Front-End for imuGAP">
+<meta name="description" content="A spreadsheet-first front-end to the imuGAP model-fitting package for users who are comfortable at the R prompt without being power R users. Reads model inputs and sampler configuration from an xlsx workbook (or data frames from CSV or RDS files), validates them against the canonical imuGAP schema, runs a fit, and writes summarized estimates back into the workbook. The engine functions are exported for direct R use, with an optional bundled command-line wrapper.">
+<meta property="og:description" content="A spreadsheet-first front-end to the imuGAP model-fitting package for users who are comfortable at the R prompt without being power R users. Reads model inputs and sampler configuration from an xlsx workbook (or data frames from CSV or RDS files), validates them against the canonical imuGAP schema, runs a fit, and writes summarized estimates back into the workbook. The engine functions are exported for direct R use, with an optional bundled command-line wrapper.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -65,23 +65,23 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><code>imurun</code> is a lean, beginner-friendly command-line front-end to the <a href="https://github.com/ACCIDDA/imuGAP" class="external-link"><code>imuGAP</code></a> model-fitting package. You hand it your data — either a directory of <code>observations</code> / <code>populations</code> / <code>locations</code> files (CSV or RDS) or a single Excel workbook with one sheet per input — and it reads the inputs, validates them against imuGAP’s canonical schema with friendly, spreadsheet-referenced error messages, fits the model with <code>imuGAP::sampling()</code>, and writes the result to <code>fit.rds</code>. No R scripting is required to run a fit, but every step of the engine is also exported as an ordinary R function, so the same pipeline works from a shell command, from a scripted R session, or anywhere in between.</p>
+<p><code>imurun</code> is a spreadsheet-first front-end to the <a href="https://github.com/ACCIDDA/imuGAP" class="external-link"><code>imuGAP</code></a> model-fitting package. It is built for people who are comfortable running a command at the R prompt but are not power R users: describe the analysis in one Excel workbook, validate it with spreadsheet-referenced messages, fit with <code>imuGAP::sampling()</code>, and read the coverage estimates back in the same workbook.</p>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
 <ul>
 <li>
-<strong>Two input modes.</strong> Point <code>imurun</code> at a directory of <code>observations</code>, <code>populations</code>, and <code>locations</code> files (CSV or RDS, CSV taking precedence), or at a single <code>.xlsx</code> workbook with one sheet per input — convenient for people who do not work in R.</li>
+<strong>Two input modes.</strong> Use a single <code>.xlsx</code> workbook or a directory containing <code>observations</code>, <code>locations</code>, and <code>target</code> files (CSV or RDS). imurun derives imuGAP’s population rows from each observation’s location, reference cohort, age span, and dose.</li>
 <li>
-<strong>Bundled template and example workbooks.</strong> <code>imurun init</code> drops a blank template (correct headers plus an instructions sheet) into a directory; <code>imurun example</code> drops a small, complete, runnable example derived from imuGAP’s <code>*_sim</code> data.</li>
+<strong>Bundled template and example workbooks.</strong> <code><a href="reference/imurun_init.html">imurun_init()</a></code> writes a blank template with instructions and sampler configuration; <code><a href="reference/imurun_copy_example.html">imurun_copy_example()</a></code> writes a complete example derived from imuGAP’s <code>*_sim</code> data.</li>
 <li>
 <strong>Friendly validation.</strong> Inputs are checked against the canonical schema ([<code>IMURUN_SCHEMA</code>]) via a layer over imuGAP’s canonicalizers that names the offending sheet, column, or row and collects <em>every</em> problem it can find rather than stopping at the first.</li>
 <li>
-<strong>Validate-only mode.</strong> <code>imurun -h &lt;input&gt;</code> checks the inputs without fitting, so you can confirm a workbook is well-formed before committing to a model run.</li>
+<strong>Validate-only mode.</strong> <code>run_fit(c("-h", &lt;input&gt;))</code> checks the workbook without fitting.</li>
 <li>
-<strong>Fits and saves.</strong> On success it runs <code>imuGAP::sampling()</code> and writes <code>fit.rds</code> (the raw <code>stanfit</code> object) to the output directory for post-processing.</li>
+<strong>Human-readable results.</strong> On success, the input workbook gains a <code>results</code> sheet containing medians and credible intervals beside the request context; <code>fit.rds</code> is also saved for advanced post-processing.</li>
 <li>
-<strong>Scriptable.</strong> The engine functions (<code><a href="reference/run_fit.html">run_fit()</a></code>, <code><a href="reference/read_inputs.html">read_inputs()</a></code>, <code><a href="reference/validate_inputs.html">validate_inputs()</a></code>, <code><a href="reference/read_workbook.html">read_workbook()</a></code>, and friends) are all exported for use directly from R, and the CLI returns shell exit codes (<code>0</code> success, <code>1</code> validation, <code>2</code> model, <code>3</code> I/O) for use in pipelines.</li>
+<strong>Scriptable.</strong> The engine functions (<code><a href="reference/run_fit.html">run_fit()</a></code>, <code><a href="reference/read_inputs.html">read_inputs()</a></code>, <code><a href="reference/validate_inputs.html">validate_inputs()</a></code>, <code><a href="reference/read_workbook.html">read_workbook()</a></code>, and friends) are exported for use directly from R. The optional CLI wrapper returns shell exit codes (<code>0</code> success, <code>1</code> validation, <code>2</code> model, <code>3</code> I/O) for use in pipelines.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -95,7 +95,7 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"imurun"</span><span class="op">)</span></span></code></pre></div>
 <p><code>imurun</code> depends on <a href="https://github.com/ACCIDDA/imuGAP" class="external-link"><code>imuGAP</code></a>; fitting is delegated to <code>imuGAP::sampling()</code>, which requires imuGAP’s Stan-based model backend (a working Stan toolchain). Reading <code>.xlsx</code> workbooks additionally uses <a href="https://readxl.tidyverse.org" class="external-link"><code>readxl</code></a>.</p>
-<p>To make <code>imurun</code> available as a shell command, install the bundled CLI onto your <code>PATH</code>:</p>
+<p>The R functions are the primary interface. To additionally make <code>imurun</code> available as a shell command, install the bundled wrapper onto your <code>PATH</code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="reference/install_cli.html">install_cli</a></span><span class="op">(</span><span class="op">)</span>          <span class="co"># symlinks into ~/.local/bin (Unix) or writes</span></span>
 <span>                               <span class="co"># an imurun.cmd shim (Windows)</span></span></code></pre></div>
@@ -104,41 +104,38 @@
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>The CLI takes an input path and an optional output directory:</p>
-<pre><code>imurun &lt;input&gt; [output_dir]
-imurun -h &lt;input&gt;              # validate only, no model fitting
-imurun init [dir]              # write a blank input template workbook
-imurun example [dir]           # write a filled example workbook
-imurun -h | --help             # show usage</code></pre>
-<p><code>&lt;input&gt;</code> is either a directory of CSV/RDS files or a single <code>.xlsx</code> workbook. <code>output_dir</code> defaults to the input directory (or, for a workbook, the directory containing it), and the fit is written there as <code>fit.rds</code>.</p>
+<p><code><a href="reference/run_fit.html">run_fit()</a></code> accepts a workbook path (or a directory of CSV/RDS inputs). The generated workbook’s <code>configuration</code> sheet holds <code>iter</code>, <code>chains</code>, <code>seed</code>, and <code>warmup</code>; automation flags may override those values.</p>
 <div class="section level3">
 <h3 id="walkthrough">Walkthrough<a class="anchor" aria-label="anchor" href="#walkthrough"></a>
 </h3>
 <ol style="list-style-type: decimal">
 <li>
 <p><strong>Get a workbook to fill in.</strong> Scaffold a blank template into the current directory:</p>
-<pre><code>imurun init .</code></pre>
-<p>This writes <code>imurun_template.xlsx</code> with one sheet each for <code>observations</code>, <code>populations</code>, and <code>locations</code> (correct headers) plus an <code>instructions</code> sheet. To start from a filled, runnable example instead, use <code>imurun example .</code> to get <code>imurun_example.xlsx</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="reference/imurun_init.html">imurun_init</a></span><span class="op">(</span><span class="st">"."</span><span class="op">)</span></span></code></pre></div>
+<p>This writes <code>imurun_template.xlsx</code> with <code>instructions</code>, <code>configuration</code>, <code>observations</code>, <code>locations</code>, and <code>target</code> sheets. To start from a filled, runnable example, use <code>imurun::imurun_copy_example(".")</code>.</p>
 </li>
-<li><p><strong>Fill it in.</strong> Open the workbook and enter your data on the three sheets. The required columns are <code>obs_id, positive, sample_n</code> (observations); <code>obs_id, loc_id, cohort, age, dose</code> (populations); and <code>loc_id, parent_id</code> (locations). Extra columns are ignored.</p></li>
+<li><p><strong>Fill it in.</strong> Enter sampled counts on <code>observations</code>, the hierarchy on <code>locations</code>, and prediction requests on <code>target</code>. Review the sampler values on <code>configuration</code>. The workbook instructions define every column.</p></li>
 <li>
 <p><strong>Validate.</strong> Check the inputs without fitting:</p>
-<pre><code>imurun -h imurun_template.xlsx</code></pre>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-h"</span>, <span class="st">"imurun_template.xlsx"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Any problems are reported all at once, in spreadsheet terms. Validation does not require the Stan toolchain.</p>
 </li>
 <li>
 <p><strong>Fit.</strong> Once validation passes, run the model:</p>
-<pre><code>imurun imurun_template.xlsx</code></pre>
-<p><code>imurun</code> loads the inputs, validates them, runs <code>imuGAP::sampling()</code>, and writes <strong><code>fit.rds</code></strong> (the raw <code>stanfit</code> object) to the output directory — next to the workbook by default, or into <code>output_dir</code> if you supply one.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="st">"imurun_template.xlsx"</span><span class="op">)</span></span></code></pre></div>
+<p>imurun adds a <strong><code>results</code></strong> sheet to that workbook and writes <strong><code>fit.rds</code></strong> beside it. It refuses to replace existing results unless <code>--overwrite</code> is supplied.</p>
 </li>
 </ol>
-<p>The same steps work with a directory of CSV/RDS files in place of the workbook, for example <code>imurun data/</code> where <code>data/</code> contains <code>observations.csv</code>, <code>populations.csv</code>, and <code>locations.csv</code>.</p>
+<p>The same steps work with a directory of CSV/RDS files in place of the workbook, for example <code>run_fit("data")</code> where <code>data/</code> contains <code>observations.csv</code>, <code>locations.csv</code>, and <code>target.csv</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="from-r">From R<a class="anchor" aria-label="anchor" href="#from-r"></a>
 </h3>
 <p>Every step is also available as an exported function, so you can drive the same pipeline from a script:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ACCIDDA/imurun" class="external-link">imurun</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Copy the bundled example next to your work and inspect it</span></span>
@@ -148,7 +145,7 @@ imurun -h | --help             # show usage</code></pre>
 <span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/read_inputs.html">read_inputs</a></span><span class="op">(</span><span class="va">example</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/validate_inputs.html">validate_inputs</a></span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Or run the whole pipeline (writes fit.rds), returning a shell exit code</span></span>
+<span><span class="co"># Or run the whole pipeline (amends the workbook and writes fit.rds)</span></span>
 <span><span class="fu"><a href="reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="va">example</span><span class="op">)</span></span></code></pre></div>
 <p>See <code><a href="reference/run_fit.html">?run_fit</a></code>, <code><a href="reference/read_inputs.html">?read_inputs</a></code>, <code><a href="reference/validate_inputs.html">?validate_inputs</a></code>, and <code><a href="reference/IMURUN_SCHEMA.html">?IMURUN_SCHEMA</a></code> for details, and the <a href="https://accidda.github.io/imurun">package website</a> for the full reference.</p>
 </div>

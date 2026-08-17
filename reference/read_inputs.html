@@ -16,7 +16,8 @@ read_workbook().
 
 Missing inputs (files or sheets) are all reported at once. A target sheet
 (in a workbook) or target.csv/target.rds (in a directory) is required and
-returned as a target element (issue #14)."><meta property="og:description" content="Convenience entry point that loads the raw (un-canonicalized)
+returned as a target element (issue #14). Workbook configuration is
+returned as config when its sheet is present."><meta property="og:description" content="Convenience entry point that loads the raw (un-canonicalized)
 observations and locations data, ready to be passed to
 validate_inputs() or run_fit().
 read_inputs() accepts either:
@@ -33,7 +34,8 @@ read_workbook().
 
 Missing inputs (files or sheets) are all reported at once. A target sheet
 (in a workbook) or target.csv/target.rds (in a directory) is required and
-returned as a target element (issue #14)."></head><body>
+returned as a target element (issue #14). Workbook configuration is
+returned as config when its sheet is present."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -92,7 +94,8 @@ returned as a target element (issue #14)."></head><body>
 
 </dl><p>Missing inputs (files or sheets) are all reported at once. A <code>target</code> sheet
 (in a workbook) or <code>target.csv</code>/<code>target.rds</code> (in a directory) is required and
-returned as a <code>target</code> element (issue #14).</p>
+returned as a <code>target</code> element (issue #14). Workbook configuration is
+returned as <code>config</code> when its sheet is present.</p>
     </div>
 
     <div class="section level2">
@@ -111,7 +114,8 @@ returned as a <code>target</code> element (issue #14).</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named list with elements <code>obs</code>, <code>locs</code>, and <code>target</code>.</p>
+    <p>A named list with elements <code>obs</code>, <code>locs</code>, and <code>target</code>, and optionally
+<code>config</code> for workbook input.</p>
     </div>
 
     <div class="section level2">

@@ -7,8 +7,9 @@ Sheet names are matched case-insensitively against the required
 IMURUN_SHEETS. The reader package ('readxl') is only needed at call time;
 an informative error is raised if it is not installed.
 A target sheet (IMURUN_TARGET_SHEET) is also required and returned as a
-target element: imurun always predicts coverage for named populations, so
-there is no such thing as a target-less input."><meta property="og:description" content="Reads the observations and locations sheets
+target element. Generated workbooks additionally include a configuration
+sheet containing sampler settings; it is returned as config when present.
+Older workbooks without it retain the package defaults."><meta property="og:description" content="Reads the observations and locations sheets
 from a single Excel workbook into data frames. Reports every missing sheet at
 once (mirroring check_all_inputs() semantics) rather than failing on the
 first.
@@ -16,8 +17,9 @@ Sheet names are matched case-insensitively against the required
 IMURUN_SHEETS. The reader package ('readxl') is only needed at call time;
 an informative error is raised if it is not installed.
 A target sheet (IMURUN_TARGET_SHEET) is also required and returned as a
-target element: imurun always predicts coverage for named populations, so
-there is no such thing as a target-less input."></head><body>
+target element. Generated workbooks additionally include a configuration
+sheet containing sampler settings; it is returned as config when present.
+Older workbooks without it retain the package defaults."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -70,8 +72,9 @@ first.</p>
 <a href="IMURUN_SHEETS.html">IMURUN_SHEETS</a>. The reader package ('readxl') is only needed at call time;
 an informative error is raised if it is not installed.</p>
 <p>A <code>target</code> sheet (<a href="IMURUN_TARGET_SHEET.html">IMURUN_TARGET_SHEET</a>) is also required and returned as a
-<code>target</code> element: imurun always predicts coverage for named populations, so
-there is no such thing as a target-less input.</p>
+<code>target</code> element. Generated workbooks additionally include a <code>configuration</code>
+sheet containing sampler settings; it is returned as <code>config</code> when present.
+Older workbooks without it retain the package defaults.</p>
     </div>
 
     <div class="section level2">
@@ -89,8 +92,8 @@ there is no such thing as a target-less input.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A named list with elements <code>obs</code>, <code>locs</code>, and <code>target</code> (each a
-<code>data.frame</code>).</p>
+    <p>A named list with elements <code>obs</code>, <code>locs</code>, and <code>target</code>, plus <code>config</code>
+when the workbook has a configuration sheet (each a <code>data.frame</code>).</p>
     </div>
 
     <div class="section level2">
@@ -100,7 +103,7 @@ there is no such thing as a target-less input.</p>
 <span class="r-in"><span>  <span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu">read_workbook</span><span class="op">(</span><span class="va">wb</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "obs"    "locs"   "target"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "obs"    "locs"   "target" "config"</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

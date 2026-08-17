@@ -5,8 +5,8 @@ The inverse of
 writes an inputs list (as returned by
 [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md))
 back to a single `.xlsx` workbook, one sheet per element
-(`observations`, `locations`, and `target` when present). Uses the
-'writexl' package.
+(`observations`, `locations`, `configuration`, and `target` when
+present). Uses the 'writexl' package.
 
 ## Usage
 

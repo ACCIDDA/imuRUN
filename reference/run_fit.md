@@ -1,10 +1,11 @@
 # Run the imurun fitting pipeline
 
-The core engine behind the `imurun` command-line interface, exposed as
-an ordinary R function. Given a directory of inputs it loads the
-`observations` and `locations` files (CSV or RDS), validates them
-against the canonical 'imuGAP' schema, fits the model with
-`imuGAP::sampling()`, and writes `fit.rds` to the output directory.
+The spreadsheet-first fitting entry point, also used by the optional
+`imurun` command wrapper. Given a workbook or directory of inputs, it
+validates the observations, locations, target requests, and workbook
+configuration; fits with `imuGAP::sampling()`; writes `fit.rds`; and
+adds a human-readable `results` sheet to the supplied workbook (or
+creates `results.xlsx` for directory input).
 
 The function never throws for expected failure modes; instead it prints
 a human-readable message and returns an integer exit code, so it can
@@ -38,13 +39,12 @@ run_fit(args = commandArgs(trailingOnly = TRUE))
 
 - args:
 
-  character vector of command-line style arguments. The first non-flag
-  argument is the input directory; an optional second is the output
-  directory (defaults to the input directory). A leading `-h`/`--help`
-  either prints usage (when alone) or requests validation-only mode
-  (when followed by an input directory). Sampler options (`--iter`,
-  `--chains`, `--seed`, `--warmup`) may appear anywhere and override the
-  defaults for the fit; see
+  character vector whose first non-flag value is the input workbook or
+  directory and whose optional second value is the output directory. A
+  leading `-h`/`--help` either prints usage (when alone) or requests
+  validation-only mode. Workbook sampler settings come from its
+  `configuration` sheet; `--iter`, `--chains`, `--seed`, and `--warmup`
+  may override them for automation. See
   [`parse_sampler_options()`](https://accidda.github.io/imurun/reference/parse_sampler_options.md).
 
 ## Value
@@ -75,22 +75,30 @@ run_fit(character(0))
 #> A workbook must have one sheet per input with the same column names
 #> (run 'imurun init' to get a correctly-headed template).
 #> 
-#> Sampler options (each takes a positive whole number; an explicit flag overrides
-#> the default, otherwise the imuGAP defaults are used):
+#> Sampler options belong in the workbook's 'configuration' sheet. The generated
+#> template supplies iter=2000 and chains=4; seed and warmup may be left blank.
+#> For automation and older workflows, these flags override the sheet:
 #>   --iter N        total iterations per chain (default 2000)
 #>   --chains N      number of chains (default 4)
 #>   --seed N        random seed for reproducibility
 #>   --warmup N      warmup iterations per chain
 #> Flags may appear anywhere and may be written --iter N or --iter=N.
 #> 
-#> Output: fit.rds (raw stanfit object for post-processing).
-#> output_dir defaults to input_dir. Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
+#> Output options:
+#>   --results PATH  write an amended copy instead of updating the input workbook
+#>   --csv PATH      also write a results-only CSV
+#>   --overwrite     replace existing output files (otherwise imurun refuses)
+#> 
+#> Output: for workbook input, a 'results' sheet of per-target medians and credible
+#> intervals is added to that workbook; directory input writes results.xlsx.
+#> fit.rds is also written for post-processing. output_dir defaults to input_dir.
+#> Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
 
 # Validate inputs only (no Stan toolchain required):
 dir <- tempfile("imurun_validate_")
 dir.create(dir)
 if (FALSE) { # \dontrun{
-# Fit and write fit.rds (requires a working Stan toolchain):
+# Fit, amend the workbook, and write fit.rds (requires a Stan toolchain):
 run_fit("path/to/inputs")
 } # }
 ```

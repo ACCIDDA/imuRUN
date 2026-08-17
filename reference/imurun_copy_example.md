@@ -33,6 +33,6 @@ dir <- tempfile("imurun_example_")
 if (nzchar(imurun_example())) {
   imurun_copy_example(dir)
 }
-#> Created: /tmp/RtmpVwJXPn/imurun_example_1beb472c4321/imurun_example.xlsx
-#> Validate it with:  imurun -h /tmp/RtmpVwJXPn/imurun_example_1beb472c4321/imurun_example.xlsx
+#> Created: /tmp/RtmpL9R3LT/imurun_example_191d2e0e2d4d/imurun_example.xlsx
+#> Validate it with:  imurun -h /tmp/RtmpL9R3LT/imurun_example_191d2e0e2d4d/imurun_example.xlsx
 ```

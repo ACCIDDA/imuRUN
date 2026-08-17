@@ -19,5 +19,5 @@ package is not installed.
 
 ``` r
 imurun_template()
-#> [1] "/tmp/RtmpVwJXPn/temp_libpath1beb46fff4a6/imurun/templates/imurun_template.xlsx"
+#> [1] "/tmp/RtmpL9R3LT/temp_libpath191d10805594/imurun/templates/imurun_template.xlsx"
 ```

@@ -24,6 +24,8 @@
   : Install imurun CLI to PATH
 - [`load_by_ext()`](https://accidda.github.io/imurun/reference/load_by_ext.md)
   : Read a data file by its extension
+- [`parse_output_options()`](https://accidda.github.io/imurun/reference/parse_output_options.md)
+  : Pull output-path options out of the command-line arguments
 - [`parse_sampler_options()`](https://accidda.github.io/imurun/reference/parse_sampler_options.md)
   : Pull sampler-option overrides out of the command-line arguments
 - [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md)
@@ -38,5 +40,9 @@
   : Validate imurun inputs and report all problems at once
 - [`validate_targets()`](https://accidda.github.io/imurun/reference/validate_targets.md)
   : Validate a target-request sheet with friendly, row-referenced errors
+- [`write_results_csv()`](https://accidda.github.io/imurun/reference/write_results_csv.md)
+  : Write the by-target results to a CSV
+- [`write_results_workbook()`](https://accidda.github.io/imurun/reference/write_results_workbook.md)
+  : Add results to the supplied workbook
 - [`write_workbook()`](https://accidda.github.io/imurun/reference/write_workbook.md)
   : Write imurun inputs to an .xlsx workbook

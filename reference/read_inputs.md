@@ -19,7 +19,8 @@ or [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md).
 
 Missing inputs (files or sheets) are all reported at once. A `target`
 sheet (in a workbook) or `target.csv`/`target.rds` (in a directory) is
-required and returned as a `target` element (issue \#14).
+required and returned as a `target` element (issue \#14). Workbook
+configuration is returned as `config` when its sheet is present.
 
 ## Usage
 
@@ -36,7 +37,8 @@ read_inputs(path)
 
 ## Value
 
-A named list with elements `obs`, `locs`, and `target`.
+A named list with elements `obs`, `locs`, and `target`, and optionally
+`config` for workbook input.
 
 ## Examples
 
