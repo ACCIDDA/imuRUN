@@ -1,20 +1,10 @@
-# Validate a target-request sheet with friendly, row-referenced errors
+# Validate target-request rows against model extents and schema
 
-Checks a `target` sheet the same way
-[`validate_inputs()`](https://accidda.github.io/imurun/reference/validate_inputs.md)
-checks the input sheets: it collects *all* problems and reports them at
-once in spreadsheet terms, naming the offending column and row. Problems
-detected include missing/renamed required columns (per
-[IMURUN_TARGET_SCHEMA](https://accidda.github.io/imurun/reference/IMURUN_TARGET_SCHEMA.md)),
-non-numeric `cohort`/`age_low`/`age_high`/`dose`, `loc_id` values absent
-from the locations sheet, an inverted age span (`age_low > age_high`),
-out-of-range `cohort`/`age`/`dose`, and a snapshot span whose expansion
-(`cohort + (age_high - age_low)`) reaches beyond the model's cohort
-count.
-
-On success the (unmodified) target frame is returned invisibly. On
-failure a single error is raised whose message lists every problem
-found.
+Checks that `targets` matches
+[IMURUN_TARGET_SCHEMA](https://accidda.github.io/imuRUN/reference/IMURUN_TARGET_SCHEMA.md),
+that every named location exists in `loc_ids`, that
+`age_low <= age_high`, and that the requested ages and derived cohorts
+fall within `max_age` and `max_cohort`.
 
 ## Usage
 
@@ -26,33 +16,37 @@ validate_targets(targets, loc_ids, max_cohort, max_age, max_dose = 2L)
 
 - targets:
 
-  data.frame of target-request rows.
+  data.frame of target requests.
 
 - loc_ids:
 
-  character; the known location identifiers (the `loc_id` column of the
-  locations sheet).
+  character vector of valid location identifiers.
 
-- max_cohort, max_age:
+- max_cohort:
 
-  integer upper bounds for `cohort` and the age span.
+  integer; upper bound on the derived cohort.
+
+- max_age:
+
+  integer; upper bound on the requested age.
 
 - max_dose:
 
-  integer; the maximum allowed `dose` (default `2`).
+  integer; upper bound on the dose (default 2).
 
 ## Value
 
-Invisibly, the validated `targets` data.frame.
+Invisibly, `targets` on success; raises an error describing all problems
+found otherwise.
 
 ## See also
 
-[`expand_targets()`](https://accidda.github.io/imurun/reference/expand_targets.md),
-[`validate_inputs()`](https://accidda.github.io/imurun/reference/validate_inputs.md)
+[`expand_targets()`](https://accidda.github.io/imuRUN/reference/expand_targets.md),
+[IMURUN_TARGET_SCHEMA](https://accidda.github.io/imuRUN/reference/IMURUN_TARGET_SCHEMA.md)
 
 ## Examples
 
 ``` r
-tg <- data.frame(loc_id = "A;B", cohort = 5, age_low = 5, age_high = 7)
+tg <- data.frame(loc_id = "A;B", year = 12, age_low = 5, age_high = 7)
 validate_targets(tg, loc_ids = c("A", "B"), max_cohort = 15, max_age = 8)
 ```

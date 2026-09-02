@@ -1,7 +1,7 @@
 # Locate the bundled filled example workbook
 
 Resolves the path to the small, realistic example `.xlsx` workbook
-shipped with imurun (derived from 'imuGAP”s `*_sim` datasets), via
+shipped with imuRUN (derived from 'imuGAP”s `*_sim` datasets), via
 [`base::system.file()`](https://rdrr.io/r/base/system.file.html).
 
 ## Usage
@@ -19,5 +19,5 @@ package is not installed.
 
 ``` r
 imurun_example()
-#> [1] "/tmp/RtmpL9R3LT/temp_libpath191d10805594/imurun/extdata/imurun_example.xlsx"
+#> [1] "/tmp/Rtmp8UWNbc/temp_libpath1fda5d1b7cb7/imuRUN/extdata/imurun_example.xlsx"
 ```

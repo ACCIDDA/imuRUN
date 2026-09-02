@@ -5,7 +5,13 @@ Copy a bundled workbook into a target directory
 ## Usage
 
 ``` r
-copy_bundled_workbook(src, path, overwrite, label)
+copy_bundled_workbook(
+  src,
+  path = ".",
+  name = NULL,
+  overwrite = FALSE,
+  label = "workbook"
+)
 ```
 
 ## Arguments
@@ -18,6 +24,11 @@ copy_bundled_workbook(src, path, overwrite, label)
 
   character; destination directory.
 
+- name:
+
+  character; optional file name. If missing or without `.xlsx`
+  extension, `.xlsx` is appended.
+
 - overwrite:
 
   logical; overwrite an existing file?
@@ -28,4 +39,4 @@ copy_bundled_workbook(src, path, overwrite, label)
 
 ## Value
 
-Invisibly, the path to the copied file.
+Invisibly, the resolved path to the copied file.

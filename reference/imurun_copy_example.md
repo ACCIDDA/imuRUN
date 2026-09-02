@@ -7,7 +7,11 @@ to learn from.
 ## Usage
 
 ``` r
-imurun_copy_example(path = ".", overwrite = FALSE)
+imurun_copy_example(
+  path = ".",
+  name = "imurun_example.xlsx",
+  overwrite = FALSE
+)
 ```
 
 ## Arguments
@@ -15,16 +19,21 @@ imurun_copy_example(path = ".", overwrite = FALSE)
 - path:
 
   character; destination directory (created if needed). Defaults to the
-  current working directory.
+  current working directory (`"."`).
+
+- name:
+
+  character; destination file name (default `"imurun_example.xlsx"`).
+  The `.xlsx` extension is optional and will be appended if omitted.
 
 - overwrite:
 
-  logical; if `FALSE` (the default) an existing `imurun_example.xlsx` is
-  not clobbered.
+  logical; if `FALSE` (the default) an existing workbook is not
+  clobbered.
 
 ## Value
 
-Invisibly, the path to the copied workbook.
+Invisibly, the resolved path to the copied workbook.
 
 ## Examples
 
@@ -33,6 +42,6 @@ dir <- tempfile("imurun_example_")
 if (nzchar(imurun_example())) {
   imurun_copy_example(dir)
 }
-#> Created: /tmp/RtmpL9R3LT/imurun_example_191d2e0e2d4d/imurun_example.xlsx
-#> Validate it with:  imurun -h /tmp/RtmpL9R3LT/imurun_example_191d2e0e2d4d/imurun_example.xlsx
+#> Created: /tmp/Rtmp8UWNbc/imurun_example_1fda2a8769de/imurun_example.xlsx
+#> Validate it with:  imuRUN::run_fit("/tmp/Rtmp8UWNbc/imurun_example_1fda2a8769de/imurun_example.xlsx", dryrun = TRUE)
 ```

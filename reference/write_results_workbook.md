@@ -19,12 +19,12 @@ write_results_workbook(inputs, results, path, overwrite = FALSE, source = NULL)
 
   a list with `obs`, `locs`, and optionally `target` data frames, e.g.
   the result of
-  [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md).
+  [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md).
 
 - results:
 
   data.frame of summarized targets, as returned by
-  [`summarize_targets()`](https://accidda.github.io/imurun/reference/summarize_targets.md).
+  [`summarize_targets()`](https://accidda.github.io/imuRUN/reference/summarize_targets.md).
 
 - path:
 
@@ -48,15 +48,15 @@ Each results row carries the `target_id` label and the resolved
 `loc_id`/`cohort`/`age`/`dose` identity, so a reader can trace it back
 to the `target` sheet row it came from. A single target-request row
 expands to one results row per location and per age in its span (see
-[`expand_targets()`](https://accidda.github.io/imurun/reference/expand_targets.md)),
+[`expand_targets()`](https://accidda.github.io/imuRUN/reference/expand_targets.md)),
 which is why the estimates land on their own sheet rather than being
 appended to the request rows.
 
 ## See also
 
-[`write_results_csv()`](https://accidda.github.io/imurun/reference/write_results_csv.md),
-[`write_workbook()`](https://accidda.github.io/imurun/reference/write_workbook.md),
-[`summarize_targets()`](https://accidda.github.io/imurun/reference/summarize_targets.md)
+[`write_results_csv()`](https://accidda.github.io/imuRUN/reference/write_results_csv.md),
+[`write_workbook()`](https://accidda.github.io/imuRUN/reference/write_workbook.md),
+[`summarize_targets()`](https://accidda.github.io/imuRUN/reference/summarize_targets.md)
 
 ## Examples
 

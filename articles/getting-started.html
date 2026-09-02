@@ -5,12 +5,18 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Getting started with imurun • imurun</title>
+<title>Getting started with imuRUN • imuRUN</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with imurun">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<meta property="og:title" content="Getting started with imuRUN">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -18,7 +24,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">imurun</a>
+    <a class="navbar-brand me-2" href="../index.html">imuRUN</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -33,7 +39,7 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with imurun</a></li>
+<li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with imuRUN</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -42,7 +48,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ACCIDDA/imurun/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/ACCIDDA/imuRUN/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
@@ -64,208 +70,263 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Getting started with imurun</h1>
+      <h1>Getting started with imuRUN</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/ACCIDDA/imurun/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ACCIDDA/imuRUN/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>getting-started.Rmd</code></div>
     </div>
 
     
     
-<p>imurun is a spreadsheet-first front-end to the <a href="https://github.com/ACCIDDA/imuGAP" class="external-link">imuGAP</a> vaccine-coverage
-model. It is aimed at people who are comfortable running a command at
-the R prompt but are not power R users: describe the analysis in a
-workbook, run one function, and read the coverage estimates back in that
-workbook.</p>
-<p>This guide walks the whole happy path: install, try the shipped
-example, prepare your own workbook, validate, fit, and read the
-results.</p>
+<p><strong>Routine-Use Notebooks</strong> (<code>imuRUN</code>) is a
+spreadsheet-first front-end to the <a href="https://CRAN.R-project.org/package=imuGAP" class="external-link">imuGAP</a>
+vaccine-coverage model. It is designed for users who want to fit models
+and generate coverage estimates with a single R command: describe your
+data in a spreadsheet, run one function, and read the coverage estimates
+directly back in your workbook.</p>
+<p>This guide walks through the full workflow: getting the example
+workbook, setting up your own data, checking for errors, fitting the
+model, and interpreting results.</p>
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"ACCIDDA/imurun"</span><span class="op">)</span></span></code></pre></div>
-<p>Once imurun is on CRAN you will be able to
-<code>install.packages("imurun")</code>.</p>
-<p>An optional command wrapper is also available via
-<code><a href="../reference/install_cli.html">install_cli()</a></code>, but it is not required for this guide.</p>
+<code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"ACCIDDA/imuRUN"</span><span class="op">)</span></span></code></pre></div>
+<p>Once <code>imuRUN</code> is on CRAN, you will be able to run
+<code>install.packages("imuRUN")</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="run-the-shipped-example-first">1. Run the shipped example first<a class="anchor" aria-label="anchor" href="#run-the-shipped-example-first"></a>
+<h2 id="explore-the-example-data">1. Explore the example data<a class="anchor" aria-label="anchor" href="#explore-the-example-data"></a>
 </h2>
-<p>imurun ships a complete, ready-to-run example so you can see a fit
-before preparing your own data. Write a copy into the current
-folder:</p>
+<p><code>imuRUN</code> includes a complete, ready-to-run example so you
+can see how the spreadsheet is structured before preparing your own
+data. Copy it to your current folder:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_copy_example.html">imurun_copy_example</a></span><span class="op">(</span><span class="st">"."</span><span class="op">)</span> <span class="co"># writes imurun_example.xlsx</span></span></code></pre></div>
-<p>The example is a real, fittable dataset carved from imuGAP’s
-simulated data. From R, its installed location is:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_example.html">imurun_example</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "/tmp/RtmpL9R3LT/temp_libpath191d10805594/imurun/extdata/imurun_example.xlsx"</span></span></code></pre></div>
-<p>Open it in your spreadsheet program. The first tabs are
-<strong>instructions</strong> and <strong>configuration</strong>; then
-come <strong>observations</strong>, <strong>locations</strong>, and
-<strong>target</strong>.</p>
+<code class="sourceCode R"><span><span class="va">my_example</span> <span class="op">&lt;-</span> <span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_copy_example.html">imurun_copy_example</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<blockquote>
+<p><strong>Tip:</strong> By default, <code><a href="../reference/imurun_copy_example.html">imurun_copy_example()</a></code>
+writes <code>imurun_example.xlsx</code> into your working directory and
+returns its path. You can customize the location or filename by passing
+<code>path</code> or <code>name</code> (e.g.,
+<code>imurun_copy_example(path = "data", name = "my_example")</code>).</p>
+</blockquote>
+<p>Open <code>imurun_example.xlsx</code> in Excel or your preferred
+spreadsheet program. The file contains five sheets:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>instructions</strong>: A built-in reference guide describing
+every column.</li>
+<li>
+<strong>observations</strong>: Sampled counts and surveyed
+populations.</li>
+<li>
+<strong>locations</strong>: The hierarchy of geographic or
+administrative locations.</li>
+<li>
+<strong>target</strong>: The populations and time points you want
+coverage predicted for.</li>
+<li>
+<strong>configuration</strong>: Calculation settings (iterations,
+chains, etc.).</li>
+</ol>
 </div>
 <div class="section level2">
 <h2 id="prepare-your-own-workbook">2. Prepare your own workbook<a class="anchor" aria-label="anchor" href="#prepare-your-own-workbook"></a>
 </h2>
-<p>Start from a blank, correctly-headed template:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_init.html">imurun_init</a></span><span class="op">(</span><span class="st">"."</span><span class="op">)</span> <span class="co"># writes imurun_template.xlsx</span></span></code></pre></div>
-<p>Fill the tabs (the instructions tab explains every column). imurun
-uses plain, human-readable headers:</p>
+<p>When you are ready to use your own data, generate a blank
+template:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_init.html">imurun_init</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"my_coverage_study"</span><span class="op">)</span></span></code></pre></div>
+<p>Fill in the sheets with your data:</p>
 <ul>
 <li>
-<strong>observations</strong> – one row per sampled count:
-<em>Location</em>, <em>Reference cohort</em>, <em>Youngest age</em>,
-<em>Oldest age</em>, <em>Dose</em>, <em>Vaccinated</em>,
-<em>Sampled</em> (and an optional <em>Censored</em>).</li>
-<li>
-<strong>locations</strong> – the location hierarchy:
-<em>Location</em> and <em>Parent location</em> (leave <em>Parent
-location</em> blank for the single top-level location).</li>
-<li>
-<strong>target</strong> – the populations you want coverage
-predicted for: <em>Location</em>, <em>Reference cohort</em>,
-<em>Youngest age</em>, <em>Oldest age</em> (and optional <em>Dose</em>
-and <em>Label</em>).</li>
-</ul>
-<p>Two things imurun handles for you, so you never fill them in:</p>
+<strong>observations</strong>: One row per survey or count:
 <ul>
-<li>there is <strong>no observation id</strong> to invent – imurun
-assigns one; and</li>
-<li>there is <strong>no populations tab</strong> – imurun builds
-populations from your observations.</li>
+<li>
+<em>Location</em>: Name of the location (must match a location in
+the <em>locations</em> sheet).</li>
+<li>
+<em>Observation Year</em>: Calendar year when the survey/count was
+recorded (e.g., <code>2024</code>).</li>
+<li>
+<em>Youngest age</em> and <em>Oldest age</em>: The age span surveyed
+(put the same age in both for a single age, or just use <em>Youngest
+age</em>).</li>
+<li>
+<em>Dose</em>: Which dose this count represents (e.g.,
+<code>1</code> or <code>2</code>).</li>
+<li>
+<em>Vaccinated</em>: Number of individuals found to be
+vaccinated.</li>
+<li>
+<em>Sampled</em>: Total number of individuals sampled
+(<em>Vaccinated</em> must be &lt;= <em>Sampled</em>).</li>
+<li>
+<em>Censored</em> (optional): Leave blank, or enter <code>1</code>
+if right-censored.</li>
 </ul>
-<p>If you prefer imuGAP’s own column names (<code>loc_id</code>,
-<code>cohort</code>, …), those work too; and you may delete the
-instructions tab – imurun only reads the data sheets.</p>
+</li>
+<li>
+<strong>locations</strong>: Your location tree:
+<ul>
+<li>
+<em>Location</em>: A unique name for each location.</li>
+<li>
+<em>Parent location</em>: The name of its parent location. Leave
+<em>Parent location</em> blank for your single top-level root (e.g., the
+country or state).</li>
+</ul>
+</li>
+<li>
+<strong>target</strong>: The specific predictions you want:
+<ul>
+<li>
+<em>Location</em>: The location(s) to predict (use semicolons for
+multiple, e.g., <code>District A; District B</code>).</li>
+<li>
+<em>Target Year</em>: The calendar year for the prediction
+snapshot.</li>
+<li>
+<em>Youngest age</em> and <em>Oldest age</em>: The age range you
+want coverage estimated for.</li>
+<li>
+<em>Dose</em> (optional): Leave blank to predict for the final dose,
+or specify a dose number.</li>
+<li>
+<em>Label</em> (optional): A descriptive tag echoed into your
+results (e.g., <code>Schools 2025</code>).</li>
+</ul>
+</li>
+<li>
+<strong>configuration</strong>: Settings for the model fit. The
+default values (2000 iterations, 4 chains) work well for most analyses,
+so you can safely leave this sheet as-is.</li>
+</ul>
 <div class="section level3">
-<h3 id="configure-the-fit">Configure the fit<a class="anchor" aria-label="anchor" href="#configure-the-fit"></a>
+<h3 id="surveys-covering-a-range-of-ages">Surveys covering a range of ages<a class="anchor" aria-label="anchor" href="#surveys-covering-a-range-of-ages"></a>
 </h3>
-<p>The <strong>configuration</strong> sheet keeps the common sampler
-settings next to the data:</p>
+<p>If a survey sampled children across an age band (such as 5-to-10 year
+olds), enter <code>5</code> for <em>Youngest age</em> and
+<code>10</code> for <em>Oldest age</em>. <code>imuRUN</code>
+automatically models equal contributions across the age span behind the
+scenes.</p>
+</div>
+<div class="section level3">
+<h3 id="settings-in-the-configuration-sheet">Settings in the configuration sheet<a class="anchor" aria-label="anchor" href="#settings-in-the-configuration-sheet"></a>
+</h3>
+<p>The <strong>configuration</strong> sheet keeps settings alongside
+your data:</p>
 <table class="table">
 <thead><tr class="header">
 <th align="left">Setting</th>
 <th align="left">Default</th>
-<th align="left">Meaning</th>
+<th align="left">Description</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="left"><code>iter</code></td>
 <td align="left">2000</td>
-<td align="left">total iterations per chain</td>
+<td align="left">Total iterations per MCMC chain</td>
 </tr>
 <tr class="even">
 <td align="left"><code>chains</code></td>
 <td align="left">4</td>
-<td align="left">number of chains</td>
+<td align="left">Number of parallel chains</td>
 </tr>
 <tr class="odd">
 <td align="left"><code>seed</code></td>
 <td align="left">blank</td>
-<td align="left">optional random seed for reproducibility</td>
+<td align="left">Optional random seed for exact reproducibility</td>
 </tr>
 <tr class="even">
 <td align="left"><code>warmup</code></td>
 <td align="left">blank</td>
-<td align="left">optional warmup iterations per chain</td>
+<td align="left">Optional warmup/burn-in iterations per chain</td>
 </tr>
 </tbody>
 </table>
-<p>Edit the Value column as needed. Command-line flags remain available
-for automation and override the workbook when supplied, but most
-workbook users do not need them.</p>
-</div>
-<div class="section level3">
-<h3 id="counts-that-cover-a-range-of-ages">Counts that cover a range of ages<a class="anchor" aria-label="anchor" href="#counts-that-cover-a-range-of-ages"></a>
-</h3>
-<p>A count is often drawn from a band of ages rather than a single one,
-so an observation names an age range. For a single-age count put the
-same age in <em>Youngest age</em> and <em>Oldest age</em>, or simply use
-one <em>Age</em> column instead – imurun reads that as a one-age
-range.</p>
-<p>When a count does span several ages, imurun splits it evenly across
-them: each age contributes an equal share of that observation’s modeled
-coverage. The sheet carries no per-age denominators, so an even split is
-the only division the input can express; weighting by age-specific
-population sizes would need a further column and is not available
-yet.</p>
-<p><em>Reference cohort</em> is the cohort of the
-<strong>oldest</strong> age in the row. Younger ages in the same row
-belong to correspondingly later cohorts, so a row describes one moment
-in time rather than one cohort followed through life. The
-<em>target</em> sheet reads its age span exactly the same way, which is
-what lets you write a target over the same span as an observation and
-get back an estimate of the same thing.</p>
+<p>Advanced sampler options from <a href="https://CRAN.R-project.org/package=flexstanr" class="external-link"><code>flexstanr::stan_options()</code></a>
+(e.g., <code>cores</code>, <code>thin</code>, <code>adapt_delta</code>,
+<code>max_treedepth</code>) and model options from <a href="https://CRAN.R-project.org/package=imuGAP" class="external-link"><code>imuGAP::imugap_options()</code></a>
+(e.g., <code>df</code>) can also be added as rows here.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="validate-before-you-fit">3. Validate before you fit<a class="anchor" aria-label="anchor" href="#validate-before-you-fit"></a>
 </h2>
-<p>Check a workbook without fitting anything:</p>
+<p>Before running a fit, check your workbook to ensure all columns,
+locations, and age ranges are valid:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="va">my_example</span>, dryrun <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>Setting <code>dryrun = TRUE</code> validates everything without
+fitting the model.</p>
+<p>If you are scripting your analysis in R, you can also validate the
+loaded data object directly:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"-h"</span>, <span class="st">"imurun_example.xlsx"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>From R, that is <code><a href="../reference/read_inputs.html">read_inputs()</a></code> followed by
-<code><a href="../reference/validate_inputs.html">validate_inputs()</a></code>:</p>
+<code class="sourceCode R"><span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/read_inputs.html">read_inputs</a></span><span class="op">(</span><span class="va">my_example</span><span class="op">)</span></span>
+<span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/validate_inputs.html">validate_inputs</a></span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Looks good -- ready to fit!\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Looks good -- ready to fit!</span></span></code></pre></div>
+<p>When there is a mistake in the spreadsheet, <code>imuRUN</code>
+reports the exact sheet, column, and row so you can quickly fix it. For
+example, if text is entered in the <em>Sampled</em> column:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/read_inputs.html">read_inputs</a></span><span class="op">(</span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/imurun_example.html">imurun_example</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/validate_inputs.html">validate_inputs</a></span><span class="op">(</span><span class="va">inputs</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Looks good -- ready to fit.\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Looks good -- ready to fit.</span></span></code></pre></div>
-<p>When something is wrong, imurun reports it in plain, spreadsheet
-terms rather than an R error. For instance, if a <em>Sampled</em> cell
-holds text instead of a number:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">broken</span> <span class="op">&lt;-</span> <span class="va">inputs</span></span>
 <span><span class="va">broken</span><span class="op">$</span><span class="va">obs</span><span class="op">$</span><span class="va">sample_n</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"not a number"</span></span>
-<span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/validate_inputs.html">validate_inputs</a></span><span class="op">(</span><span class="va">broken</span><span class="op">)</span></span>
+<span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/validate_inputs.html">validate_inputs</a></span><span class="op">(</span><span class="va">broken</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Input validation failed with 1 problem(s):</span></span>
 <span><span class="co">#&gt;   - [observations] column 'sample_n' must be numeric; non-numeric value(s) at row(s): 1</span></span></code></pre></div>
-<p>Fix the flagged cell(s) in your spreadsheet and validate again.</p>
 </div>
 <div class="section level2">
 <h2 id="fit-the-model">4. Fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>
 </h2>
+<p>When validation passes, fit the model:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="va">my_example</span><span class="op">)</span></span></code></pre></div>
+<p><code>imuRUN</code> will fit the coverage model and write a new
+<strong>results</strong> sheet into your Excel workbook.</p>
+<blockquote>
+<p><strong>Note:</strong> Model fitting runs Markov chain Monte Carlo
+(MCMC) sampling with Stan, which typically takes a few minutes.</p>
+</blockquote>
+<div class="section level3">
+<h3 id="saving-additional-output-formats">Saving additional output formats<a class="anchor" aria-label="anchor" href="#saving-additional-output-formats"></a>
+</h3>
+<p>By default, <code><a href="../reference/run_fit.html">run_fit()</a></code> updates your Excel workbook. You
+can also export a CSV file or save the raw model object using the
+<code>result</code> argument:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="st">"imurun_example.xlsx"</span><span class="op">)</span></span></code></pre></div>
-<p>This fits the imuGAP model and produces two artifacts:</p>
+<code class="sourceCode R"><span><span class="co"># Update the Excel workbook and save a CSV of results</span></span>
+<span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="st">"imurun_example.xlsx"</span>, result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"xlsx"</span>, <span class="st">"csv"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Save the raw R fit object for post-processing in R</span></span>
+<span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="st">"imurun_example.xlsx"</span>, result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"xlsx"</span>, <span class="st">"rds"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <ul>
 <li>
-<strong>your input workbook</strong> gains a <code>results</code>
-sheet. This is the artifact most people want; the existing sheets and
-formatting are preserved.</li>
+<code>"xlsx"</code> (default): Adds or updates the
+<strong>results</strong> sheet in your Excel file.</li>
 <li>
-<strong><code>fit.rds</code></strong> – the raw fitted model, for
-post-processing in R.</li>
+<code>"csv"</code>: Creates a standalone CSV file containing the
+summarized target predictions.</li>
+<li>
+<code>"rds"</code>: Saves the fitted model object
+(<code>.rds</code>) for advanced R analysis.</li>
 </ul>
-<p>Fitting compiles and runs a Stan model, so it can take several
-minutes. It is not run in this guide; on success the command exits with
-status <code>0</code>.</p>
-<p>imurun will not replace an existing <code>results</code> sheet or
-<code>fit.rds</code> silently. Pass <code>--overwrite</code> when you do
-want to replace them. You can also request an amended copy at another
-path, and optionally write a results-only CSV:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">imurun</span><span class="fu">::</span><span class="fu"><a href="../reference/run_fit.html">run_fit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="st">"imurun_example.xlsx"</span>,</span>
-<span>  <span class="st">"--results"</span>, <span class="st">"estimates.xlsx"</span>,</span>
-<span>  <span class="st">"--csv"</span>, <span class="st">"estimates.csv"</span></span>
-<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Your target sheet is checked before fitting starts, so a typo in a
-target row fails immediately instead of after a long fit.</p>
+<p>By default, <code><a href="../reference/run_fit.html">run_fit()</a></code> overwrites existing results when
+re-run. Set <code>overwrite = FALSE</code> if you prefer to be prompted
+before any files or sheets are overwritten.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="read-the-results">5. Read the results<a class="anchor" aria-label="anchor" href="#read-the-results"></a>
 </h2>
-<p>Open your input workbook and go to the new <strong>results</strong>
-sheet. It has one row per requested population (each location, at each
-age in the span you asked for):</p>
+<p>Open your workbook and switch to the <strong>results</strong> sheet.
+Each row gives the coverage estimate for a requested population and
+age:</p>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -278,55 +339,40 @@ age in the span you asked for):</p>
 <tbody>
 <tr class="odd">
 <td align="left"><code>target_id</code></td>
-<td align="left">your label from the target sheet, if you gave one</td>
+<td align="left">Your optional label from the <em>target</em> sheet</td>
 </tr>
 <tr class="even">
 <td align="left">
 <code>loc_id</code>, <code>cohort</code>,
 <code>age</code>, <code>dose</code>
 </td>
-<td align="left">which population the row estimates</td>
+<td align="left">The specific location, cohort, age, and dose
+modeled</td>
 </tr>
 <tr class="odd">
 <td align="left"><code>est_median</code></td>
-<td align="left">the estimated coverage</td>
+<td align="left">
+<strong>Estimated coverage</strong> as a proportion
+(e.g., <code>0.85</code> = 85% coverage)</td>
 </tr>
 <tr class="even">
 <td align="left">
 <code>est_lower</code>, <code>est_upper</code>
 </td>
-<td align="left">the credible interval around it</td>
+<td align="left">Lower and upper bounds of the <strong>95% credible
+interval</strong>
+</td>
 </tr>
 <tr class="odd">
 <td align="left"><code>ci_level</code></td>
-<td align="left">the interval’s level (0.95)</td>
-</tr>
-<tr class="even">
-<td align="left"><code>n_draws</code></td>
-<td align="left">posterior draws behind the estimate</td>
+<td align="left">The credible interval level (<code>0.95</code>)</td>
 </tr>
 </tbody>
 </table>
-<p>Your <code>instructions</code>, <code>configuration</code>,
-<code>observations</code>, <code>locations</code>, and
-<code>target</code> sheets remain intact, so the request and settings
-travel with the answer.</p>
-<p><code>fit.rds</code> is the raw fitted model, for anyone who wants to
-post-process it in R:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="st">"fit.rds"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="where-next">Where next<a class="anchor" aria-label="anchor" href="#where-next"></a>
-</h2>
-<ul>
-<li>
-<strong>Optional <code>imurun</code> command wrapper</strong> (PATH
-setup): <a href="https://github.com/ACCIDDA/imurun/issues/16" class="external-link">issue
-#16</a>.</li>
-<li>
-<strong>The model itself</strong>: see the <a href="https://github.com/ACCIDDA/imuGAP" class="external-link">imuGAP</a> documentation.</li>
-</ul>
+<p>Your original sheets (<em>instructions</em>, <em>observations</em>,
+<em>locations</em>, <em>target</em>, and <em>configuration</em>) remain
+untouched, keeping your input data, analysis settings, and results
+together in a single self-contained workbook.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

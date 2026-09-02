@@ -3,4 +3,4 @@
 ### All vignettes
 
 - [Getting started with
-  imurun](https://accidda.github.io/imurun/articles/getting-started.md):
+  imuRUN](https://accidda.github.io/imuRUN/articles/getting-started.md):

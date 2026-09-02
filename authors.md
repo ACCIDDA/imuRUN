@@ -14,15 +14,15 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/ACCIDDA/imurun/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/ACCIDDA/imuRUN/blob/main/DESCRIPTION)
 
-Pearson C, Smith C (2026). *imurun: Spreadsheet-First Front-End for
-'imuGAP'*. R package version 0.1.0, <https://github.com/ACCIDDA/imurun>.
+Pearson C, Smith C (2026). *imuRUN: Routine-Use Notebooks for 'imuGAP'*.
+R package version 0.1.0, <https://github.com/ACCIDDA/imuRUN>.
 
     @Manual{,
-      title = {imurun: Spreadsheet-First Front-End for 'imuGAP'},
+      title = {imuRUN: Routine-Use Notebooks for 'imuGAP'},
       author = {Carl Pearson and Claire Perrin Smith},
       year = {2026},
       note = {R package version 0.1.0},
-      url = {https://github.com/ACCIDDA/imurun},
+      url = {https://github.com/ACCIDDA/imuRUN},
     }

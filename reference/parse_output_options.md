@@ -1,7 +1,7 @@
 # Pull output-path options out of the command-line arguments
 
 The counterpart to
-[`parse_sampler_options()`](https://accidda.github.io/imurun/reference/parse_sampler_options.md)
+[`parse_sampler_options()`](https://accidda.github.io/imuRUN/reference/parse_sampler_options.md)
 for the output flags: `--results PATH` (where the amended workbook
 goes), `--csv PATH` (also write a results-only CSV), and `--overwrite`
 (allow replacing existing outputs). Each path flag may be written
@@ -28,7 +28,7 @@ and their values removed).
 
 ## See also
 
-[`parse_sampler_options()`](https://accidda.github.io/imurun/reference/parse_sampler_options.md)
+[`parse_sampler_options()`](https://accidda.github.io/imuRUN/reference/parse_sampler_options.md)
 
 ## Examples
 

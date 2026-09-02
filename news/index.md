@@ -1,39 +1,39 @@
 # Changelog
 
-## imurun 0.1.0
+## imuRUN 0.1.0
 
 - Initial release.
 - Exported the core CLI engine as ordinary R functions:
-  [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md),
-  [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md),
-  [`load_by_ext()`](https://accidda.github.io/imurun/reference/load_by_ext.md),
-  [`find_input_file()`](https://accidda.github.io/imurun/reference/find_input_file.md),
+  [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md),
+  [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md),
+  [`load_by_ext()`](https://accidda.github.io/imuRUN/reference/load_by_ext.md),
+  [`find_input_file()`](https://accidda.github.io/imuRUN/reference/find_input_file.md),
   and
-  [`check_all_inputs()`](https://accidda.github.io/imurun/reference/check_all_inputs.md).
+  [`check_all_inputs()`](https://accidda.github.io/imuRUN/reference/check_all_inputs.md).
 - Added
-  [`install_cli()`](https://accidda.github.io/imurun/reference/install_cli.md)
+  [`install_cli()`](https://accidda.github.io/imuRUN/reference/install_cli.md)
   to put the bundled `imurun` command on the PATH.
 - Added an `.xlsx` workbook input mode:
-  [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md)
+  [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md)
   now accepts either a directory of CSV/RDS files or a single workbook
   with one sheet per input, via the new
-  [`read_workbook()`](https://accidda.github.io/imurun/reference/read_workbook.md).
+  [`read_workbook()`](https://accidda.github.io/imuRUN/reference/read_workbook.md).
   Missing sheets are reported all at once.
 - Pinned the canonical input schema as `IMURUN_SCHEMA` and shipped a
   blank template workbook (`inst/templates/imurun_template.xlsx`) plus a
   small filled example (`inst/extdata/imurun_example.xlsx`) derived from
   imuGAP’s `*_sim` data; resolve them with
-  [`imurun_template()`](https://accidda.github.io/imurun/reference/imurun_template.md)
+  [`imurun_template()`](https://accidda.github.io/imuRUN/reference/imurun_template.md)
   /
-  [`imurun_example()`](https://accidda.github.io/imurun/reference/imurun_example.md).
+  [`imurun_example()`](https://accidda.github.io/imuRUN/reference/imurun_example.md).
 - Added
-  [`imurun_init()`](https://accidda.github.io/imurun/reference/imurun_init.md)
+  [`imurun_init()`](https://accidda.github.io/imuRUN/reference/imurun_init.md)
   and
-  [`imurun_copy_example()`](https://accidda.github.io/imurun/reference/imurun_copy_example.md)
+  [`imurun_copy_example()`](https://accidda.github.io/imuRUN/reference/imurun_copy_example.md)
   (and `imurun init` / `imurun example` subcommands) to scaffold
   workbooks into a directory.
 - Added
-  [`validate_inputs()`](https://accidda.github.io/imurun/reference/validate_inputs.md),
+  [`validate_inputs()`](https://accidda.github.io/imuRUN/reference/validate_inputs.md),
   a friendly validation layer over the imuGAP canonicalizers that
   reports every problem at once in spreadsheet terms.
 - Observations now describe an inclusive age range (`age_min`/`age_max`,
@@ -47,7 +47,7 @@
   oldest age: the cohorts of younger ages are derived so that age plus
   cohort stays constant, matching how the target sheet is already
   expanded. The former *Birth cohort* header is still accepted.
-- [`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md)
+- [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md)
   now writes a human-readable result, not just `fit.rds`. The target
   sheet is expanded, predicted, and summarized into a `results` sheet in
   the workbook the user supplied, preserving its existing sheets and

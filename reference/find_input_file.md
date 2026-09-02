@@ -3,7 +3,7 @@
 Looks for a named input (e.g. `"observations"`) in a directory, trying
 each supported extension in precedence order (CSV before RDS), and reads
 the first match with
-[`load_by_ext()`](https://accidda.github.io/imurun/reference/load_by_ext.md).
+[`load_by_ext()`](https://accidda.github.io/imuRUN/reference/load_by_ext.md).
 Errors with a clear message if no matching file is found.
 
 ## Usage

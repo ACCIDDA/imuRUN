@@ -1,8 +1,8 @@
-# imurun
+# imuRUN
 
-`imurun` is a spreadsheet-first front-end to the
-[`imuGAP`](https://github.com/ACCIDDA/imuGAP) model-fitting package. It
-is built for people who are comfortable running a command at the R
+**Routine-Use Notebooks** (`imuRUN`) is a spreadsheet-first front-end to
+the [`imuGAP`](https://github.com/ACCIDDA/imuGAP) model-fitting package.
+It is built for people who are comfortable running a command at the R
 prompt but are not power R users: describe the analysis in one Excel
 workbook, validate it with spreadsheet-referenced messages, fit with
 `imuGAP::sampling()`, and read the coverage estimates back in the same
@@ -12,12 +12,12 @@ workbook.
 
 - **Two input modes.** Use a single `.xlsx` workbook or a directory
   containing `observations`, `locations`, and `target` files (CSV or
-  RDS). imurun derives imuGAP’s population rows from each observation’s
+  RDS). imuRUN derives imuGAP’s population rows from each observation’s
   location, reference cohort, age span, and dose.
 - **Bundled template and example workbooks.**
-  [`imurun_init()`](https://accidda.github.io/imurun/reference/imurun_init.md)
+  [`imurun_init()`](https://accidda.github.io/imuRUN/reference/imurun_init.md)
   writes a blank template with instructions and sampler configuration;
-  [`imurun_copy_example()`](https://accidda.github.io/imurun/reference/imurun_copy_example.md)
+  [`imurun_copy_example()`](https://accidda.github.io/imuRUN/reference/imurun_copy_example.md)
   writes a complete example derived from imuGAP’s `*_sim` data.
 - **Friendly validation.** Inputs are checked against the canonical
   schema (\[`IMURUN_SCHEMA`\]) via a layer over imuGAP’s canonicalizers
@@ -29,22 +29,22 @@ workbook.
   `results` sheet containing medians and credible intervals beside the
   request context; `fit.rds` is also saved for advanced post-processing.
 - **Scriptable.** The engine functions
-  ([`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md),
-  [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md),
-  [`validate_inputs()`](https://accidda.github.io/imurun/reference/validate_inputs.md),
-  [`read_workbook()`](https://accidda.github.io/imurun/reference/read_workbook.md),
+  ([`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md),
+  [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md),
+  [`validate_inputs()`](https://accidda.github.io/imuRUN/reference/validate_inputs.md),
+  [`read_workbook()`](https://accidda.github.io/imuRUN/reference/read_workbook.md),
   and friends) are exported for use directly from R. The optional CLI
   wrapper returns shell exit codes (`0` success, `1` validation, `2`
   model, `3` I/O) for use in pipelines.
 
 ## Installation
 
-`imurun` is a beta release; install it from GitHub for now:
+`imuRUN` is a beta release; install it from GitHub for now:
 
 ``` r
 
 # install.packages("remotes")
-remotes::install_github("ACCIDDA/imurun")
+remotes::install_github("ACCIDDA/imuRUN")
 ```
 
 Once it is on CRAN you will be able to install the released version
@@ -52,31 +52,32 @@ with:
 
 ``` r
 
-install.packages("imurun")
+install.packages("imuRUN")
 ```
 
-`imurun` depends on [`imuGAP`](https://github.com/ACCIDDA/imuGAP);
+`imuRUN` depends on [`imuGAP`](https://github.com/ACCIDDA/imuGAP);
 fitting is delegated to `imuGAP::sampling()`, which requires imuGAP’s
-Stan-based model backend (a working Stan toolchain). Reading `.xlsx`
-workbooks additionally uses [`readxl`](https://readxl.tidyverse.org).
+Stan-based model backend (a working Stan toolchain). Reading and writing
+`.xlsx` workbooks uses
+[`openxlsx2`](https://cran.r-project.org/package=openxlsx2).
 
-The R functions are the primary interface. To additionally make `imurun`
+The R functions are the primary interface. To additionally make `imuRUN`
 available as a shell command, install the bundled wrapper onto your
 `PATH`:
 
 ``` r
 
-imurun::install_cli()          # symlinks into ~/.local/bin (Unix) or writes
+imuRUN::install_cli()          # symlinks into ~/.local/bin (Unix) or writes
                                # an imurun.cmd shim (Windows)
 ```
 
 Make sure the target directory (`~/.local/bin` by default) is on your
 `PATH`. If you would rather not install a launcher, you can always
-invoke the engine from R with `imurun::run_fit(...)`.
+invoke the engine from R with `imuRUN::run_fit(...)`.
 
 ## Usage
 
-[`run_fit()`](https://accidda.github.io/imurun/reference/run_fit.md)
+[`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md)
 accepts a workbook path (or a directory of CSV/RDS inputs). The
 generated workbook’s `configuration` sheet holds `iter`, `chains`,
 `seed`, and `warmup`; automation flags may override those values.
@@ -88,13 +89,13 @@ generated workbook’s `configuration` sheet holds `iter`, `chains`,
 
     ``` r
 
-    imurun::imurun_init(".")
+    imuRUN::imurun_init(".")
     ```
 
     This writes `imurun_template.xlsx` with `instructions`,
     `configuration`, `observations`, `locations`, and `target` sheets.
     To start from a filled, runnable example, use
-    `imurun::imurun_copy_example(".")`.
+    `imuRUN::imurun_copy_example(".")`.
 
 2.  **Fill it in.** Enter sampled counts on `observations`, the
     hierarchy on `locations`, and prediction requests on `target`.
@@ -105,7 +106,7 @@ generated workbook’s `configuration` sheet holds `iter`, `chains`,
 
     ``` r
 
-    imurun::run_fit(c("-h", "imurun_template.xlsx"))
+    imuRUN::run_fit(c("-h", "imurun_template.xlsx"))
     ```
 
     Any problems are reported all at once, in spreadsheet terms.
@@ -115,10 +116,10 @@ generated workbook’s `configuration` sheet holds `iter`, `chains`,
 
     ``` r
 
-    imurun::run_fit("imurun_template.xlsx")
+    imuRUN::run_fit("imurun_template.xlsx")
     ```
 
-    imurun adds a **`results`** sheet to that workbook and writes
+    imuRUN adds a **`results`** sheet to that workbook and writes
     **`fit.rds`** beside it. It refuses to replace existing results
     unless `--overwrite` is supplied.
 
@@ -133,7 +134,7 @@ the same pipeline from a script:
 
 ``` r
 
-library(imurun)
+library(imuRUN)
 
 # Copy the bundled example next to your work and inspect it
 example <- imurun_copy_example(tempdir())
@@ -146,16 +147,16 @@ validate_inputs(inputs)
 run_fit(example)
 ```
 
-See [`?run_fit`](https://accidda.github.io/imurun/reference/run_fit.md),
-[`?read_inputs`](https://accidda.github.io/imurun/reference/read_inputs.md),
-[`?validate_inputs`](https://accidda.github.io/imurun/reference/validate_inputs.md),
+See [`?run_fit`](https://accidda.github.io/imuRUN/reference/run_fit.md),
+[`?read_inputs`](https://accidda.github.io/imuRUN/reference/read_inputs.md),
+[`?validate_inputs`](https://accidda.github.io/imuRUN/reference/validate_inputs.md),
 and
-[`?IMURUN_SCHEMA`](https://accidda.github.io/imurun/reference/IMURUN_SCHEMA.md)
-for details, and the [package website](https://accidda.github.io/imurun)
-for the full reference.
+[`?IMURUN_SCHEMA`](https://accidda.github.io/imuRUN/reference/IMURUN_SCHEMA.md)
+for details, and the [package
+website](https://accidda.github.io/imuRUN/) for the full reference.
 
 ## Related
 
-`imurun` is part of the `imu*` family and fronts
+`imuRUN` is part of the `imu*` family and fronts
 [`imuGAP`](https://github.com/ACCIDDA/imuGAP), the underlying
 model-fitting package.

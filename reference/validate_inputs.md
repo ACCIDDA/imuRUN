@@ -10,10 +10,10 @@ than stopping at the first.
 Problems detected include:
 
 - missing or renamed required columns (per
-  [IMURUN_SCHEMA](https://accidda.github.io/imurun/reference/IMURUN_SCHEMA.md));
+  [IMURUN_SCHEMA](https://accidda.github.io/imuRUN/reference/IMURUN_SCHEMA.md));
 
-- non-numeric count columns (`positive`, `sample_n`, `cohort`,
-  `age_min`, `age_max`, `dose`);
+- non-numeric count columns (`positive`, `sample_n`, `year`, `age_min`,
+  `age_max`, `dose`);
 
 - fractional age-span endpoints;
 
@@ -23,16 +23,16 @@ Problems detected include:
 
 - `loc_id` values in `observations` but absent from `locations`;
 
-- `dose`, `cohort`, and `age` values out of range;
+- `dose`, `year`, and `age` values out of range;
 
 - structural location problems (duplicate or missing root, cycles).
 
 The imuGAP populations are constructed from the observations
-([`build_populations()`](https://accidda.github.io/imurun/reference/build_populations.md));
+([`build_populations()`](https://accidda.github.io/imuRUN/reference/build_populations.md));
 there is no populations sheet.
 
-On success the canonicalized frames are returned invisibly. On failure a
-single error is raised whose message lists every problem found.
+On success `TRUE` is returned invisibly. On failure a single error is
+raised whose message lists every problem found.
 
 ## Usage
 
@@ -45,16 +45,15 @@ validate_inputs(inputs, max_cohort = NULL, max_age = NULL, max_dose = 2L)
 - inputs:
 
   a named list with `obs` and `locs` (as returned by
-  [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md)),
+  [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md)),
   or a path passed straight to
-  [`read_inputs()`](https://accidda.github.io/imurun/reference/read_inputs.md).
+  [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md).
 
 - max_cohort, max_age:
 
   integer upper bounds for the derived `cohort` and `age` values.
   Default to the largest value present in the populations built from
-  `observations` – which, for a multi-age observation, reaches past its
-  own reference cohort – so that validation does not impose a model
+  `observations` so that validation does not impose a model
   configuration; supply explicit bounds to enforce a particular
   schedule.
 
@@ -64,14 +63,13 @@ validate_inputs(inputs, max_cohort = NULL, max_age = NULL, max_dose = 2L)
 
 ## Value
 
-Invisibly, a named list of the canonicalized `obs`, `pops`, and `locs`
-frames (`pops` derived from `obs`).
+Invisibly, `TRUE` on success.
 
 ## Examples
 
 ``` r
-wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
-if (nzchar(wb) && requireNamespace("readxl", quietly = TRUE)) {
+wb <- system.file("extdata", "imurun_example.xlsx", package = "imuRUN")
+if (nzchar(wb)) {
   validate_inputs(read_inputs(wb))
 }
 ```

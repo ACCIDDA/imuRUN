@@ -46,9 +46,10 @@ follow:
   `cohort` is the **reference** cohort, that of `age_max`, and the
   cohort of each younger age is derived so that `age + cohort` is held
   constant: `cohort_at_age = cohort + age_max - age`. This is a snapshot
-  in time, and is the same relation `imuGAP::create_target()` applies in
-  `"snapshot"` mode, so an observation and a target written over the
-  same span describe the same populations.
+  in time, and is the same relation
+  [`imuGAP::create_target()`](https://accidda.github.io/imuGAP/reference/create_target.html)
+  applies in `"snapshot"` mode, so an observation and a target written
+  over the same span describe the same populations.
 
 A single-age observation (`age_min == age_max`) reduces to exactly the
 former behavior: one row, `weight = 1`, `cohort` unchanged.

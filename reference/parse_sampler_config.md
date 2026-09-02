@@ -1,10 +1,12 @@
-# Read sampler settings from a workbook configuration sheet
+# Read calculation settings from a workbook configuration sheet or list
 
-Parses the `Setting`/`Value` rows supplied in generated imurun
-workbooks. Recognized settings are `iter`, `chains`, `seed`, and
-`warmup`; blank values use the package/default value. The same
-whole-number rules as the compatibility CLI flags apply. Unknown or
-repeated populated settings are reported rather than silently ignored.
+Parses the `Setting`/`Value` rows supplied in generated imurun workbooks
+or a configuration list, categorizing them into `stan_opts` (for
+[`flexstanr::stan_options`](https://accidda.github.io/flexstanr/reference/stan_options.html)
+/
+[`imuGAP::stan_options`](https://accidda.github.io/flexstanr/reference/stan_options.html))
+and `imugap_opts` (for
+[`imuGAP::imugap_options`](https://accidda.github.io/imuGAP/reference/imugap_options.html)).
 
 ## Usage
 
@@ -16,8 +18,8 @@ parse_sampler_config(config)
 
 - config:
 
-  optional data.frame read from the `configuration` sheet.
+  optional data.frame or list with configuration settings.
 
 ## Value
 
-A named list of sampler-option overrides.
+A named list with `stan_opts` and `imugap_opts` sub-lists.

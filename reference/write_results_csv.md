@@ -15,7 +15,7 @@ write_results_csv(results, path, overwrite = FALSE)
 - results:
 
   data.frame of summarized targets, as returned by
-  [`summarize_targets()`](https://accidda.github.io/imurun/reference/summarize_targets.md).
+  [`summarize_targets()`](https://accidda.github.io/imuRUN/reference/summarize_targets.md).
 
 - path:
 
@@ -31,8 +31,8 @@ Invisibly, `path`.
 
 ## See also
 
-[`write_results_workbook()`](https://accidda.github.io/imurun/reference/write_results_workbook.md),
-[`summarize_targets()`](https://accidda.github.io/imurun/reference/summarize_targets.md)
+[`write_results_workbook()`](https://accidda.github.io/imuRUN/reference/write_results_workbook.md),
+[`summarize_targets()`](https://accidda.github.io/imuRUN/reference/summarize_targets.md)
 
 ## Examples
 

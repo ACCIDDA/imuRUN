@@ -2,7 +2,7 @@
 
 Tests whether a named input (e.g. `"observations"`) exists in a
 directory under any of the
-[SUPPORTED_EXT](https://accidda.github.io/imurun/reference/SUPPORTED_EXT.md)
+[SUPPORTED_EXT](https://accidda.github.io/imuRUN/reference/SUPPORTED_EXT.md)
 extensions.
 
 ## Usage

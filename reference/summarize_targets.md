@@ -33,7 +33,7 @@ A data.frame with one row per target: the carried identity columns plus
 
 ## See also
 
-[`expand_targets()`](https://accidda.github.io/imurun/reference/expand_targets.md)
+[`expand_targets()`](https://accidda.github.io/imuRUN/reference/expand_targets.md)
 
 ## Examples
 

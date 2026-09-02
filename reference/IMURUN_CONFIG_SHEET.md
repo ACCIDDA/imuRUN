@@ -1,8 +1,7 @@
-# Name and columns of the workbook sampler-configuration sheet
+# Name and columns of the workbook configuration sheet
 
-Generated workbooks include this sheet so sampler settings can be edited
-in the same place as the data. Older workbooks without it continue to
-use IMURUN_SAMPLER_DEFAULTS.
+Generated workbooks include this sheet so calculation settings can be
+edited in the same place as the data.
 
 ## Usage
 
