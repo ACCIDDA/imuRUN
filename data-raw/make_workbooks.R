@@ -27,7 +27,7 @@
 #
 # Structure (openxlsx2): each data sheet gets an AutoFilter, a frozen header
 # row, auto-fit column widths, and a Dose dropdown (1/2). These are cosmetic --
-# the loader reads values with readxl and is blind to filters/freeze/validation
+# the loader reads values with openxlsx2 and is blind to filters/freeze/validation
 # -- so they never affect parsing, only human usability. The runtime results
 # writer also uses openxlsx2 to preserve these workbook features when adding the
 # results sheet.
@@ -46,14 +46,23 @@ suppressMessages({
 # Canonical -> human-readable header maps. Keep in lock-step with
 # R/schema.R::IMURUN_HEADER_ALIASES (which maps the friendly labels back).
 obs_headers <- c(
-  loc_id = "Location", cohort = "Reference cohort", age_min = "Youngest age",
-  age_max = "Oldest age", dose = "Dose", positive = "Vaccinated",
-  sample_n = "Sampled", censored = "Censored"
+  loc_id = "Location",
+  year = "Observation Year",
+  age_min = "Youngest age",
+  age_max = "Oldest age",
+  dose = "Dose",
+  positive = "Vaccinated",
+  sample_n = "Sampled",
+  censored = "Censored"
 )
 loc_headers <- c(loc_id = "Location", parent_id = "Parent location")
 tgt_headers <- c(
-  loc_id = "Location", cohort = "Reference cohort", age_low = "Youngest age",
-  age_high = "Oldest age", dose = "Dose", target_id = "Label"
+  loc_id = "Location",
+  year = "Target Year",
+  age_low = "Youngest age",
+  age_high = "Oldest age",
+  dose = "Dose",
+  target_id = "Label"
 )
 sampler_config <- data.frame(
   Setting = c("iter", "chains", "seed", "warmup"),
@@ -98,17 +107,17 @@ instructions_lines <- c(
   "HOW TO USE THIS FILE",
   "  1. Fill in the data sheets below (the tabs at the bottom): one row per record.",
   "  2. Keep the header row on each sheet. You may use these friendly headers or",
-  "     imuGAP's own names (loc_id, cohort, ...); either works.",
+  "     imuGAP's own names (loc_id, year, ...); either works.",
   "  3. Review the configuration sheet, then save the file.",
-  "  4. From R, check it: imurun::run_fit(c('-h', 'yourfile.xlsx'))",
-  "  5. Fix anything it flags, then fit: imurun::run_fit('yourfile.xlsx')",
+  "  4. From R, check it: imuRUN::run_fit('yourfile.xlsx', dryrun = TRUE)",
+  "  5. Fix anything it flags, then fit: imuRUN::run_fit('yourfile.xlsx')",
   "  A bad edit fails the check with a clear message -- it cannot silently produce a wrong result.",
   "",
   "This 'instructions' sheet is optional: imurun reads only the data sheets by name, so you may",
   "delete it. Do not add a populations sheet or an observation-id column -- imurun handles both",
   "for you. Extra columns you add for your own notes are ignored.",
   "",
-  "configuration sheet -- sampler settings used for the fit:",
+  "configuration sheet -- settings used for the calculations:",
   "  iter              total iterations per chain (default 2000)",
   "  chains            number of chains (default 4)",
   "  seed              optional random seed for reproducibility",
@@ -117,15 +126,15 @@ instructions_lines <- c(
   "",
   "observations sheet -- one row per sampled count:",
   "  Location          the location of this count (must match a Location in the locations sheet)",
-  "  Reference cohort  positive whole-number cohort index, for the OLDEST age in the row",
+  "  Observation Year  timing of the observation",
   "  Youngest age      youngest age this count covers",
   "  Oldest age        oldest age this count covers (put the same age in both for a single age)",
   "  Dose              which dose this count is for: 1 or 2",
   "  Vaccinated        how many were found vaccinated",
   "  Sampled           how many were sampled (Vaccinated must be <= Sampled)",
   "  Censored          optional; leave blank, or put 1 for a right-censored observation",
-  "  A count covering several ages is split evenly across them, and the cohort of each younger",
-  "  age is stepped up so that age + cohort stays constant (a snapshot in time). If you prefer,",
+  "  A count covering several ages is split evenly across them, and the cohort of each age",
+  "  is derived as Observation Year - age (a snapshot in time). If you prefer,",
   "  you may use a single 'Age' column instead of the two age columns.",
   "",
   "locations sheet -- your location hierarchy, written as a tree:",
@@ -137,15 +146,15 @@ instructions_lines <- c(
   "",
   "target sheet -- the populations to predict coverage for (required):",
   "  Location          one or more locations to predict, ';'-separated",
-  "  Reference cohort  cohort index for the oldest age in the span",
+  "  Target Year       timing of the target snapshot to predict",
   "  Youngest age      youngest age to predict",
   "  Oldest age        oldest age to predict",
   "  Dose              optional; leave blank to default to the final dose",
   "  Label             optional; free-text label echoed into the results",
-  "  A Location-only row (cohort/ages/dose left blank) inherits those from the row above it.",
+  "  A Location-only row (year/ages/dose left blank) inherits those from the row above it.",
   "",
-  "Check from R: imurun::run_fit(c('-h', 'yourfile.xlsx'))",
-  "Fit from R:   imurun::run_fit('yourfile.xlsx')",
+  "Check from R: imuRUN::run_fit('yourfile.xlsx', dryrun = TRUE)",
+  "Fit from R:   imuRUN::run_fit('yourfile.xlsx')",
   "If you installed the optional command wrapper, 'imurun yourfile.xlsx' also works."
 )
 
@@ -206,8 +215,6 @@ build_workbook <- function(observations, locations, target, valid_rows) {
 
 # --- Blank template ----------------------------------------------------------
 
-# The template ships empty, so pre-apply the Dose dropdown to a generous span of
-# rows the user is likely to fill.
 TEMPLATE_ROWS <- 1000L
 wb_template <- build_workbook(
   empty_friendly(obs_headers),
@@ -228,22 +235,17 @@ obs_sim <- as.data.table(observations_sim)
 pop_sim <- as.data.table(populations_sim)
 loc_sim <- as.data.table(locations_sim)
 
-# Collapse each observation's population rows to the age span imurun's
-# observations sheet carries (#36): the reference cohort is the cohort of the
-# OLDEST age, and the span runs age_min..age_max. imuGAP's simulated populations
-# are exactly this shape already -- every obs_id spans a contiguous age range at
-# one location and dose, with equal weights and `age + cohort` held constant --
-# so this is lossless, and build_populations() reconstructs populations_sim from
-# it row for row (asserted below). Earlier revisions had to drop the multi-age
-# observations (`.SD[1L]`) because the sheet could only express a single age.
-# Use ALL observations and ALL locations -- do not subset (keep the real trends).
-pop_span <- pop_sim[, .(
-  loc_id = loc_id[1L],
-  cohort = cohort[which.max(age)],
-  age_min = min(age),
-  age_max = max(age),
-  dose = dose[1L]
-), by = obs_id]
+# Derive Observation Year: in a snapshot observation, year = cohort + age is constant
+pop_span <- pop_sim[,
+  .(
+    loc_id = loc_id[1L],
+    year = cohort[1L] + age[1L],
+    age_min = min(age),
+    age_max = max(age),
+    dose = dose[1L]
+  ),
+  by = obs_id
+]
 ex_obs <- merge(
   obs_sim[, .(obs_id, positive, sample_n)],
   pop_span,
@@ -251,12 +253,12 @@ ex_obs <- merge(
 )
 setorder(ex_obs, obs_id)
 ex_obs <- as.data.frame(ex_obs, stringsAsFactors = FALSE)
-ex_loc <- as.data.frame(loc_sim[, .(loc_id, parent_id)], stringsAsFactors = FALSE)
+ex_loc <- as.data.frame(
+  loc_sim[, .(loc_id, parent_id)],
+  stringsAsFactors = FALSE
+)
 
 # Sanity check: the example must pass canonicalization the way imurun runs it
-# (obs_id auto-assigned here mirrors the loader's ensure_obs_id()). Use imurun's
-# own build_populations() rather than a local copy of the expansion, so the
-# shipped example is verified by the exact code that will later read it.
 source(file.path("R", "schema.R"))
 source(file.path("R", "loaders.R"))
 source(file.path("R", "validate.R"))
@@ -268,9 +270,12 @@ stopifnot(
       as.data.frame(setorder(as.data.table(ex_pops), obs_id, age)),
       as.data.frame(
         setorder(copy(pop_sim), obs_id, age)[, .(
-          obs_id = as.numeric(obs_id), loc_id = as.character(loc_id),
-          cohort = as.numeric(cohort), age = as.numeric(age),
-          dose = as.numeric(dose), weight = as.numeric(weight)
+          obs_id = as.numeric(obs_id),
+          loc_id = as.character(loc_id),
+          cohort = as.numeric(cohort),
+          age = as.numeric(age),
+          dose = as.numeric(dose),
+          weight = as.numeric(weight)
         )]
       ),
       check.attributes = FALSE
@@ -281,25 +286,22 @@ stopifnot(
 loc_c <- imuGAP::canonicalize_locations(ex_loc)
 obs_c <- imuGAP::canonicalize_observations(ex_obs)
 imuGAP::canonicalize_populations(
-  ex_pops, obs_c, loc_c,
-  max_cohort = max(ex_pops$cohort), max_age = max(ex_pops$age)
+  ex_pops,
+  obs_c,
+  loc_c,
+  max_cohort = max(ex_pops$cohort),
+  max_age = max(ex_pops$age)
 )
 
 # A small target example: a multi-location request plus a location-only row
-# that inherits the request above it (demonstrates the LOCF fill).
-# The snapshot expansion holds `age + cohort` constant, so a span [age_low,
-# age_high] reaches reference_cohort + (age_high - age_low) at its youngest age.
-# Pick the reference cohort so the whole span stays within the observed cohort
-# range, otherwise predict() fails on cohorts the model was never fit for (#38).
-# Bound against the EXPANDED populations, which is what sizes the model: a
-# multi-age observation derives cohorts above its own reference cohort.
 some_locs <- unique(ex_loc$loc_id[!is.na(ex_loc$parent_id)])
 tgt_age_low <- 1L
 tgt_age_high <- min(5L, max(ex_pops$age))
 tgt_ref_cohort <- max(ex_pops$cohort) - (tgt_age_high - tgt_age_low)
+tgt_year <- tgt_ref_cohort + tgt_age_high
 ex_target <- data.frame(
   loc_id = c(paste(utils::head(some_locs, 2L), collapse = "; "), some_locs[3L]),
-  cohort = c(tgt_ref_cohort, NA),
+  year = c(tgt_year, NA),
   age_low = c(tgt_age_low, NA),
   age_high = c(tgt_age_high, NA),
   dose = c(2L, NA),
@@ -312,28 +314,42 @@ ex_loc_friendly <- to_friendly(ex_loc, loc_headers)
 ex_tgt_friendly <- to_friendly(ex_target, tgt_headers)
 
 wb_example <- build_workbook(
-  ex_obs_friendly, ex_loc_friendly, ex_tgt_friendly,
+  ex_obs_friendly,
+  ex_loc_friendly,
+  ex_tgt_friendly,
   valid_rows = nrow(ex_obs_friendly)
 )
 openxlsx2::wb_save(wb_example, out_example, overwrite = TRUE)
-message("Wrote ", out_example,
-        " (", nrow(ex_obs), " obs, ", nrow(ex_loc), " loc)")
+message(
+  "Wrote ",
+  out_example,
+  " (",
+  nrow(ex_obs),
+  " obs, ",
+  nrow(ex_loc),
+  " loc)"
+)
 
 # --- CSV directory fixture (same example, directory read path) ---------------
-# Canonical headers here: read.csv() mangles headers with spaces, and this
-# fixture's job is to exercise the directory/CSV path (the friendly-header alias
-# path is covered by the .xlsx fixtures). obs_id is omitted (auto-assigned).
 csv_dir <- file.path("tests", "testthat", "fixtures", "example_dir")
 dir.create(csv_dir, recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(
   ex_obs[, c(
-    "loc_id", "cohort", "age_min", "age_max", "dose", "positive", "sample_n"
+    "loc_id",
+    "year",
+    "age_min",
+    "age_max",
+    "dose",
+    "positive",
+    "sample_n"
   )],
-  file.path(csv_dir, "observations.csv"), row.names = FALSE
+  file.path(csv_dir, "observations.csv"),
+  row.names = FALSE
 )
 utils::write.csv(
   ex_loc[, c("loc_id", "parent_id")],
-  file.path(csv_dir, "locations.csv"), row.names = FALSE
+  file.path(csv_dir, "locations.csv"),
+  row.names = FALSE
 )
 utils::write.csv(ex_target, file.path(csv_dir, "target.csv"), row.names = FALSE)
 message("Wrote CSV directory fixture to ", csv_dir)
@@ -343,19 +359,29 @@ fixture_dir <- file.path("tests", "testthat", "fixtures")
 dir.create(fixture_dir, recursive = TRUE, showWarnings = FALSE)
 file.copy(out_example, file.path(fixture_dir, "example.xlsx"), overwrite = TRUE)
 
-# Corrupted copy: give a required column an unrecognized header (so it is neither
-# friendly nor canonical -> missing) and blank a numeric with a string --
-# exercises the structural and numeric validation branches at once.
+# Corrupted copy: give a required column an unrecognized header and non-numeric year
 bad_obs <- to_friendly(ex_obs, obs_headers)
-names(bad_obs)[names(bad_obs) == "Sampled"] <- "Sampl3d"  # unrecognized header
-bad_obs[["Reference cohort"]][1] <- "abc"                 # non-numeric
+names(bad_obs)[names(bad_obs) == "Sampled"] <- "Sampl3d" # unrecognized header
+bad_obs[["Observation Year"]][1] <- "abc" # non-numeric
 wb_corrupt <- openxlsx2::wb_workbook()
 add_instructions_sheet(wb_corrupt)
 add_data_sheet(wb_corrupt, "configuration", sampler_config, valid_rows = 0L)
 add_data_sheet(wb_corrupt, "observations", bad_obs, valid_rows = nrow(bad_obs))
-add_data_sheet(wb_corrupt, "locations", ex_loc_friendly, valid_rows = nrow(ex_loc_friendly))
-# target is required, so include a valid one -- the corruption is in the
-# observations sheet, which is what validation should catch.
-add_data_sheet(wb_corrupt, "target", ex_tgt_friendly, valid_rows = nrow(ex_tgt_friendly))
-openxlsx2::wb_save(wb_corrupt, file.path(fixture_dir, "example_corrupt.xlsx"), overwrite = TRUE)
+add_data_sheet(
+  wb_corrupt,
+  "locations",
+  ex_loc_friendly,
+  valid_rows = nrow(ex_loc_friendly)
+)
+add_data_sheet(
+  wb_corrupt,
+  "target",
+  ex_tgt_friendly,
+  valid_rows = nrow(ex_tgt_friendly)
+)
+openxlsx2::wb_save(
+  wb_corrupt,
+  file.path(fixture_dir, "example_corrupt.xlsx"),
+  overwrite = TRUE
+)
 message("Wrote test fixtures to ", fixture_dir)

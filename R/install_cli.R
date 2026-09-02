@@ -18,9 +18,9 @@
 #'
 #' @export
 install_cli <- function(path = "~/.local/bin") {
-  script <- system.file("scripts", "imurun.R", package = "imurun")
+  script <- system.file("scripts", "imurun.R", package = "imuRUN")
   if (!nzchar(script)) {
-    stop("Cannot find bundled CLI script. Is imurun installed?", call. = FALSE)
+    stop("Cannot find bundled CLI script. Is imuRUN installed?", call. = FALSE)
   }
 
   path <- normalizePath(path, mustWork = FALSE)

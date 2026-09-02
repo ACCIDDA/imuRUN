@@ -80,7 +80,7 @@ assert_results_destination <- function(source, path, overwrite = FALSE) {
     assert_no_clobber(path, overwrite)
   }
 
-  sheets <- readxl::excel_sheets(source)
+  sheets <- openxlsx2::wb_load(source)$get_sheet_names()
   has_results <- any(tolower(sheets) == "results")
   if (same_path && has_results && !isTRUE(overwrite)) {
     stop(
@@ -184,17 +184,25 @@ write_results_workbook <- function(
 
   if (is.null(source)) {
     sheets <- list()
-    if (!is.null(inputs$obs)) sheets$observations <- inputs$obs
-    if (!is.null(inputs$locs)) sheets$locations <- inputs$locs
-    if (!is.null(inputs$config)) sheets$configuration <- inputs$config
-    if (!is.null(inputs$target)) sheets$target <- inputs$target
+    if (!is.null(inputs$obs)) {
+      sheets$observations <- inputs$obs
+    }
+    if (!is.null(inputs$locs)) {
+      sheets$locations <- inputs$locs
+    }
+    if (!is.null(inputs$config)) {
+      sheets$configuration <- inputs$config
+    }
+    if (!is.null(inputs$target)) {
+      sheets$target <- inputs$target
+    }
     sheets$results <- as.data.frame(results, stringsAsFactors = FALSE)
-    writexl::write_xlsx(sheets, path = path)
+    openxlsx2::write_xlsx(sheets, file = path)
     return(invisible(path))
   }
 
   wb <- openxlsx2::wb_load(source)
-  sheet_names <- readxl::excel_sheets(source)
+  sheet_names <- unname(wb$get_sheet_names())
   result_idx <- match("results", tolower(sheet_names))
   if (!is.na(result_idx)) {
     wb$remove_worksheet(sheet_names[result_idx])
@@ -205,7 +213,9 @@ write_results_workbook <- function(
   wb$add_filter("results", rows = 1, cols = seq_len(ncol(result_data)))
   wb$freeze_pane("results", first_active_row = 2)
   wb$set_col_widths(
-    "results", cols = seq_len(ncol(result_data)), widths = "auto"
+    "results",
+    cols = seq_len(ncol(result_data)),
+    widths = "auto"
   )
 
   # Save completely before replacing the user's file, so a serialization error

@@ -1,699 +1,842 @@
-"loc_id","cohort","age_min","age_max","dose","positive","sample_n"
-"Chickadee Elementary",4,5,5,2,16,19
-"Chickadee Elementary",5,5,5,2,14,20
-"Chickadee Elementary",6,5,5,2,14,16
-"Chickadee Elementary",7,5,5,2,10,13
-"Chickadee Elementary",8,5,5,2,8,13
-"Chickadee Elementary",9,5,5,2,7,8
-"Chickadee Elementary",10,5,5,2,6,9
-"Chickadee Elementary",11,5,5,2,9,10
-"Chickadee Elementary",12,5,5,2,5,5
-"Chickadee Elementary",13,5,5,2,4,4
-"Chickadee Elementary",14,5,5,2,4,4
-"Chickadee Elementary",15,5,5,2,4,4
-"Chickadee Elementary",16,5,5,2,4,4
-"Chickadee Elementary",17,5,5,2,4,4
-"Chickadee Elementary",18,5,5,2,6,6
-"Chickadee Elementary",19,5,5,2,6,7
-"Chickadee Elementary",20,5,5,2,8,11
-"Chickadee Elementary",21,5,5,2,12,13
-"Chickadee Elementary",22,5,5,2,10,13
-"Chickadee Elementary",23,5,5,2,14,15
-"Chickadee Elementary",24,5,5,2,11,13
-"Chickadee Elementary",25,5,5,2,10,11
-"Chickadee Elementary",26,5,5,2,13,16
-"Chickadee Elementary",27,5,5,2,16,18
-"Chickadee Elementary",28,5,5,2,19,20
-"Nuthatch Academy",4,5,5,2,43,53
-"Nuthatch Academy",5,5,5,2,44,54
-"Nuthatch Academy",6,5,5,2,42,49
-"Nuthatch Academy",7,5,5,2,42,50
-"Nuthatch Academy",8,5,5,2,35,48
-"Nuthatch Academy",9,5,5,2,42,53
-"Nuthatch Academy",10,5,5,2,41,52
-"Nuthatch Academy",11,5,5,2,43,53
-"Nuthatch Academy",12,5,5,2,51,57
-"Nuthatch Academy",13,5,5,2,48,55
-"Nuthatch Academy",14,5,5,2,44,51
-"Nuthatch Academy",15,5,5,2,43,55
-"Nuthatch Academy",16,5,5,2,44,55
-"Nuthatch Academy",17,5,5,2,46,56
-"Nuthatch Academy",18,5,5,2,54,60
-"Nuthatch Academy",19,5,5,2,56,62
-"Nuthatch Academy",20,5,5,2,54,65
-"Nuthatch Academy",21,5,5,2,57,66
-"Nuthatch Academy",22,5,5,2,57,66
-"Nuthatch Academy",23,5,5,2,54,64
-"Nuthatch Academy",24,5,5,2,57,63
-"Nuthatch Academy",25,5,5,2,54,61
-"Nuthatch Academy",26,5,5,2,52,58
-"Nuthatch Academy",27,5,5,2,54,57
-"Nuthatch Academy",28,5,5,2,48,54
-"Blue Heron School",4,5,5,2,59,66
-"Blue Heron School",5,5,5,2,63,71
-"Blue Heron School",6,5,5,2,58,66
-"Blue Heron School",7,5,5,2,67,70
-"Blue Heron School",8,5,5,2,64,71
-"Blue Heron School",9,5,5,2,62,69
-"Blue Heron School",10,5,5,2,58,65
-"Blue Heron School",11,5,5,2,56,65
-"Blue Heron School",12,5,5,2,60,64
-"Blue Heron School",13,5,5,2,65,69
-"Blue Heron School",14,5,5,2,65,71
-"Blue Heron School",15,5,5,2,65,70
-"Blue Heron School",16,5,5,2,64,70
-"Blue Heron School",17,5,5,2,67,70
-"Blue Heron School",18,5,5,2,62,69
-"Blue Heron School",19,5,5,2,64,68
-"Blue Heron School",20,5,5,2,67,72
-"Blue Heron School",21,5,5,2,64,69
-"Blue Heron School",22,5,5,2,61,69
-"Blue Heron School",23,5,5,2,63,65
-"Blue Heron School",24,5,5,2,62,65
-"Blue Heron School",25,5,5,2,57,62
-"Blue Heron School",26,5,5,2,65,65
-"Blue Heron School",27,5,5,2,60,65
-"Blue Heron School",28,5,5,2,60,62
-"Flycatcher Elementary",4,5,5,2,69,99
-"Flycatcher Elementary",5,5,5,2,79,98
-"Flycatcher Elementary",6,5,5,2,76,95
-"Flycatcher Elementary",7,5,5,2,82,98
-"Flycatcher Elementary",8,5,5,2,88,103
-"Flycatcher Elementary",9,5,5,2,83,104
-"Flycatcher Elementary",10,5,5,2,87,101
-"Flycatcher Elementary",11,5,5,2,84,105
-"Flycatcher Elementary",12,5,5,2,91,104
-"Flycatcher Elementary",13,5,5,2,87,105
-"Flycatcher Elementary",14,5,5,2,97,108
-"Flycatcher Elementary",15,5,5,2,93,108
-"Flycatcher Elementary",16,5,5,2,101,113
-"Flycatcher Elementary",17,5,5,2,103,115
-"Flycatcher Elementary",18,5,5,2,98,117
-"Flycatcher Elementary",19,5,5,2,96,119
-"Flycatcher Elementary",20,5,5,2,97,117
-"Flycatcher Elementary",21,5,5,2,103,119
-"Flycatcher Elementary",22,5,5,2,102,117
-"Flycatcher Elementary",23,5,5,2,106,121
-"Flycatcher Elementary",24,5,5,2,112,124
-"Flycatcher Elementary",25,5,5,2,105,120
-"Flycatcher Elementary",26,5,5,2,111,124
-"Flycatcher Elementary",27,5,5,2,112,126
-"Flycatcher Elementary",28,5,5,2,108,126
-"Bluebird Learning Center",4,5,5,2,71,89
-"Bluebird Learning Center",5,5,5,2,73,91
-"Bluebird Learning Center",6,5,5,2,73,90
-"Bluebird Learning Center",7,5,5,2,85,94
-"Bluebird Learning Center",8,5,5,2,83,95
-"Bluebird Learning Center",9,5,5,2,87,95
-"Bluebird Learning Center",10,5,5,2,82,97
-"Bluebird Learning Center",11,5,5,2,82,97
-"Bluebird Learning Center",12,5,5,2,79,93
-"Bluebird Learning Center",13,5,5,2,77,91
-"Bluebird Learning Center",14,5,5,2,79,90
-"Bluebird Learning Center",15,5,5,2,80,89
-"Bluebird Learning Center",16,5,5,2,75,87
-"Bluebird Learning Center",17,5,5,2,83,89
-"Bluebird Learning Center",18,5,5,2,85,94
-"Bluebird Learning Center",19,5,5,2,88,93
-"Bluebird Learning Center",20,5,5,2,86,94
-"Bluebird Learning Center",21,5,5,2,90,98
-"Bluebird Learning Center",22,5,5,2,91,99
-"Bluebird Learning Center",23,5,5,2,92,100
-"Bluebird Learning Center",24,5,5,2,89,100
-"Bluebird Learning Center",25,5,5,2,93,102
-"Bluebird Learning Center",26,5,5,2,96,106
-"Bluebird Learning Center",27,5,5,2,101,110
-"Bluebird Learning Center",28,5,5,2,108,114
-"Catbird Academy",4,5,5,2,58,61
-"Catbird Academy",5,5,5,2,59,63
-"Catbird Academy",6,5,5,2,58,59
-"Catbird Academy",7,5,5,2,45,54
-"Catbird Academy",8,5,5,2,44,53
-"Catbird Academy",9,5,5,2,48,53
-"Catbird Academy",10,5,5,2,52,55
-"Catbird Academy",11,5,5,2,52,55
-"Catbird Academy",12,5,5,2,49,54
-"Catbird Academy",13,5,5,2,47,57
-"Catbird Academy",14,5,5,2,52,58
-"Catbird Academy",15,5,5,2,59,63
-"Catbird Academy",16,5,5,2,54,58
-"Catbird Academy",17,5,5,2,54,56
-"Catbird Academy",18,5,5,2,55,58
-"Catbird Academy",19,5,5,2,54,61
-"Catbird Academy",20,5,5,2,55,57
-"Catbird Academy",21,5,5,2,55,59
-"Catbird Academy",22,5,5,2,54,61
-"Catbird Academy",23,5,5,2,52,60
-"Catbird Academy",24,5,5,2,57,63
-"Catbird Academy",25,5,5,2,57,62
-"Catbird Academy",26,5,5,2,53,59
-"Catbird Academy",27,5,5,2,52,58
-"Catbird Academy",28,5,5,2,50,56
-"Finch Elementary",4,5,5,2,50,61
-"Finch Elementary",5,5,5,2,51,65
-"Finch Elementary",6,5,5,2,48,62
-"Finch Elementary",7,5,5,2,53,63
-"Finch Elementary",8,5,5,2,51,63
-"Finch Elementary",9,5,5,2,48,61
-"Finch Elementary",10,5,5,2,46,56
-"Finch Elementary",11,5,5,2,52,59
-"Finch Elementary",12,5,5,2,52,58
-"Finch Elementary",13,5,5,2,55,63
-"Finch Elementary",14,5,5,2,54,60
-"Finch Elementary",15,5,5,2,50,56
-"Finch Elementary",16,5,5,2,45,56
-"Finch Elementary",17,5,5,2,47,55
-"Finch Elementary",18,5,5,2,49,58
-"Finch Elementary",19,5,5,2,49,55
-"Finch Elementary",20,5,5,2,50,54
-"Finch Elementary",21,5,5,2,53,57
-"Finch Elementary",22,5,5,2,53,61
-"Finch Elementary",23,5,5,2,62,65
-"Finch Elementary",24,5,5,2,48,61
-"Finch Elementary",25,5,5,2,53,58
-"Finch Elementary",26,5,5,2,49,54
-"Finch Elementary",27,5,5,2,47,55
-"Finch Elementary",28,5,5,2,47,57
-"Sparrow School",4,5,5,2,46,49
-"Sparrow School",5,5,5,2,50,52
-"Sparrow School",6,5,5,2,49,53
-"Sparrow School",7,5,5,2,54,57
-"Sparrow School",8,5,5,2,54,58
-"Sparrow School",9,5,5,2,50,59
-"Sparrow School",10,5,5,2,54,60
-"Sparrow School",11,5,5,2,57,60
-"Sparrow School",12,5,5,2,58,64
-"Sparrow School",13,5,5,2,57,68
-"Sparrow School",14,5,5,2,61,64
-"Sparrow School",15,5,5,2,64,68
-"Sparrow School",16,5,5,2,58,66
-"Sparrow School",17,5,5,2,57,65
-"Sparrow School",18,5,5,2,56,62
-"Sparrow School",19,5,5,2,61,64
-"Sparrow School",20,5,5,2,63,66
-"Sparrow School",21,5,5,2,63,70
-"Sparrow School",22,5,5,2,62,70
-"Sparrow School",23,5,5,2,64,68
-"Sparrow School",24,5,5,2,59,67
-"Sparrow School",25,5,5,2,59,64
-"Sparrow School",26,5,5,2,65,67
-"Sparrow School",27,5,5,2,65,65
-"Sparrow School",28,5,5,2,55,60
-"Towhee Children's Academy",4,5,5,2,283,373
-"Towhee Children's Academy",5,5,5,2,288,372
-"Towhee Children's Academy",6,5,5,2,278,376
-"Towhee Children's Academy",7,5,5,2,279,374
-"Towhee Children's Academy",8,5,5,2,280,374
-"Towhee Children's Academy",9,5,5,2,279,375
-"Towhee Children's Academy",10,5,5,2,290,378
-"Towhee Children's Academy",11,5,5,2,290,379
-"Towhee Children's Academy",12,5,5,2,308,381
-"Towhee Children's Academy",13,5,5,2,309,383
-"Towhee Children's Academy",14,5,5,2,290,386
-"Towhee Children's Academy",15,5,5,2,325,389
-"Towhee Children's Academy",16,5,5,2,297,386
-"Towhee Children's Academy",17,5,5,2,318,384
-"Towhee Children's Academy",18,5,5,2,305,380
-"Towhee Children's Academy",19,5,5,2,321,385
-"Towhee Children's Academy",20,5,5,2,318,388
-"Towhee Children's Academy",21,5,5,2,320,389
-"Towhee Children's Academy",22,5,5,2,338,392
-"Towhee Children's Academy",23,5,5,2,337,387
-"Towhee Children's Academy",24,5,5,2,340,387
-"Towhee Children's Academy",25,5,5,2,319,386
-"Towhee Children's Academy",26,5,5,2,330,390
-"Towhee Children's Academy",27,5,5,2,333,387
-"Towhee Children's Academy",28,5,5,2,332,382
-"Warbler Elementary",4,5,5,2,68,85
-"Warbler Elementary",5,5,5,2,61,80
-"Warbler Elementary",6,5,5,2,65,80
-"Warbler Elementary",7,5,5,2,72,83
-"Warbler Elementary",8,5,5,2,68,82
-"Warbler Elementary",9,5,5,2,73,83
-"Warbler Elementary",10,5,5,2,77,83
-"Warbler Elementary",11,5,5,2,73,81
-"Warbler Elementary",12,5,5,2,71,77
-"Warbler Elementary",13,5,5,2,66,79
-"Warbler Elementary",14,5,5,2,66,76
-"Warbler Elementary",15,5,5,2,70,81
-"Warbler Elementary",16,5,5,2,72,82
-"Warbler Elementary",17,5,5,2,71,79
-"Warbler Elementary",18,5,5,2,71,82
-"Warbler Elementary",19,5,5,2,79,85
-"Warbler Elementary",20,5,5,2,82,90
-"Warbler Elementary",21,5,5,2,76,85
-"Warbler Elementary",22,5,5,2,78,83
-"Warbler Elementary",23,5,5,2,75,84
-"Warbler Elementary",24,5,5,2,80,88
-"Warbler Elementary",25,5,5,2,78,86
-"Warbler Elementary",26,5,5,2,68,82
-"Warbler Elementary",27,5,5,2,79,85
-"Warbler Elementary",28,5,5,2,79,84
-"Egret Elementary",4,5,5,2,61,72
-"Egret Elementary",5,5,5,2,57,74
-"Egret Elementary",6,5,5,2,63,79
-"Egret Elementary",7,5,5,2,64,77
-"Egret Elementary",8,5,5,2,61,75
-"Egret Elementary",9,5,5,2,52,71
-"Egret Elementary",10,5,5,2,58,76
-"Egret Elementary",11,5,5,2,58,74
-"Egret Elementary",12,5,5,2,63,72
-"Egret Elementary",13,5,5,2,63,74
-"Egret Elementary",14,5,5,2,64,78
-"Egret Elementary",15,5,5,2,67,80
-"Egret Elementary",16,5,5,2,67,78
-"Egret Elementary",17,5,5,2,71,82
-"Egret Elementary",18,5,5,2,75,85
-"Egret Elementary",19,5,5,2,77,89
-"Egret Elementary",20,5,5,2,79,90
-"Egret Elementary",21,5,5,2,81,88
-"Egret Elementary",22,5,5,2,76,87
-"Egret Elementary",23,5,5,2,80,91
-"Egret Elementary",24,5,5,2,83,92
-"Egret Elementary",25,5,5,2,84,91
-"Egret Elementary",26,5,5,2,82,94
-"Egret Elementary",27,5,5,2,90,98
-"Egret Elementary",28,5,5,2,83,98
-"Cardinal Academy",4,5,5,2,34,37
-"Cardinal Academy",5,5,5,2,32,34
-"Cardinal Academy",6,5,5,2,30,34
-"Cardinal Academy",7,5,5,2,35,38
-"Cardinal Academy",8,5,5,2,33,36
-"Cardinal Academy",9,5,5,2,36,39
-"Cardinal Academy",10,5,5,2,33,37
-"Cardinal Academy",11,5,5,2,37,39
-"Cardinal Academy",12,5,5,2,35,38
-"Cardinal Academy",13,5,5,2,36,40
-"Cardinal Academy",14,5,5,2,34,38
-"Cardinal Academy",15,5,5,2,34,37
-"Cardinal Academy",16,5,5,2,35,40
-"Cardinal Academy",17,5,5,2,37,40
-"Cardinal Academy",18,5,5,2,35,37
-"Cardinal Academy",19,5,5,2,35,36
-"Cardinal Academy",20,5,5,2,36,37
-"Cardinal Academy",21,5,5,2,34,37
-"Cardinal Academy",22,5,5,2,37,38
-"Cardinal Academy",23,5,5,2,32,35
-"Cardinal Academy",24,5,5,2,36,38
-"Cardinal Academy",25,5,5,2,33,38
-"Cardinal Academy",26,5,5,2,34,38
-"Cardinal Academy",27,5,5,2,34,36
-"Cardinal Academy",28,5,5,2,39,41
-"Bunting School",4,5,5,2,64,85
-"Bunting School",5,5,5,2,63,83
-"Bunting School",6,5,5,2,71,86
-"Bunting School",7,5,5,2,75,87
-"Bunting School",8,5,5,2,72,89
-"Bunting School",9,5,5,2,76,91
-"Bunting School",10,5,5,2,74,91
-"Bunting School",11,5,5,2,79,89
-"Bunting School",12,5,5,2,77,90
-"Bunting School",13,5,5,2,82,91
-"Bunting School",14,5,5,2,71,90
-"Bunting School",15,5,5,2,76,90
-"Bunting School",16,5,5,2,81,95
-"Bunting School",17,5,5,2,87,97
-"Bunting School",18,5,5,2,86,94
-"Bunting School",19,5,5,2,81,94
-"Bunting School",20,5,5,2,82,92
-"Bunting School",21,5,5,2,85,93
-"Bunting School",22,5,5,2,83,97
-"Bunting School",23,5,5,2,90,97
-"Bunting School",24,5,5,2,92,101
-"Bunting School",25,5,5,2,92,99
-"Bunting School",26,5,5,2,94,100
-"Bunting School",27,5,5,2,84,97
-"Bunting School",28,5,5,2,87,97
-"Tanager Academy",4,5,5,2,72,75
-"Tanager Academy",5,5,5,2,64,72
-"Tanager Academy",6,5,5,2,62,68
-"Tanager Academy",7,5,5,2,62,65
-"Tanager Academy",8,5,5,2,60,65
-"Tanager Academy",9,5,5,2,59,64
-"Tanager Academy",10,5,5,2,64,65
-"Tanager Academy",11,5,5,2,59,68
-"Tanager Academy",12,5,5,2,67,70
-"Tanager Academy",13,5,5,2,65,67
-"Tanager Academy",14,5,5,2,60,65
-"Tanager Academy",15,5,5,2,65,68
-"Tanager Academy",16,5,5,2,63,69
-"Tanager Academy",17,5,5,2,65,70
-"Tanager Academy",18,5,5,2,69,74
-"Tanager Academy",19,5,5,2,73,75
-"Tanager Academy",20,5,5,2,75,77
-"Tanager Academy",21,5,5,2,75,78
-"Tanager Academy",22,5,5,2,71,74
-"Tanager Academy",23,5,5,2,72,79
-"Tanager Academy",24,5,5,2,78,84
-"Tanager Academy",25,5,5,2,80,84
-"Tanager Academy",26,5,5,2,83,88
-"Tanager Academy",27,5,5,2,85,87
-"Tanager Academy",28,5,5,2,80,84
-"Oriole Youth Academy",4,5,5,2,21,29
-"Oriole Youth Academy",5,5,5,2,20,26
-"Oriole Youth Academy",6,5,5,2,24,31
-"Oriole Youth Academy",7,5,5,2,21,26
-"Oriole Youth Academy",8,5,5,2,21,24
-"Oriole Youth Academy",9,5,5,2,20,22
-"Oriole Youth Academy",10,5,5,2,13,17
-"Oriole Youth Academy",11,5,5,2,17,20
-"Oriole Youth Academy",12,5,5,2,20,24
-"Oriole Youth Academy",13,5,5,2,19,20
-"Oriole Youth Academy",14,5,5,2,19,21
-"Oriole Youth Academy",15,5,5,2,19,22
-"Oriole Youth Academy",16,5,5,2,15,19
-"Oriole Youth Academy",17,5,5,2,15,19
-"Oriole Youth Academy",18,5,5,2,18,22
-"Oriole Youth Academy",19,5,5,2,13,20
-"Oriole Youth Academy",20,5,5,2,14,16
-"Oriole Youth Academy",21,5,5,2,13,14
-"Oriole Youth Academy",22,5,5,2,15,18
-"Oriole Youth Academy",23,5,5,2,16,20
-"Oriole Youth Academy",24,5,5,2,23,24
-"Oriole Youth Academy",25,5,5,2,24,27
-"Oriole Youth Academy",26,5,5,2,22,22
-"Oriole Youth Academy",27,5,5,2,26,27
-"Oriole Youth Academy",28,5,5,2,30,32
-"Grosbeak Learning Center",4,5,5,2,95,117
-"Grosbeak Learning Center",5,5,5,2,111,122
-"Grosbeak Learning Center",6,5,5,2,113,122
-"Grosbeak Learning Center",7,5,5,2,110,124
-"Grosbeak Learning Center",8,5,5,2,114,126
-"Grosbeak Learning Center",9,5,5,2,110,126
-"Grosbeak Learning Center",10,5,5,2,112,129
-"Grosbeak Learning Center",11,5,5,2,116,126
-"Grosbeak Learning Center",12,5,5,2,112,126
-"Grosbeak Learning Center",13,5,5,2,119,131
-"Grosbeak Learning Center",14,5,5,2,118,130
-"Grosbeak Learning Center",15,5,5,2,119,133
-"Grosbeak Learning Center",16,5,5,2,123,132
-"Grosbeak Learning Center",17,5,5,2,117,132
-"Grosbeak Learning Center",18,5,5,2,121,128
-"Grosbeak Learning Center",19,5,5,2,113,125
-"Grosbeak Learning Center",20,5,5,2,118,123
-"Grosbeak Learning Center",21,5,5,2,114,125
-"Grosbeak Learning Center",22,5,5,2,115,124
-"Grosbeak Learning Center",23,5,5,2,111,120
-"Grosbeak Learning Center",24,5,5,2,101,115
-"Grosbeak Learning Center",25,5,5,2,106,112
-"Grosbeak Learning Center",26,5,5,2,100,111
-"Grosbeak Learning Center",27,5,5,2,98,110
-"Grosbeak Learning Center",28,5,5,2,100,111
-"Junco Elementary",4,5,5,2,239,276
-"Junco Elementary",5,5,5,2,242,279
-"Junco Elementary",6,5,5,2,240,279
-"Junco Elementary",7,5,5,2,236,277
-"Junco Elementary",8,5,5,2,239,278
-"Junco Elementary",9,5,5,2,239,275
-"Junco Elementary",10,5,5,2,247,279
-"Junco Elementary",11,5,5,2,238,277
-"Junco Elementary",12,5,5,2,241,275
-"Junco Elementary",13,5,5,2,241,279
-"Junco Elementary",14,5,5,2,253,281
-"Junco Elementary",15,5,5,2,246,276
-"Junco Elementary",16,5,5,2,244,272
-"Junco Elementary",17,5,5,2,245,271
-"Junco Elementary",18,5,5,2,240,270
-"Junco Elementary",19,5,5,2,238,269
-"Junco Elementary",20,5,5,2,256,272
-"Junco Elementary",21,5,5,2,233,274
-"Junco Elementary",22,5,5,2,256,278
-"Junco Elementary",23,5,5,2,250,280
-"Junco Elementary",24,5,5,2,250,279
-"Junco Elementary",25,5,5,2,255,283
-"Junco Elementary",26,5,5,2,266,287
-"Junco Elementary",27,5,5,2,256,285
-"Junco Elementary",28,5,5,2,259,283
-"Meadowlark School",4,5,5,2,12,17
-"Meadowlark School",5,5,5,2,20,20
-"Meadowlark School",6,5,5,2,15,19
-"Meadowlark School",7,5,5,2,20,23
-"Meadowlark School",8,5,5,2,25,26
-"Meadowlark School",9,5,5,2,19,22
-"Meadowlark School",10,5,5,2,14,17
-"Meadowlark School",11,5,5,2,14,16
-"Meadowlark School",12,5,5,2,10,11
-"Meadowlark School",13,5,5,2,13,14
-"Meadowlark School",14,5,5,2,11,15
-"Meadowlark School",15,5,5,2,11,13
-"Meadowlark School",16,5,5,2,17,17
-"Meadowlark School",17,5,5,2,18,21
-"Meadowlark School",18,5,5,2,19,22
-"Meadowlark School",19,5,5,2,16,19
-"Meadowlark School",20,5,5,2,21,23
-"Meadowlark School",21,5,5,2,20,23
-"Meadowlark School",22,5,5,2,20,24
-"Meadowlark School",23,5,5,2,17,19
-"Meadowlark School",24,5,5,2,13,14
-"Meadowlark School",25,5,5,2,10,11
-"Meadowlark School",26,5,5,2,14,15
-"Meadowlark School",27,5,5,2,11,13
-"Meadowlark School",28,5,5,2,8,9
-"Goldfinch Elementary",4,5,5,2,282,338
-"Goldfinch Elementary",5,5,5,2,280,341
-"Goldfinch Elementary",6,5,5,2,276,339
-"Goldfinch Elementary",7,5,5,2,261,335
-"Goldfinch Elementary",8,5,5,2,273,332
-"Goldfinch Elementary",9,5,5,2,271,330
-"Goldfinch Elementary",10,5,5,2,263,332
-"Goldfinch Elementary",11,5,5,2,276,328
-"Goldfinch Elementary",12,5,5,2,275,328
-"Goldfinch Elementary",13,5,5,2,265,327
-"Goldfinch Elementary",14,5,5,2,282,331
-"Goldfinch Elementary",15,5,5,2,286,331
-"Goldfinch Elementary",16,5,5,2,283,331
-"Goldfinch Elementary",17,5,5,2,287,329
-"Goldfinch Elementary",18,5,5,2,279,331
-"Goldfinch Elementary",19,5,5,2,290,327
-"Goldfinch Elementary",20,5,5,2,287,329
-"Goldfinch Elementary",21,5,5,2,287,328
-"Goldfinch Elementary",22,5,5,2,288,327
-"Goldfinch Elementary",23,5,5,2,288,328
-"Goldfinch Elementary",24,5,5,2,291,328
-"Goldfinch Elementary",25,5,5,2,301,331
-"Goldfinch Elementary",26,5,5,2,285,331
-"Goldfinch Elementary",27,5,5,2,291,335
-"Goldfinch Elementary",28,5,5,2,298,334
-"Mockingbird Academy",4,5,5,2,53,62
-"Mockingbird Academy",5,5,5,2,54,67
-"Mockingbird Academy",6,5,5,2,54,65
+"loc_id","year","age_min","age_max","dose","positive","sample_n"
+"Chickadee Elementary",6,5,5,2,111,155
+"Chickadee Elementary",7,5,5,2,99,152
+"Chickadee Elementary",8,5,5,2,110,156
+"Chickadee Elementary",9,5,5,2,104,155
+"Chickadee Elementary",10,5,5,2,123,155
+"Chickadee Elementary",11,5,5,2,119,158
+"Chickadee Elementary",12,5,5,2,117,155
+"Chickadee Elementary",13,5,5,2,115,158
+"Chickadee Elementary",14,5,5,2,116,161
+"Chickadee Elementary",15,5,5,2,126,159
+"Chickadee Elementary",16,5,5,2,121,156
+"Chickadee Elementary",17,5,5,2,121,160
+"Chickadee Elementary",18,5,5,2,129,157
+"Chickadee Elementary",19,5,5,2,118,154
+"Chickadee Elementary",20,5,5,2,119,151
+"Chickadee Elementary",21,5,5,2,113,146
+"Chickadee Elementary",22,5,5,2,109,141
+"Chickadee Elementary",23,5,5,2,119,139
+"Chickadee Elementary",24,5,5,2,115,138
+"Chickadee Elementary",25,5,5,2,113,138
+"Chickadee Elementary",26,5,5,2,114,142
+"Chickadee Elementary",27,5,5,2,118,143
+"Chickadee Elementary",28,5,5,2,122,143
+"Chickadee Elementary",29,5,5,2,119,141
+"Chickadee Elementary",30,5,5,2,122,142
+"Chickadee Elementary",31,5,5,2,121,138
+"Chickadee Elementary",32,5,5,2,118,137
+"Chickadee Elementary",33,5,5,2,108,133
+"Nuthatch Academy",6,5,5,2,293,382
+"Nuthatch Academy",7,5,5,2,310,386
+"Nuthatch Academy",8,5,5,2,306,384
+"Nuthatch Academy",9,5,5,2,305,380
+"Nuthatch Academy",10,5,5,2,312,377
+"Nuthatch Academy",11,5,5,2,304,373
+"Nuthatch Academy",12,5,5,2,306,372
+"Nuthatch Academy",13,5,5,2,308,373
+"Nuthatch Academy",14,5,5,2,296,370
+"Nuthatch Academy",15,5,5,2,320,370
+"Nuthatch Academy",16,5,5,2,325,371
+"Nuthatch Academy",17,5,5,2,314,372
+"Nuthatch Academy",18,5,5,2,322,368
+"Nuthatch Academy",19,5,5,2,310,365
+"Nuthatch Academy",20,5,5,2,306,362
+"Nuthatch Academy",21,5,5,2,302,362
+"Nuthatch Academy",22,5,5,2,323,366
+"Nuthatch Academy",23,5,5,2,320,364
+"Nuthatch Academy",24,5,5,2,309,361
+"Nuthatch Academy",25,5,5,2,318,363
+"Nuthatch Academy",26,5,5,2,325,366
+"Nuthatch Academy",27,5,5,2,309,363
+"Nuthatch Academy",28,5,5,2,332,364
+"Nuthatch Academy",29,5,5,2,316,364
+"Nuthatch Academy",30,5,5,2,315,365
+"Nuthatch Academy",31,5,5,2,323,364
+"Nuthatch Academy",32,5,5,2,315,363
+"Nuthatch Academy",33,5,5,2,320,362
+"Blue Heron School",6,5,5,2,96,131
+"Blue Heron School",7,5,5,2,96,129
+"Blue Heron School",8,5,5,2,84,125
+"Blue Heron School",9,5,5,2,84,121
+"Blue Heron School",10,5,5,2,88,123
+"Blue Heron School",11,5,5,2,88,120
+"Blue Heron School",12,5,5,2,96,119
+"Blue Heron School",13,5,5,2,95,120
+"Blue Heron School",14,5,5,2,91,118
+"Blue Heron School",15,5,5,2,93,116
+"Blue Heron School",16,5,5,2,89,119
+"Blue Heron School",17,5,5,2,90,114
+"Blue Heron School",18,5,5,2,88,113
+"Blue Heron School",19,5,5,2,103,112
+"Blue Heron School",20,5,5,2,87,114
+"Blue Heron School",21,5,5,2,92,114
+"Blue Heron School",22,5,5,2,94,114
+"Blue Heron School",23,5,5,2,86,111
+"Blue Heron School",24,5,5,2,95,108
+"Blue Heron School",25,5,5,2,94,105
+"Blue Heron School",26,5,5,2,86,107
+"Blue Heron School",27,5,5,2,95,110
+"Blue Heron School",28,5,5,2,97,111
+"Blue Heron School",29,5,5,2,97,115
+"Blue Heron School",30,5,5,2,101,118
+"Blue Heron School",31,5,5,2,104,117
+"Blue Heron School",32,5,5,2,96,114
+"Blue Heron School",33,5,5,2,90,111
+"Flycatcher Elementary",6,5,5,2,42,57
+"Flycatcher Elementary",7,5,5,2,50,60
+"Flycatcher Elementary",8,5,5,2,51,64
+"Flycatcher Elementary",9,5,5,2,56,65
+"Flycatcher Elementary",10,5,5,2,51,62
+"Flycatcher Elementary",11,5,5,2,46,66
+"Flycatcher Elementary",12,5,5,2,58,66
+"Flycatcher Elementary",13,5,5,2,60,65
+"Flycatcher Elementary",14,5,5,2,58,66
+"Flycatcher Elementary",15,5,5,2,57,67
+"Flycatcher Elementary",16,5,5,2,60,70
+"Flycatcher Elementary",17,5,5,2,56,66
+"Flycatcher Elementary",18,5,5,2,52,64
+"Flycatcher Elementary",19,5,5,2,47,59
+"Flycatcher Elementary",20,5,5,2,52,58
+"Flycatcher Elementary",21,5,5,2,53,61
+"Flycatcher Elementary",22,5,5,2,49,56
+"Flycatcher Elementary",23,5,5,2,47,59
+"Flycatcher Elementary",24,5,5,2,48,56
+"Flycatcher Elementary",25,5,5,2,45,52
+"Flycatcher Elementary",26,5,5,2,52,57
+"Flycatcher Elementary",27,5,5,2,50,54
+"Flycatcher Elementary",28,5,5,2,52,57
+"Flycatcher Elementary",29,5,5,2,54,55
+"Flycatcher Elementary",30,5,5,2,46,51
+"Flycatcher Elementary",31,5,5,2,43,49
+"Flycatcher Elementary",32,5,5,2,46,51
+"Flycatcher Elementary",33,5,5,2,50,54
+"Bluebird Learning Center",6,5,5,2,31,49
+"Bluebird Learning Center",7,5,5,2,35,48
+"Bluebird Learning Center",8,5,5,2,29,47
+"Bluebird Learning Center",9,5,5,2,29,43
+"Bluebird Learning Center",10,5,5,2,32,46
+"Bluebird Learning Center",11,5,5,2,41,47
+"Bluebird Learning Center",12,5,5,2,38,50
+"Bluebird Learning Center",13,5,5,2,37,46
+"Bluebird Learning Center",14,5,5,2,39,49
+"Bluebird Learning Center",15,5,5,2,36,46
+"Bluebird Learning Center",16,5,5,2,41,49
+"Bluebird Learning Center",17,5,5,2,40,53
+"Bluebird Learning Center",18,5,5,2,39,48
+"Bluebird Learning Center",19,5,5,2,44,49
+"Bluebird Learning Center",20,5,5,2,37,45
+"Bluebird Learning Center",21,5,5,2,36,41
+"Bluebird Learning Center",22,5,5,2,36,44
+"Bluebird Learning Center",23,5,5,2,39,46
+"Bluebird Learning Center",24,5,5,2,37,48
+"Bluebird Learning Center",25,5,5,2,37,46
+"Bluebird Learning Center",26,5,5,2,41,50
+"Bluebird Learning Center",27,5,5,2,41,47
+"Bluebird Learning Center",28,5,5,2,43,51
+"Bluebird Learning Center",29,5,5,2,40,51
+"Bluebird Learning Center",30,5,5,2,43,56
+"Bluebird Learning Center",31,5,5,2,47,58
+"Bluebird Learning Center",32,5,5,2,50,60
+"Bluebird Learning Center",33,5,5,2,50,60
+"Catbird Academy",6,5,5,2,367,437
+"Catbird Academy",7,5,5,2,381,433
+"Catbird Academy",8,5,5,2,361,436
+"Catbird Academy",9,5,5,2,361,436
+"Catbird Academy",10,5,5,2,372,434
+"Catbird Academy",11,5,5,2,371,436
+"Catbird Academy",12,5,5,2,379,432
+"Catbird Academy",13,5,5,2,379,428
+"Catbird Academy",14,5,5,2,364,423
+"Catbird Academy",15,5,5,2,372,421
+"Catbird Academy",16,5,5,2,364,417
+"Catbird Academy",17,5,5,2,365,413
+"Catbird Academy",18,5,5,2,373,416
+"Catbird Academy",19,5,5,2,369,420
+"Catbird Academy",20,5,5,2,383,422
+"Catbird Academy",21,5,5,2,372,426
+"Catbird Academy",22,5,5,2,383,423
+"Catbird Academy",23,5,5,2,372,425
+"Catbird Academy",24,5,5,2,384,422
+"Catbird Academy",25,5,5,2,379,420
+"Catbird Academy",26,5,5,2,379,418
+"Catbird Academy",27,5,5,2,388,415
+"Catbird Academy",28,5,5,2,374,418
+"Catbird Academy",29,5,5,2,388,420
+"Catbird Academy",30,5,5,2,391,422
+"Catbird Academy",31,5,5,2,387,420
+"Catbird Academy",32,5,5,2,383,418
+"Catbird Academy",33,5,5,2,373,413
+"Finch Elementary",6,5,5,2,38,49
+"Finch Elementary",7,5,5,2,37,44
+"Finch Elementary",8,5,5,2,31,40
+"Finch Elementary",9,5,5,2,33,36
+"Finch Elementary",10,5,5,2,29,36
+"Finch Elementary",11,5,5,2,28,35
+"Finch Elementary",12,5,5,2,31,34
+"Finch Elementary",13,5,5,2,28,32
+"Finch Elementary",14,5,5,2,25,35
+"Finch Elementary",15,5,5,2,26,34
+"Finch Elementary",16,5,5,2,27,32
+"Finch Elementary",17,5,5,2,23,27
+"Finch Elementary",18,5,5,2,25,29
+"Finch Elementary",19,5,5,2,31,34
+"Finch Elementary",20,5,5,2,26,29
+"Finch Elementary",21,5,5,2,31,33
+"Finch Elementary",22,5,5,2,27,29
+"Finch Elementary",23,5,5,2,22,25
+"Finch Elementary",24,5,5,2,26,27
+"Finch Elementary",25,5,5,2,26,27
+"Finch Elementary",26,5,5,2,24,27
+"Finch Elementary",27,5,5,2,28,32
+"Finch Elementary",28,5,5,2,27,30
+"Finch Elementary",29,5,5,2,29,33
+"Finch Elementary",30,5,5,2,24,29
+"Finch Elementary",31,5,5,2,27,30
+"Finch Elementary",32,5,5,2,27,30
+"Finch Elementary",33,5,5,2,26,29
+"Sparrow School",6,5,5,2,57,89
+"Sparrow School",7,5,5,2,56,84
+"Sparrow School",8,5,5,2,67,87
+"Sparrow School",9,5,5,2,67,86
+"Sparrow School",10,5,5,2,65,84
+"Sparrow School",11,5,5,2,63,87
+"Sparrow School",12,5,5,2,64,87
+"Sparrow School",13,5,5,2,67,86
+"Sparrow School",14,5,5,2,64,85
+"Sparrow School",15,5,5,2,67,82
+"Sparrow School",16,5,5,2,66,83
+"Sparrow School",17,5,5,2,68,87
+"Sparrow School",18,5,5,2,72,87
+"Sparrow School",19,5,5,2,73,89
+"Sparrow School",20,5,5,2,69,85
+"Sparrow School",21,5,5,2,71,88
+"Sparrow School",22,5,5,2,71,88
+"Sparrow School",23,5,5,2,72,87
+"Sparrow School",24,5,5,2,75,86
+"Sparrow School",25,5,5,2,75,88
+"Sparrow School",26,5,5,2,72,83
+"Sparrow School",27,5,5,2,77,86
+"Sparrow School",28,5,5,2,79,91
+"Sparrow School",29,5,5,2,77,91
+"Sparrow School",30,5,5,2,74,91
+"Sparrow School",31,5,5,2,77,88
+"Sparrow School",32,5,5,2,67,85
+"Sparrow School",33,5,5,2,72,88
+"Towhee Children's Academy",6,5,5,2,196,219
+"Towhee Children's Academy",7,5,5,2,193,216
+"Towhee Children's Academy",8,5,5,2,196,214
+"Towhee Children's Academy",9,5,5,2,201,218
+"Towhee Children's Academy",10,5,5,2,192,222
+"Towhee Children's Academy",11,5,5,2,211,219
+"Towhee Children's Academy",12,5,5,2,197,220
+"Towhee Children's Academy",13,5,5,2,201,216
+"Towhee Children's Academy",14,5,5,2,199,213
+"Towhee Children's Academy",15,5,5,2,200,214
+"Towhee Children's Academy",16,5,5,2,190,210
+"Towhee Children's Academy",17,5,5,2,194,206
+"Towhee Children's Academy",18,5,5,2,189,206
+"Towhee Children's Academy",19,5,5,2,194,207
+"Towhee Children's Academy",20,5,5,2,188,205
+"Towhee Children's Academy",21,5,5,2,191,202
+"Towhee Children's Academy",22,5,5,2,187,199
+"Towhee Children's Academy",23,5,5,2,178,198
+"Towhee Children's Academy",24,5,5,2,177,199
+"Towhee Children's Academy",25,5,5,2,184,199
+"Towhee Children's Academy",26,5,5,2,175,197
+"Towhee Children's Academy",27,5,5,2,186,196
+"Towhee Children's Academy",28,5,5,2,187,199
+"Towhee Children's Academy",29,5,5,2,187,203
+"Towhee Children's Academy",30,5,5,2,193,201
+"Towhee Children's Academy",31,5,5,2,194,204
+"Towhee Children's Academy",32,5,5,2,191,204
+"Towhee Children's Academy",33,5,5,2,187,204
+"Warbler Elementary",6,5,5,2,50,55
+"Warbler Elementary",7,5,5,2,46,54
+"Warbler Elementary",8,5,5,2,44,50
+"Warbler Elementary",9,5,5,2,35,46
+"Warbler Elementary",10,5,5,2,35,45
+"Warbler Elementary",11,5,5,2,36,44
+"Warbler Elementary",12,5,5,2,38,40
+"Warbler Elementary",13,5,5,2,32,37
+"Warbler Elementary",14,5,5,2,28,34
+"Warbler Elementary",15,5,5,2,31,32
+"Warbler Elementary",16,5,5,2,27,35
+"Warbler Elementary",17,5,5,2,36,39
+"Warbler Elementary",18,5,5,2,33,37
+"Warbler Elementary",19,5,5,2,33,42
+"Warbler Elementary",20,5,5,2,35,39
+"Warbler Elementary",21,5,5,2,32,34
+"Warbler Elementary",22,5,5,2,30,33
+"Warbler Elementary",23,5,5,2,29,32
+"Warbler Elementary",24,5,5,2,27,30
+"Warbler Elementary",25,5,5,2,29,29
+"Warbler Elementary",26,5,5,2,30,31
+"Warbler Elementary",27,5,5,2,29,35
+"Warbler Elementary",28,5,5,2,35,37
+"Warbler Elementary",29,5,5,2,34,36
+"Warbler Elementary",30,5,5,2,35,37
+"Warbler Elementary",31,5,5,2,31,34
+"Warbler Elementary",32,5,5,2,31,33
+"Warbler Elementary",33,5,5,2,27,28
+"Egret Elementary",6,5,5,2,129,171
+"Egret Elementary",7,5,5,2,126,175
+"Egret Elementary",8,5,5,2,131,171
+"Egret Elementary",9,5,5,2,127,171
+"Egret Elementary",10,5,5,2,133,168
+"Egret Elementary",11,5,5,2,129,168
+"Egret Elementary",12,5,5,2,133,166
+"Egret Elementary",13,5,5,2,125,163
+"Egret Elementary",14,5,5,2,126,167
+"Egret Elementary",15,5,5,2,126,165
+"Egret Elementary",16,5,5,2,130,165
+"Egret Elementary",17,5,5,2,136,166
+"Egret Elementary",18,5,5,2,131,169
+"Egret Elementary",19,5,5,2,140,171
+"Egret Elementary",20,5,5,2,145,176
+"Egret Elementary",21,5,5,2,151,173
+"Egret Elementary",22,5,5,2,143,169
+"Egret Elementary",23,5,5,2,140,165
+"Egret Elementary",24,5,5,2,135,161
+"Egret Elementary",25,5,5,2,140,160
+"Egret Elementary",26,5,5,2,133,162
+"Egret Elementary",27,5,5,2,143,163
+"Egret Elementary",28,5,5,2,142,166
+"Egret Elementary",29,5,5,2,141,164
+"Egret Elementary",30,5,5,2,142,163
+"Egret Elementary",31,5,5,2,138,161
+"Egret Elementary",32,5,5,2,138,157
+"Egret Elementary",33,5,5,2,133,156
+"Cardinal Academy",6,5,5,2,28,29
+"Cardinal Academy",7,5,5,2,27,30
+"Cardinal Academy",8,5,5,2,28,29
+"Cardinal Academy",9,5,5,2,27,28
+"Cardinal Academy",10,5,5,2,22,26
+"Cardinal Academy",11,5,5,2,30,31
+"Cardinal Academy",12,5,5,2,30,32
+"Cardinal Academy",13,5,5,2,29,32
+"Cardinal Academy",14,5,5,2,28,29
+"Cardinal Academy",15,5,5,2,27,30
+"Cardinal Academy",16,5,5,2,28,30
+"Cardinal Academy",17,5,5,2,23,26
+"Cardinal Academy",18,5,5,2,26,28
+"Cardinal Academy",19,5,5,2,31,32
+"Cardinal Academy",20,5,5,2,27,27
+"Cardinal Academy",21,5,5,2,32,32
+"Cardinal Academy",22,5,5,2,30,31
+"Cardinal Academy",23,5,5,2,28,29
+"Cardinal Academy",24,5,5,2,26,31
+"Cardinal Academy",25,5,5,2,29,32
+"Cardinal Academy",26,5,5,2,30,32
+"Cardinal Academy",27,5,5,2,32,33
+"Cardinal Academy",28,5,5,2,28,29
+"Cardinal Academy",29,5,5,2,25,26
+"Cardinal Academy",30,5,5,2,25,26
+"Cardinal Academy",31,5,5,2,21,21
+"Cardinal Academy",32,5,5,2,22,22
+"Cardinal Academy",33,5,5,2,23,23
+"Bunting School",6,5,5,2,81,87
+"Bunting School",7,5,5,2,80,87
+"Bunting School",8,5,5,2,75,84
+"Bunting School",9,5,5,2,76,83
+"Bunting School",10,5,5,2,77,82
+"Bunting School",11,5,5,2,80,84
+"Bunting School",12,5,5,2,80,85
+"Bunting School",13,5,5,2,85,89
+"Bunting School",14,5,5,2,81,91
+"Bunting School",15,5,5,2,84,91
+"Bunting School",16,5,5,2,90,93
+"Bunting School",17,5,5,2,84,91
+"Bunting School",18,5,5,2,84,89
+"Bunting School",19,5,5,2,91,94
+"Bunting School",20,5,5,2,91,96
+"Bunting School",21,5,5,2,98,98
+"Bunting School",22,5,5,2,88,96
+"Bunting School",23,5,5,2,93,100
+"Bunting School",24,5,5,2,91,97
+"Bunting School",25,5,5,2,91,99
+"Bunting School",26,5,5,2,98,104
+"Bunting School",27,5,5,2,98,102
+"Bunting School",28,5,5,2,99,106
+"Bunting School",29,5,5,2,93,104
+"Bunting School",30,5,5,2,96,102
+"Bunting School",31,5,5,2,92,101
+"Bunting School",32,5,5,2,96,99
+"Bunting School",33,5,5,2,85,95
+"Tanager Academy",6,5,5,2,20,26
+"Tanager Academy",7,5,5,2,17,25
+"Tanager Academy",8,5,5,2,19,26
+"Tanager Academy",9,5,5,2,24,30
+"Tanager Academy",10,5,5,2,18,27
+"Tanager Academy",11,5,5,2,20,30
+"Tanager Academy",12,5,5,2,23,28
+"Tanager Academy",13,5,5,2,25,31
+"Tanager Academy",14,5,5,2,22,32
+"Tanager Academy",15,5,5,2,26,36
+"Tanager Academy",16,5,5,2,31,37
+"Tanager Academy",17,5,5,2,27,34
+"Tanager Academy",18,5,5,2,29,35
+"Tanager Academy",19,5,5,2,27,30
+"Tanager Academy",20,5,5,2,27,31
+"Tanager Academy",21,5,5,2,25,29
+"Tanager Academy",22,5,5,2,30,34
+"Tanager Academy",23,5,5,2,29,33
+"Tanager Academy",24,5,5,2,27,34
+"Tanager Academy",25,5,5,2,32,38
+"Tanager Academy",26,5,5,2,31,36
+"Tanager Academy",27,5,5,2,28,32
+"Tanager Academy",28,5,5,2,28,36
+"Tanager Academy",29,5,5,2,34,36
+"Tanager Academy",30,5,5,2,35,37
+"Tanager Academy",31,5,5,2,36,41
+"Tanager Academy",32,5,5,2,38,43
+"Tanager Academy",33,5,5,2,40,46
+"Oriole Youth Academy",6,5,5,2,157,174
+"Oriole Youth Academy",7,5,5,2,153,172
+"Oriole Youth Academy",8,5,5,2,146,171
+"Oriole Youth Academy",9,5,5,2,147,169
+"Oriole Youth Academy",10,5,5,2,157,166
+"Oriole Youth Academy",11,5,5,2,145,165
+"Oriole Youth Academy",12,5,5,2,142,162
+"Oriole Youth Academy",13,5,5,2,137,161
+"Oriole Youth Academy",14,5,5,2,143,160
+"Oriole Youth Academy",15,5,5,2,137,157
+"Oriole Youth Academy",16,5,5,2,141,156
+"Oriole Youth Academy",17,5,5,2,143,160
+"Oriole Youth Academy",18,5,5,2,148,162
+"Oriole Youth Academy",19,5,5,2,148,165
+"Oriole Youth Academy",20,5,5,2,149,166
+"Oriole Youth Academy",21,5,5,2,154,162
+"Oriole Youth Academy",22,5,5,2,150,160
+"Oriole Youth Academy",23,5,5,2,155,159
+"Oriole Youth Academy",24,5,5,2,152,163
+"Oriole Youth Academy",25,5,5,2,153,167
+"Oriole Youth Academy",26,5,5,2,160,170
+"Oriole Youth Academy",27,5,5,2,164,168
+"Oriole Youth Academy",28,5,5,2,147,165
+"Oriole Youth Academy",29,5,5,2,152,169
+"Oriole Youth Academy",30,5,5,2,163,170
+"Oriole Youth Academy",31,5,5,2,161,172
+"Oriole Youth Academy",32,5,5,2,168,175
+"Oriole Youth Academy",33,5,5,2,167,173
+"Grosbeak Learning Center",6,5,5,2,26,31
+"Grosbeak Learning Center",7,5,5,2,24,26
+"Grosbeak Learning Center",8,5,5,2,24,26
+"Grosbeak Learning Center",9,5,5,2,28,31
+"Grosbeak Learning Center",10,5,5,2,25,26
+"Grosbeak Learning Center",11,5,5,2,27,30
+"Grosbeak Learning Center",12,5,5,2,26,31
+"Grosbeak Learning Center",13,5,5,2,27,29
+"Grosbeak Learning Center",14,5,5,2,20,25
+"Grosbeak Learning Center",15,5,5,2,22,25
+"Grosbeak Learning Center",16,5,5,2,21,24
+"Grosbeak Learning Center",17,5,5,2,27,29
+"Grosbeak Learning Center",18,5,5,2,26,31
+"Grosbeak Learning Center",19,5,5,2,28,30
+"Grosbeak Learning Center",20,5,5,2,28,30
+"Grosbeak Learning Center",21,5,5,2,29,30
+"Grosbeak Learning Center",22,5,5,2,29,29
+"Grosbeak Learning Center",23,5,5,2,27,28
+"Grosbeak Learning Center",24,5,5,2,32,32
+"Grosbeak Learning Center",25,5,5,2,28,29
+"Grosbeak Learning Center",26,5,5,2,26,29
+"Grosbeak Learning Center",27,5,5,2,22,25
+"Grosbeak Learning Center",28,5,5,2,25,25
+"Grosbeak Learning Center",29,5,5,2,21,22
+"Grosbeak Learning Center",30,5,5,2,23,25
+"Grosbeak Learning Center",31,5,5,2,25,25
+"Grosbeak Learning Center",32,5,5,2,21,22
+"Grosbeak Learning Center",33,5,5,2,22,25
+"Junco Elementary",6,5,5,2,176,218
+"Junco Elementary",7,5,5,2,174,214
+"Junco Elementary",8,5,5,2,185,217
+"Junco Elementary",9,5,5,2,189,220
+"Junco Elementary",10,5,5,2,198,224
+"Junco Elementary",11,5,5,2,202,229
+"Junco Elementary",12,5,5,2,196,228
+"Junco Elementary",13,5,5,2,205,227
+"Junco Elementary",14,5,5,2,209,229
+"Junco Elementary",15,5,5,2,206,231
+"Junco Elementary",16,5,5,2,208,233
+"Junco Elementary",17,5,5,2,210,231
+"Junco Elementary",18,5,5,2,214,235
+"Junco Elementary",19,5,5,2,214,234
+"Junco Elementary",20,5,5,2,203,235
+"Junco Elementary",21,5,5,2,217,236
+"Junco Elementary",22,5,5,2,219,241
+"Junco Elementary",23,5,5,2,211,238
+"Junco Elementary",24,5,5,2,221,236
+"Junco Elementary",25,5,5,2,224,239
+"Junco Elementary",26,5,5,2,212,234
+"Junco Elementary",27,5,5,2,209,236
+"Junco Elementary",28,5,5,2,213,233
+"Junco Elementary",29,5,5,2,209,232
+"Junco Elementary",30,5,5,2,199,229
+"Junco Elementary",31,5,5,2,213,232
+"Junco Elementary",32,5,5,2,220,237
+"Junco Elementary",33,5,5,2,213,238
+"Meadowlark School",6,5,5,2,33,38
+"Meadowlark School",7,5,5,2,33,37
+"Meadowlark School",8,5,5,2,32,38
+"Meadowlark School",9,5,5,2,35,41
+"Meadowlark School",10,5,5,2,36,41
+"Meadowlark School",11,5,5,2,38,46
+"Meadowlark School",12,5,5,2,45,48
+"Meadowlark School",13,5,5,2,40,50
+"Meadowlark School",14,5,5,2,50,52
+"Meadowlark School",15,5,5,2,46,50
+"Meadowlark School",16,5,5,2,46,52
+"Meadowlark School",17,5,5,2,43,50
+"Meadowlark School",18,5,5,2,49,54
+"Meadowlark School",19,5,5,2,52,57
+"Meadowlark School",20,5,5,2,49,53
+"Meadowlark School",21,5,5,2,52,57
+"Meadowlark School",22,5,5,2,54,59
+"Meadowlark School",23,5,5,2,54,59
+"Meadowlark School",24,5,5,2,58,64
+"Meadowlark School",25,5,5,2,55,63
+"Meadowlark School",26,5,5,2,59,63
+"Meadowlark School",27,5,5,2,56,61
+"Meadowlark School",28,5,5,2,56,58
+"Meadowlark School",29,5,5,2,58,60
+"Meadowlark School",30,5,5,2,48,56
+"Meadowlark School",31,5,5,2,54,59
+"Meadowlark School",32,5,5,2,51,55
+"Meadowlark School",33,5,5,2,51,56
+"Goldfinch Elementary",6,5,5,2,83,100
+"Goldfinch Elementary",7,5,5,2,82,96
+"Goldfinch Elementary",8,5,5,2,69,92
+"Goldfinch Elementary",9,5,5,2,82,95
+"Goldfinch Elementary",10,5,5,2,82,100
+"Goldfinch Elementary",11,5,5,2,88,104
+"Goldfinch Elementary",12,5,5,2,82,106
+"Goldfinch Elementary",13,5,5,2,97,107
+"Goldfinch Elementary",14,5,5,2,89,108
+"Goldfinch Elementary",15,5,5,2,94,106
+"Goldfinch Elementary",16,5,5,2,95,108
+"Goldfinch Elementary",17,5,5,2,96,108
+"Goldfinch Elementary",18,5,5,2,86,109
+"Goldfinch Elementary",19,5,5,2,101,113
+"Goldfinch Elementary",20,5,5,2,102,115
+"Goldfinch Elementary",21,5,5,2,103,114
+"Goldfinch Elementary",22,5,5,2,107,118
+"Goldfinch Elementary",23,5,5,2,104,119
+"Goldfinch Elementary",24,5,5,2,110,119
+"Goldfinch Elementary",25,5,5,2,106,121
+"Goldfinch Elementary",26,5,5,2,104,121
+"Goldfinch Elementary",27,5,5,2,107,117
+"Goldfinch Elementary",28,5,5,2,108,115
+"Goldfinch Elementary",29,5,5,2,104,114
+"Goldfinch Elementary",30,5,5,2,102,113
+"Goldfinch Elementary",31,5,5,2,100,111
+"Goldfinch Elementary",32,5,5,2,101,113
+"Goldfinch Elementary",33,5,5,2,106,118
+"Mockingbird Academy",6,5,5,2,47,58
 "Mockingbird Academy",7,5,5,2,51,62
-"Mockingbird Academy",8,5,5,2,44,57
-"Mockingbird Academy",9,5,5,2,47,55
-"Mockingbird Academy",10,5,5,2,46,51
-"Mockingbird Academy",11,5,5,2,41,50
-"Mockingbird Academy",12,5,5,2,44,47
-"Mockingbird Academy",13,5,5,2,41,47
-"Mockingbird Academy",14,5,5,2,40,44
-"Mockingbird Academy",15,5,5,2,36,41
-"Mockingbird Academy",16,5,5,2,43,45
-"Mockingbird Academy",17,5,5,2,41,47
-"Mockingbird Academy",18,5,5,2,45,52
-"Mockingbird Academy",19,5,5,2,45,53
-"Mockingbird Academy",20,5,5,2,42,51
-"Mockingbird Academy",21,5,5,2,47,54
-"Mockingbird Academy",22,5,5,2,48,59
-"Mockingbird Academy",23,5,5,2,47,54
-"Mockingbird Academy",24,5,5,2,46,50
-"Mockingbird Academy",25,5,5,2,51,54
-"Mockingbird Academy",26,5,5,2,48,56
-"Mockingbird Academy",27,5,5,2,55,61
-"Mockingbird Academy",28,5,5,2,60,66
-"Kinglet Learning Center",4,5,5,2,42,44
-"Kinglet Learning Center",5,5,5,2,42,47
-"Kinglet Learning Center",6,5,5,2,44,48
-"Kinglet Learning Center",7,5,5,2,44,45
-"Kinglet Learning Center",8,5,5,2,36,40
-"Kinglet Learning Center",9,5,5,2,30,35
-"Kinglet Learning Center",10,5,5,2,32,34
-"Kinglet Learning Center",11,5,5,2,30,33
-"Kinglet Learning Center",12,5,5,2,30,35
-"Kinglet Learning Center",13,5,5,2,34,37
-"Kinglet Learning Center",14,5,5,2,32,35
-"Kinglet Learning Center",15,5,5,2,35,39
-"Kinglet Learning Center",16,5,5,2,41,43
-"Kinglet Learning Center",17,5,5,2,37,44
-"Kinglet Learning Center",18,5,5,2,44,45
-"Kinglet Learning Center",19,5,5,2,40,48
-"Kinglet Learning Center",20,5,5,2,46,51
-"Kinglet Learning Center",21,5,5,2,50,54
-"Kinglet Learning Center",22,5,5,2,47,49
-"Kinglet Learning Center",23,5,5,2,47,52
-"Kinglet Learning Center",24,5,5,2,48,53
-"Kinglet Learning Center",25,5,5,2,45,49
-"Kinglet Learning Center",26,5,5,2,49,53
-"Kinglet Learning Center",27,5,5,2,53,57
-"Kinglet Learning Center",28,5,5,2,51,55
-"Vireo School",4,5,5,2,86,115
-"Vireo School",5,5,5,2,83,114
-"Vireo School",6,5,5,2,81,110
-"Vireo School",7,5,5,2,90,113
-"Vireo School",8,5,5,2,84,114
-"Vireo School",9,5,5,2,96,118
-"Vireo School",10,5,5,2,104,123
-"Vireo School",11,5,5,2,92,119
-"Vireo School",12,5,5,2,89,119
-"Vireo School",13,5,5,2,96,120
-"Vireo School",14,5,5,2,98,120
-"Vireo School",15,5,5,2,98,120
-"Vireo School",16,5,5,2,102,122
-"Vireo School",17,5,5,2,97,117
-"Vireo School",18,5,5,2,104,120
-"Vireo School",19,5,5,2,102,118
-"Vireo School",20,5,5,2,101,118
-"Vireo School",21,5,5,2,98,113
-"Vireo School",22,5,5,2,96,117
-"Vireo School",23,5,5,2,96,113
-"Vireo School",24,5,5,2,105,116
-"Vireo School",25,5,5,2,97,118
-"Vireo School",26,5,5,2,107,120
-"Vireo School",27,5,5,2,103,115
-"Vireo School",28,5,5,2,101,117
-"Kingfisher Academy",4,5,5,2,77,92
-"Kingfisher Academy",5,5,5,2,74,92
-"Kingfisher Academy",6,5,5,2,78,91
-"Kingfisher Academy",7,5,5,2,75,88
-"Kingfisher Academy",8,5,5,2,78,88
-"Kingfisher Academy",9,5,5,2,75,91
-"Kingfisher Academy",10,5,5,2,81,90
-"Kingfisher Academy",11,5,5,2,77,92
-"Kingfisher Academy",12,5,5,2,79,92
-"Kingfisher Academy",13,5,5,2,84,95
-"Kingfisher Academy",14,5,5,2,73,92
-"Kingfisher Academy",15,5,5,2,79,92
-"Kingfisher Academy",16,5,5,2,79,87
-"Kingfisher Academy",17,5,5,2,72,82
-"Kingfisher Academy",18,5,5,2,75,84
-"Kingfisher Academy",19,5,5,2,77,86
-"Kingfisher Academy",20,5,5,2,79,89
-"Kingfisher Academy",21,5,5,2,78,92
-"Kingfisher Academy",22,5,5,2,85,95
-"Kingfisher Academy",23,5,5,2,82,97
-"Kingfisher Academy",24,5,5,2,86,96
-"Kingfisher Academy",25,5,5,2,85,94
-"Kingfisher Academy",26,5,5,2,92,97
-"Kingfisher Academy",27,5,5,2,91,96
-"Kingfisher Academy",28,5,5,2,87,92
-"Cormorant Elementary",4,5,5,2,76,79
-"Cormorant Elementary",5,5,5,2,63,74
-"Cormorant Elementary",6,5,5,2,67,70
-"Cormorant Elementary",7,5,5,2,56,66
-"Cormorant Elementary",8,5,5,2,60,70
-"Cormorant Elementary",9,5,5,2,58,65
-"Cormorant Elementary",10,5,5,2,63,68
-"Cormorant Elementary",11,5,5,2,64,66
-"Cormorant Elementary",12,5,5,2,60,66
-"Cormorant Elementary",13,5,5,2,61,68
-"Cormorant Elementary",14,5,5,2,68,72
-"Cormorant Elementary",15,5,5,2,67,72
-"Cormorant Elementary",16,5,5,2,66,72
-"Cormorant Elementary",17,5,5,2,67,72
-"Cormorant Elementary",18,5,5,2,72,76
-"Cormorant Elementary",19,5,5,2,77,80
-"Cormorant Elementary",20,5,5,2,68,76
-"Cormorant Elementary",21,5,5,2,74,78
-"Cormorant Elementary",22,5,5,2,68,74
-"Cormorant Elementary",23,5,5,2,71,77
-"Cormorant Elementary",24,5,5,2,69,75
-"Cormorant Elementary",25,5,5,2,71,74
-"Cormorant Elementary",26,5,5,2,70,75
-"Cormorant Elementary",27,5,5,2,71,72
-"Cormorant Elementary",28,5,5,2,65,70
-"State",2,2,2,1,313,415
-"State",3,2,2,1,308,400
-"State",4,2,2,1,235,311
-"State",5,2,2,1,233,289
-"State",6,2,2,1,333,436
-"State",7,2,2,1,229,290
-"State",8,2,2,1,223,296
-"State",9,2,2,1,227,292
-"State",10,2,2,1,200,251
-"State",11,2,2,1,211,259
-"State",12,2,2,1,237,303
-"State",13,2,2,1,255,329
-"State",14,2,2,1,269,344
-"State",15,2,2,1,354,432
-"State",16,2,2,1,306,363
-"State",17,2,2,1,289,355
-"State",18,2,2,1,245,307
-"State",19,2,2,1,304,367
-"State",20,2,2,1,229,267
-"State",21,2,2,1,273,333
-"State",22,2,2,1,240,279
-"State",23,2,2,1,333,386
-"State",24,2,2,1,337,396
-"State",25,2,2,1,372,433
-"State",26,2,2,1,272,318
-"State",27,2,2,1,233,276
-"State",28,2,2,1,253,297
-"State",29,2,2,1,234,276
-"State",30,2,2,1,267,328
-"State",31,2,2,1,305,374
-"State",1,3,3,1,227,282
-"State",2,3,3,1,275,343
-"State",3,3,3,1,308,378
-"State",4,3,3,1,296,368
-"State",5,3,3,1,222,268
-"State",6,3,3,1,240,291
-"State",7,3,3,1,239,294
-"State",8,3,3,1,297,357
-"State",9,3,3,1,358,435
-"State",10,3,3,1,256,303
-"State",11,3,3,1,241,281
-"State",12,3,3,1,332,394
-"State",13,3,3,1,360,418
-"State",14,3,3,1,256,289
-"State",15,3,3,1,322,363
-"State",16,3,3,1,302,342
-"State",17,3,3,1,317,367
-"State",18,3,3,1,310,339
-"State",19,3,3,1,298,337
-"State",20,3,3,1,295,330
-"State",21,3,3,1,330,362
-"State",22,3,3,1,281,311
-"State",23,3,3,1,283,313
-"State",24,3,3,1,241,269
-"State",25,3,3,1,238,273
-"State",26,3,3,1,340,385
-"State",27,3,3,1,268,292
-"State",28,3,3,1,289,325
-"State",29,3,3,1,330,374
-"State",30,3,3,1,250,301
-"State",4,5,5,2,1744,2154
-"State",5,5,5,2,1719,2170
-"State",6,5,5,2,1764,2148
-"State",7,5,5,2,1754,2144
-"State",8,5,5,2,1751,2142
-"State",9,5,5,2,1766,2128
-"State",10,5,5,2,1730,2128
-"State",11,5,5,2,1778,2125
-"State",12,5,5,2,1780,2115
-"State",13,5,5,2,1819,2146
-"State",14,5,5,2,1829,2142
-"State",15,5,5,2,1823,2157
-"State",16,5,5,2,1860,2159
-"State",17,5,5,2,1872,2156
-"State",18,5,5,2,1918,2183
-"State",19,5,5,2,1898,2194
-"State",20,5,5,2,1957,2212
-"State",21,5,5,2,1970,2228
-"State",22,5,5,2,1980,2243
-"State",23,5,5,2,1991,2242
-"State",24,5,5,2,2001,2246
-"State",25,5,5,2,1964,2229
-"State",26,5,5,2,2045,2257
-"State",27,5,5,2,2003,2264
-"State",28,5,5,2,1997,2254
-"State",3,14,18,2,253,285
-"State",4,14,18,2,246,280
-"State",5,14,18,2,247,290
-"State",6,14,18,2,217,250
-"State",7,14,18,2,233,255
-"State",8,14,18,2,207,235
-"State",9,14,18,2,315,345
-"State",10,14,18,2,230,265
-"State",11,14,18,2,204,230
-"State",12,14,18,2,198,215
-"State",13,14,18,2,305,340
-"State",14,14,18,2,327,345
-"State",15,14,18,2,284,310
+"Mockingbird Academy",8,5,5,2,54,63
+"Mockingbird Academy",9,5,5,2,54,64
+"Mockingbird Academy",10,5,5,2,58,64
+"Mockingbird Academy",11,5,5,2,59,66
+"Mockingbird Academy",12,5,5,2,58,70
+"Mockingbird Academy",13,5,5,2,69,74
+"Mockingbird Academy",14,5,5,2,66,78
+"Mockingbird Academy",15,5,5,2,70,82
+"Mockingbird Academy",16,5,5,2,77,86
+"Mockingbird Academy",17,5,5,2,80,90
+"Mockingbird Academy",18,5,5,2,76,86
+"Mockingbird Academy",19,5,5,2,74,85
+"Mockingbird Academy",20,5,5,2,73,81
+"Mockingbird Academy",21,5,5,2,78,83
+"Mockingbird Academy",22,5,5,2,77,86
+"Mockingbird Academy",23,5,5,2,82,89
+"Mockingbird Academy",24,5,5,2,85,93
+"Mockingbird Academy",25,5,5,2,88,94
+"Mockingbird Academy",26,5,5,2,83,93
+"Mockingbird Academy",27,5,5,2,88,96
+"Mockingbird Academy",28,5,5,2,78,92
+"Mockingbird Academy",29,5,5,2,79,92
+"Mockingbird Academy",30,5,5,2,81,87
+"Mockingbird Academy",31,5,5,2,79,85
+"Mockingbird Academy",32,5,5,2,79,84
+"Mockingbird Academy",33,5,5,2,77,82
+"Kinglet Learning Center",6,5,5,2,64,93
+"Kinglet Learning Center",7,5,5,2,64,93
+"Kinglet Learning Center",8,5,5,2,62,94
+"Kinglet Learning Center",9,5,5,2,61,94
+"Kinglet Learning Center",10,5,5,2,65,90
+"Kinglet Learning Center",11,5,5,2,63,92
+"Kinglet Learning Center",12,5,5,2,57,88
+"Kinglet Learning Center",13,5,5,2,56,83
+"Kinglet Learning Center",14,5,5,2,60,82
+"Kinglet Learning Center",15,5,5,2,56,82
+"Kinglet Learning Center",16,5,5,2,60,84
+"Kinglet Learning Center",17,5,5,2,57,84
+"Kinglet Learning Center",18,5,5,2,64,83
+"Kinglet Learning Center",19,5,5,2,59,86
+"Kinglet Learning Center",20,5,5,2,68,87
+"Kinglet Learning Center",21,5,5,2,71,92
+"Kinglet Learning Center",22,5,5,2,66,87
+"Kinglet Learning Center",23,5,5,2,74,85
+"Kinglet Learning Center",24,5,5,2,71,87
+"Kinglet Learning Center",25,5,5,2,68,90
+"Kinglet Learning Center",26,5,5,2,70,86
+"Kinglet Learning Center",27,5,5,2,71,88
+"Kinglet Learning Center",28,5,5,2,72,90
+"Kinglet Learning Center",29,5,5,2,73,89
+"Kinglet Learning Center",30,5,5,2,80,92
+"Kinglet Learning Center",31,5,5,2,74,91
+"Kinglet Learning Center",32,5,5,2,77,88
+"Kinglet Learning Center",33,5,5,2,70,87
+"Vireo School",6,5,5,2,30,54
+"Vireo School",7,5,5,2,24,51
+"Vireo School",8,5,5,2,22,46
+"Vireo School",9,5,5,2,24,50
+"Vireo School",10,5,5,2,28,55
+"Vireo School",11,5,5,2,30,55
+"Vireo School",12,5,5,2,30,52
+"Vireo School",13,5,5,2,36,49
+"Vireo School",14,5,5,2,25,50
+"Vireo School",15,5,5,2,40,55
+"Vireo School",16,5,5,2,38,58
+"Vireo School",17,5,5,2,39,56
+"Vireo School",18,5,5,2,42,56
+"Vireo School",19,5,5,2,41,52
+"Vireo School",20,5,5,2,36,49
+"Vireo School",21,5,5,2,39,53
+"Vireo School",22,5,5,2,37,49
+"Vireo School",23,5,5,2,41,49
+"Vireo School",24,5,5,2,44,53
+"Vireo School",25,5,5,2,41,58
+"Vireo School",26,5,5,2,49,61
+"Vireo School",27,5,5,2,44,62
+"Vireo School",28,5,5,2,53,65
+"Vireo School",29,5,5,2,52,68
+"Vireo School",30,5,5,2,56,72
+"Vireo School",31,5,5,2,60,76
+"Vireo School",32,5,5,2,53,73
+"Vireo School",33,5,5,2,54,74
+"Kingfisher Academy",6,5,5,2,45,61
+"Kingfisher Academy",7,5,5,2,50,56
+"Kingfisher Academy",8,5,5,2,44,59
+"Kingfisher Academy",9,5,5,2,53,58
+"Kingfisher Academy",10,5,5,2,57,63
+"Kingfisher Academy",11,5,5,2,53,60
+"Kingfisher Academy",12,5,5,2,47,56
+"Kingfisher Academy",13,5,5,2,43,56
+"Kingfisher Academy",14,5,5,2,48,55
+"Kingfisher Academy",15,5,5,2,52,58
+"Kingfisher Academy",16,5,5,2,46,55
+"Kingfisher Academy",17,5,5,2,46,54
+"Kingfisher Academy",18,5,5,2,51,57
+"Kingfisher Academy",19,5,5,2,53,61
+"Kingfisher Academy",20,5,5,2,55,65
+"Kingfisher Academy",21,5,5,2,52,61
+"Kingfisher Academy",22,5,5,2,54,58
+"Kingfisher Academy",23,5,5,2,47,54
+"Kingfisher Academy",24,5,5,2,50,55
+"Kingfisher Academy",25,5,5,2,52,57
+"Kingfisher Academy",26,5,5,2,52,56
+"Kingfisher Academy",27,5,5,2,51,58
+"Kingfisher Academy",28,5,5,2,56,61
+"Kingfisher Academy",29,5,5,2,49,59
+"Kingfisher Academy",30,5,5,2,55,60
+"Kingfisher Academy",31,5,5,2,54,63
+"Kingfisher Academy",32,5,5,2,60,64
+"Kingfisher Academy",33,5,5,2,55,61
+"Cormorant Elementary",6,5,5,2,134,165
+"Cormorant Elementary",7,5,5,2,133,162
+"Cormorant Elementary",8,5,5,2,142,160
+"Cormorant Elementary",9,5,5,2,144,164
+"Cormorant Elementary",10,5,5,2,148,165
+"Cormorant Elementary",11,5,5,2,137,168
+"Cormorant Elementary",12,5,5,2,142,166
+"Cormorant Elementary",13,5,5,2,142,163
+"Cormorant Elementary",14,5,5,2,141,160
+"Cormorant Elementary",15,5,5,2,146,162
+"Cormorant Elementary",16,5,5,2,138,158
+"Cormorant Elementary",17,5,5,2,154,163
+"Cormorant Elementary",18,5,5,2,147,162
+"Cormorant Elementary",19,5,5,2,146,162
+"Cormorant Elementary",20,5,5,2,154,166
+"Cormorant Elementary",21,5,5,2,152,170
+"Cormorant Elementary",22,5,5,2,158,173
+"Cormorant Elementary",23,5,5,2,152,174
+"Cormorant Elementary",24,5,5,2,159,178
+"Cormorant Elementary",25,5,5,2,169,179
+"Cormorant Elementary",26,5,5,2,169,180
+"Cormorant Elementary",27,5,5,2,170,181
+"Cormorant Elementary",28,5,5,2,167,181
+"Cormorant Elementary",29,5,5,2,167,185
+"Cormorant Elementary",30,5,5,2,174,189
+"Cormorant Elementary",31,5,5,2,174,185
+"Cormorant Elementary",32,5,5,2,167,189
+"Cormorant Elementary",33,5,5,2,167,187
+"State",3,2,2,1,261,352
+"State",4,2,2,1,251,328
+"State",5,2,2,1,339,431
+"State",6,2,2,1,220,287
+"State",7,2,2,1,192,260
+"State",8,2,2,1,209,257
+"State",9,2,2,1,340,436
+"State",10,2,2,1,334,434
+"State",11,2,2,1,333,417
+"State",12,2,2,1,208,264
+"State",13,2,2,1,208,270
+"State",14,2,2,1,345,435
+"State",15,2,2,1,208,253
+"State",16,2,2,1,264,326
+"State",17,2,2,1,316,391
+"State",18,2,2,1,254,303
+"State",19,2,2,1,264,322
+"State",20,2,2,1,269,336
+"State",21,2,2,1,274,327
+"State",22,2,2,1,274,314
+"State",23,2,2,1,310,364
+"State",24,2,2,1,240,294
+"State",25,2,2,1,238,272
+"State",26,2,2,1,221,272
+"State",27,2,2,1,371,420
+"State",28,2,2,1,248,286
+"State",29,2,2,1,343,405
+"State",30,2,2,1,302,357
+"State",31,2,2,1,349,429
+"State",32,2,2,1,357,440
+"State",4,3,3,1,276,352
+"State",5,3,3,1,262,328
+"State",6,3,3,1,357,431
+"State",7,3,3,1,227,287
+"State",8,3,3,1,206,260
+"State",9,3,3,1,221,257
+"State",10,3,3,1,359,436
+"State",11,3,3,1,357,434
+"State",12,3,3,1,352,417
+"State",13,3,3,1,219,264
+"State",14,3,3,1,218,270
+"State",15,3,3,1,370,435
+"State",16,3,3,1,217,253
+"State",17,3,3,1,288,326
+"State",18,3,3,1,337,391
+"State",19,3,3,1,265,303
+"State",20,3,3,1,284,322
+"State",21,3,3,1,291,336
+"State",22,3,3,1,296,327
+"State",23,3,3,1,281,314
+"State",24,3,3,1,325,364
+"State",25,3,3,1,257,294
+"State",26,3,3,1,253,272
+"State",27,3,3,1,235,272
+"State",28,3,3,1,382,420
+"State",29,3,3,1,262,286
+"State",30,3,3,1,361,405
+"State",31,3,3,1,323,357
+"State",32,3,3,1,381,429
+"State",33,3,3,1,386,440
+"State",6,5,5,2,2097,2644
+"State",7,5,5,2,2094,2585
+"State",8,5,5,2,2079,2614
+"State",9,5,5,2,2101,2567
+"State",10,5,5,2,2186,2613
+"State",11,5,5,2,2172,2613
+"State",12,5,5,2,2164,2577
+"State",13,5,5,2,2167,2572
+"State",14,5,5,2,2149,2582
+"State",15,5,5,2,2213,2583
+"State",16,5,5,2,2230,2608
+"State",17,5,5,2,2216,2593
+"State",18,5,5,2,2233,2573
+"State",19,5,5,2,2288,2627
+"State",20,5,5,2,2276,2616
+"State",21,5,5,2,2272,2588
+"State",22,5,5,2,2279,2571
+"State",23,5,5,2,2268,2588
+"State",24,5,5,2,2306,2591
+"State",25,5,5,2,2340,2618
+"State",26,5,5,2,2328,2628
+"State",27,5,5,2,2351,2623
+"State",28,5,5,2,2363,2636
+"State",29,5,5,2,2344,2644
+"State",30,5,5,2,2354,2628
+"State",31,5,5,2,2376,2642
+"State",32,5,5,2,2341,2615
+"State",33,5,5,2,2314,2610
+"State",19,14,18,2,224,257
+"State",20,14,18,2,240,274
+"State",21,14,18,2,235,274
+"State",22,14,18,2,267,302
+"State",23,14,18,2,261,307
+"State",24,14,18,2,249,286
+"State",25,14,18,2,212,247
+"State",26,14,18,2,249,276
+"State",27,14,18,2,238,267
+"State",28,14,18,2,265,293
+"State",29,14,18,2,258,280
+"State",30,14,18,2,233,251
+"State",31,14,18,2,268,292
+"State",32,14,18,2,266,283
+"State",33,14,18,2,245,269
+"Scruggs",12,11,11,2,129,165
+"Scruggs",13,11,11,2,172,200
+"Scruggs",14,11,11,2,174,206
+"Scruggs",15,11,11,2,146,172
+"Scruggs",16,11,11,2,132,148
+"Scruggs",17,11,11,2,168,205
+"Scruggs",18,11,11,2,114,131
+"Scruggs",19,11,11,2,148,172
+"Scruggs",20,11,11,2,106,125
+"Scruggs",21,11,11,2,144,166
+"Scruggs",22,11,11,2,164,191
+"Scruggs",23,11,11,2,210,235
+"Scruggs",24,11,11,2,174,193
+"Scruggs",25,11,11,2,131,141
+"Scruggs",26,11,11,2,140,166
+"Scruggs",27,11,11,2,191,215
+"Scruggs",28,11,11,2,215,231
+"Scruggs",29,11,11,2,143,156
+"Scruggs",30,11,11,2,116,125
+"Scruggs",31,11,11,2,222,247
+"Scruggs",32,11,11,2,183,202
+"Scruggs",33,11,11,2,134,144
+"Simone",12,11,11,2,144,164
+"Simone",13,11,11,2,174,210
+"Simone",14,11,11,2,116,138
+"Simone",15,11,11,2,128,149
+"Simone",16,11,11,2,156,175
+"Simone",17,11,11,2,119,133
+"Simone",18,11,11,2,145,168
+"Simone",19,11,11,2,130,145
+"Simone",20,11,11,2,157,181
+"Simone",21,11,11,2,149,170
+"Simone",22,11,11,2,157,175
+"Simone",23,11,11,2,201,233
+"Simone",24,11,11,2,126,141
+"Simone",25,11,11,2,220,247
+"Simone",26,11,11,2,186,207
+"Simone",27,11,11,2,211,229
+"Simone",28,11,11,2,143,157
+"Simone",29,11,11,2,114,127
+"Simone",30,11,11,2,207,232
+"Simone",31,11,11,2,208,228
+"Simone",32,11,11,2,142,163
+"Simone",33,11,11,2,203,229
+"Watson",12,11,11,2,159,204
+"Watson",13,11,11,2,158,208
+"Watson",14,11,11,2,122,151
+"Watson",15,11,11,2,149,189
+"Watson",16,11,11,2,185,242
+"Watson",17,11,11,2,105,135
+"Watson",18,11,11,2,176,210
+"Watson",19,11,11,2,138,172
+"Watson",20,11,11,2,195,230
+"Watson",21,11,11,2,161,204
+"Watson",22,11,11,2,193,217
+"Watson",23,11,11,2,182,217
+"Watson",24,11,11,2,108,125
+"Watson",25,11,11,2,100,124
+"Watson",26,11,11,2,157,188
+"Watson",27,11,11,2,124,153
+"Watson",28,11,11,2,142,166
+"Watson",29,11,11,2,160,184
+"Watson",30,11,11,2,195,220
+"Watson",31,11,11,2,142,174
+"Watson",32,11,11,2,207,228
+"Watson",33,11,11,2,171,201

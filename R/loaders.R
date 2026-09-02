@@ -239,8 +239,7 @@ normalize_inputs <- function(result) {
 #' first.
 #'
 #' Sheet names are matched case-insensitively against the required
-#' [IMURUN_SHEETS]. The reader package ('readxl') is only needed at call time;
-#' an informative error is raised if it is not installed.
+#' [IMURUN_SHEETS]. Uses the 'openxlsx2' package.
 #'
 #' A `target` sheet ([IMURUN_TARGET_SHEET]) is also required and returned as a
 #' `target` element. Generated workbooks additionally include a `configuration`
@@ -253,27 +252,20 @@ normalize_inputs <- function(result) {
 #'   when the workbook has a configuration sheet (each a `data.frame`).
 #'
 #' @examples
-#' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
-#' if (nzchar(wb) && requireNamespace("readxl", quietly = TRUE)) {
+#' wb <- system.file("extdata", "imurun_example.xlsx", package = "imuRUN")
+#' if (nzchar(wb)) {
 #'   inputs <- read_workbook(wb)
 #'   names(inputs)
 #' }
 #'
 #' @export
 read_workbook <- function(path) {
-  if (!requireNamespace("readxl", quietly = TRUE)) {
-    stop(
-      "Reading .xlsx input requires the 'readxl' package. ",
-      "Install it with install.packages(\"readxl\").",
-      call. = FALSE
-    )
-  }
   if (!file.exists(path)) {
     stop("Workbook not found: ", path, call. = FALSE)
   }
 
   present <- tryCatch(
-    readxl::excel_sheets(path),
+    unname(openxlsx2::wb_load(path)$get_sheet_names()),
     error = function(e) {
       stop(
         "Failed to open workbook '",
@@ -309,7 +301,7 @@ read_workbook <- function(path) {
   read_one <- function(sheet_name) {
     actual <- present[matched[match(sheet_name, IMURUN_SHEETS)]]
     df <- tryCatch(
-      readxl::read_excel(path, sheet = actual),
+      openxlsx2::read_xlsx(path, sheet = actual),
       error = function(e) {
         stop(
           "Failed to read sheet '",
@@ -333,7 +325,7 @@ read_workbook <- function(path) {
   # Required target-request sheet (issue #14): drives the by-target predictions.
   result$target <- tryCatch(
     as.data.frame(
-      readxl::read_excel(path, sheet = present[tgt_idx]),
+      openxlsx2::read_xlsx(path, sheet = present[tgt_idx]),
       stringsAsFactors = FALSE
     ),
     error = function(e) {
@@ -351,7 +343,7 @@ read_workbook <- function(path) {
   if (!is.na(config_idx)) {
     result$config <- tryCatch(
       as.data.frame(
-        readxl::read_excel(path, sheet = present[config_idx]),
+        openxlsx2::read_xlsx(path, sheet = present[config_idx]),
         stringsAsFactors = FALSE
       ),
       error = function(e) {
@@ -373,56 +365,67 @@ read_workbook <- function(path) {
 #' Read all imuGAP inputs from a directory or workbook
 #'
 #' @description Convenience entry point that loads the raw (un-canonicalized)
-#' `observations` and `locations` data, ready to be passed to
-#' [validate_inputs()] or [run_fit()].
+#' inputs regardless of storage format. Dispatches to [read_workbook()] when
+#' `path` is an `.xlsx` file, and [read_directory()] when `path` is a directory.
 #'
-#' `read_inputs()` accepts either:
-#' \describe{
-#'   \item{a directory}{containing `observations` and
-#'     `locations` files as CSV or RDS (the original behavior); or}
-#'   \item{a single `.xlsx` workbook}{with one sheet per input, read via
-#'     [read_workbook()].}
-#' }
+#' @param path character; path to a directory or a `.xlsx` file.
 #'
-#' Missing inputs (files or sheets) are all reported at once. A `target` sheet
-#' (in a workbook) or `target.csv`/`target.rds` (in a directory) is required and
-#' returned as a `target` element (issue #14). Workbook configuration is
-#' returned as `config` when its sheet is present.
-#'
-#' @param path character; a directory of CSV/RDS files, or the path to a single
-#'   `.xlsx` workbook.
-#'
-#' @return A named list with elements `obs`, `locs`, and `target`, and optionally
-#'   `config` for workbook input.
+#' @return A named list with `obs`, `locs`, and `target` (and optionally
+#'   `config`) data frames.
 #'
 #' @examples
-#' dir <- tempfile("imurun_read_")
-#' dir.create(dir)
-#' write.csv(data.frame(obs_id = 1, loc_id = 1, cohort = 2000, age = 1,
-#'                      dose = 1, positive = 1, sample_n = 10),
-#'           file.path(dir, "observations.csv"), row.names = FALSE)
-#' write.csv(data.frame(loc_id = 1, parent_id = NA),
-#'           file.path(dir, "locations.csv"), row.names = FALSE)
-#' write.csv(data.frame(loc_id = 1, cohort = 5, age_low = 1, age_high = 1),
-#'           file.path(dir, "target.csv"), row.names = FALSE)
-#' inputs <- read_inputs(dir)
-#' names(inputs)
+#' wb <- system.file("extdata", "imurun_example.xlsx", package = "imuRUN")
+#' if (nzchar(wb)) {
+#'   inputs <- read_inputs(wb)
+#'   names(inputs)
+#' }
 #'
 #' @export
 read_inputs <- function(path) {
-  if (!is.character(path) || length(path) != 1L) {
-    stop("'path' must be a single directory or .xlsx file path.", call. = FALSE)
+  if (is.list(path) && all(c("obs", "locs") %in% names(path))) {
+    return(normalize_inputs(path))
   }
-  if (tolower(tools::file_ext(path)) == "xlsx") {
+  if (!is.character(path) || length(path) != 1L) {
+    stop("'path' must be a single string.", call. = FALSE)
+  }
+  if (dir.exists(path)) {
+    return(read_directory(path))
+  }
+  if (grepl("\\.xlsx$", path, ignore.case = TRUE)) {
     return(read_workbook(path))
   }
-  check_all_inputs(path)
-  result <- list(
-    obs = find_input_file(path, "observations"),
-    locs = find_input_file(path, "locations")
+  stop(
+    "Path '",
+    path,
+    "' is neither an existing directory nor a .xlsx file.",
+    call. = FALSE
   )
-  # Required target input (issue #14): target.csv / target.rds.
-  result$target <- find_input_file(path, IMURUN_TARGET_SHEET)
+}
+
+#' Read imuGAP inputs from a directory of loose files
+#'
+#' @description Reads `observations`, `locations`, and `target` files from
+#' `dir` (each either `.csv` or `.rds`). Reports every missing file at once
+#' (mirroring [check_all_inputs()] semantics) rather than failing on the first.
+#'
+#' @param dir character; path to directory containing the input files.
+#'
+#' @return A named list with `obs`, `locs`, and `target` data frames.
+#'
+#' @examples
+#' dir <- system.file("extdata", package = "imuRUN")
+#'
+#' @export
+read_directory <- function(dir) {
+  if (!dir.exists(dir)) {
+    stop("Directory not found: ", dir, call. = FALSE)
+  }
+  check_all_inputs(dir)
+  result <- list(
+    obs = find_input_file(dir, "observations"),
+    locs = find_input_file(dir, "locations")
+  )
+  result$target <- find_input_file(dir, IMURUN_TARGET_SHEET)
   normalize_inputs(result)
 }
 
@@ -431,7 +434,7 @@ read_inputs <- function(path) {
 #' @description The inverse of [read_workbook()]: writes an inputs list (as
 #' returned by [read_inputs()]) back to a single `.xlsx` workbook, one sheet per
 #' element (`observations`, `locations`, `configuration`, and `target` when
-#' present). Uses the 'writexl' package.
+#' present). Uses the 'openxlsx2' package.
 #'
 #' @param inputs a list with `obs` and `locs` (and optionally `target`) data
 #'   frames, e.g. the result of [read_inputs()].
@@ -451,13 +454,24 @@ read_inputs <- function(path) {
 #' @export
 write_workbook <- function(inputs, path) {
   sheets <- list()
-  if (!is.null(inputs$obs)) sheets$observations <- inputs$obs
-  if (!is.null(inputs$locs)) sheets$locations <- inputs$locs
-  if (!is.null(inputs$config)) sheets$configuration <- inputs$config
-  if (!is.null(inputs$target)) sheets$target <- inputs$target
-  if (length(sheets) == 0L) {
-    stop("'inputs' has no observations/locations/target to write.", call. = FALSE)
+  if (!is.null(inputs$obs)) {
+    sheets$observations <- inputs$obs
   }
-  writexl::write_xlsx(sheets, path = path)
+  if (!is.null(inputs$locs)) {
+    sheets$locations <- inputs$locs
+  }
+  if (!is.null(inputs$config)) {
+    sheets$configuration <- inputs$config
+  }
+  if (!is.null(inputs$target)) {
+    sheets$target <- inputs$target
+  }
+  if (length(sheets) == 0L) {
+    stop(
+      "'inputs' has no observations/locations/target to write.",
+      call. = FALSE
+    )
+  }
+  openxlsx2::write_xlsx(sheets, file = path)
   invisible(path)
 }

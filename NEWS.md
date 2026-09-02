@@ -1,4 +1,4 @@
-# imurun 0.1.0
+# imuRUN 0.1.0
 
 * Initial release.
 * Exported the core CLI engine as ordinary R functions: `run_fit()`,

@@ -27,10 +27,10 @@ jobs:
             exit 0
           fi
           VERSION=$(grep -E '^Version:' DESCRIPTION | sed -E 's/Version:[[:space:]]*//')
-          if grep -qE "^# imurun[[:space:]]+$VERSION([[:space:]]|$)" NEWS.md; then
+          if grep -qE "^# imuRUN[[:space:]]+$VERSION([[:space:]]|$)" NEWS.md; then
             echo "NEWS.md heading found for version $VERSION."
           else
-            echo "::warning::NEWS.md has no '# imurun $VERSION' heading. Add one before the release lands on CRAN."
+            echo "::warning::NEWS.md has no '# imuRUN $VERSION' heading. Add one before the release lands on CRAN."
           fi
 
   submit:
@@ -44,12 +44,8 @@ jobs:
           r-version: 'release'
           use-public-rspm: true
 
-      # imuGAP (imurun's one non-CRAN dependency) is fetched from GitHub via
-      # DESCRIPTION's Remotes field, which pak reads. Do NOT add the stan-dev
-      # r-universe to the repo pool: imuGAP carries stan-dev/cmdstanr in its own
-      # Remotes, and the r-universe would drag in DEV StanHeaders/rstan that fail
-      # to compile against CRAN's RcppEigen. imurun itself is pure R and does not
-      # use cmdstanr directly, so no Additional_repositories is needed here.
+      # imurun is pure R and does not use cmdstanr directly, so no
+      # Additional_repositories is needed here.
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::roxygen2, any::pkgload

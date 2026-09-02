@@ -26,16 +26,16 @@ parse_loc_list <- function(x) {
 #' Carry non-location target columns forward into blank rows
 #'
 #' @description Fills the `target` sheet the way a spreadsheet user expects:
-#' a row that names only a `loc_id` (leaving `cohort`, `age_low`, `age_high`,
+#' a row that names only a `loc_id` (leaving `year`, `age_low`, `age_high`,
 #' and/or `dose` blank) inherits those values from the nearest row above that
 #' supplied them. Each of those columns is carried forward independently, so a
-#' run of location-only rows all share the preceding request's cohort/age/dose.
+#' run of location-only rows all share the preceding request's year/age/dose.
 #' A blank cell with no value above it is left blank (the first row cannot
 #' inherit, and a never-supplied `dose` still falls back to the default).
 #'
 #' @param targets data.frame of target-request rows.
 #'
-#' @return The `targets` data.frame with blank `cohort`/`age_low`/`age_high`/
+#' @return The `targets` data.frame with blank `year`/`age_low`/`age_high`/
 #'   `dose` cells filled from the row above.
 #'
 #' @keywords internal
@@ -43,7 +43,7 @@ fill_target_locf <- function(targets) {
   targets <- as.data.frame(targets, stringsAsFactors = FALSE)
   is_blank <- function(v) is.na(v) | !nzchar(trimws(as.character(v)))
   fill_cols <- intersect(
-    c("cohort", "age_low", "age_high", "dose"),
+    c("year", "age_low", "age_high", "dose"),
     names(targets)
   )
   for (col in fill_cols) {
@@ -68,12 +68,11 @@ fill_target_locf <- function(targets) {
 #' [imuGAP::create_target()] in `"snapshot"` mode, one call per target-request
 #' row.
 #'
-#' @details Each row's `cohort` is the snapshot **reference** cohort (that of the
-#' oldest age in the row's span). `create_target(mode = "snapshot")` fans the row
-#' out over its location list (`loc_id`) and inclusive age span
-#' (`age_low`..`age_high`), deriving a cohort for each age so that `age + cohort`
-#' is held constant (`cohort_i = cohort + max(age) - age_i`) -- i.e. a snapshot in
-#' time. A blank `dose` cell takes `default_dose` (typically the final dose).
+#' @details Each row's `year` represents the timing of the target snapshot.
+#' `create_target(mode = "snapshot")` fans the row out over its location list
+#' (`loc_id`) and inclusive age span (`age_low`..`age_high`), deriving a cohort
+#' for each age so that `age + cohort = year` is held constant (`cohort_i = year - age_i`).
+#' A blank `dose` cell takes `default_dose` (typically the final dose).
 #' Every expanded row is an independent target carrying `weight = 1`. Identical
 #' target identities (across rows) are dropped as duplicates, and a unique integer
 #' `obs_id` is assigned so the posterior draws can be grouped unambiguously by
@@ -92,7 +91,7 @@ fill_target_locf <- function(targets) {
 #' @examples
 #' tg <- data.frame(
 #'   loc_id = "Bunting School; Cardinal Academy",
-#'   cohort = 5, age_low = 5, age_high = 7
+#'   year = 20, age_low = 1, age_high = 5
 #' )
 #' expand_targets(tg, default_dose = 2L)
 #'
@@ -125,11 +124,12 @@ expand_targets <- function(targets, default_dose) {
     } else {
       as.character(i)
     }
+    ref_cohort <- as.integer(targets$year[i]) - as.integer(targets$age_high[i])
     grid <- as.data.frame(
       imuGAP::create_target(
         location = locs,
         age = ages,
-        cohort = as.integer(targets$cohort[i]),
+        cohort = ref_cohort,
         dose = dose,
         mode = "snapshot"
       ),
@@ -149,56 +149,55 @@ expand_targets <- function(targets, default_dose) {
     weight = numeric(0),
     stringsAsFactors = FALSE
   )
-  rows <- rows[!vapply(rows, is.null, logical(1))]
-  if (length(rows) == 0) {
+  if (length(rows) == 0L) {
     return(empty)
   }
-  out <- do.call(rbind, rows)
 
-  # De-duplicate on the target identity, keeping the first contributing label.
-  key <- paste(out$loc_id, out$cohort, out$age, out$dose, sep = "\r")
-  out <- out[!duplicated(key), , drop = FALSE]
+  all_rows <- do.call(rbind, rows)
+  if (is.null(all_rows) || nrow(all_rows) == 0L) {
+    return(empty)
+  }
 
-  result <- data.frame(
-    obs_id = seq_len(nrow(out)),
-    target_id = out$target_id,
-    loc_id = out$loc_id,
-    cohort = as.integer(out$cohort),
-    age = as.integer(out$age),
-    dose = as.integer(out$dose),
-    weight = 1,
-    stringsAsFactors = FALSE
+  # Dedup across target rows: if two requests ask for the same
+  # (loc_id, cohort, age, dose), only fit/predict it once. The first target_id
+  # seen is kept.
+  key <- paste(
+    all_rows$loc_id,
+    all_rows$cohort,
+    all_rows$age,
+    all_rows$dose,
+    sep = "\r"
   )
-  rownames(result) <- NULL
-  result
+  dup <- duplicated(key)
+  unique_rows <- all_rows[!dup, , drop = FALSE]
+
+  unique_rows$obs_id <- seq_len(nrow(unique_rows))
+  unique_rows <- unique_rows[,
+    c("obs_id", "target_id", "loc_id", "cohort", "age", "dose", "weight")
+  ]
+  rownames(unique_rows) <- NULL
+  unique_rows
 }
 
-#' Validate a target-request sheet with friendly, row-referenced errors
+#' Validate target-request rows against model extents and schema
 #'
-#' @description Checks a `target` sheet the same way [validate_inputs()] checks
-#' the input sheets: it collects *all* problems and reports them at once in
-#' spreadsheet terms, naming the offending column and row. Problems detected
-#' include missing/renamed required columns (per [IMURUN_TARGET_SCHEMA]),
-#' non-numeric `cohort`/`age_low`/`age_high`/`dose`, `loc_id` values absent from
-#' the locations sheet, an inverted age span (`age_low > age_high`),
-#' out-of-range `cohort`/`age`/`dose`, and a snapshot span whose expansion
-#' (`cohort + (age_high - age_low)`) reaches beyond the model's cohort count.
+#' @description Checks that `targets` matches [IMURUN_TARGET_SCHEMA], that every
+#' named location exists in `loc_ids`, that `age_low <= age_high`, and that the
+#' requested ages and derived cohorts fall within `max_age` and `max_cohort`.
 #'
-#' On success the (unmodified) target frame is returned invisibly. On failure a
-#' single error is raised whose message lists every problem found.
+#' @param targets data.frame of target requests.
+#' @param loc_ids character vector of valid location identifiers.
+#' @param max_cohort integer; upper bound on the derived cohort.
+#' @param max_age integer; upper bound on the requested age.
+#' @param max_dose integer; upper bound on the dose (default 2).
 #'
-#' @param targets data.frame of target-request rows.
-#' @param loc_ids character; the known location identifiers (the `loc_id` column
-#'   of the locations sheet).
-#' @param max_cohort,max_age integer upper bounds for `cohort` and the age span.
-#' @param max_dose integer; the maximum allowed `dose` (default `2`).
+#' @return Invisibly, `targets` on success; raises an error describing all
+#'   problems found otherwise.
 #'
-#' @return Invisibly, the validated `targets` data.frame.
-#'
-#' @seealso [expand_targets()], [validate_inputs()]
+#' @seealso [expand_targets()], [IMURUN_TARGET_SCHEMA]
 #'
 #' @examples
-#' tg <- data.frame(loc_id = "A;B", cohort = 5, age_low = 5, age_high = 7)
+#' tg <- data.frame(loc_id = "A;B", year = 12, age_low = 5, age_high = 7)
 #' validate_targets(tg, loc_ids = c("A", "B"), max_cohort = 15, max_age = 8)
 #'
 #' @export
@@ -212,7 +211,7 @@ validate_targets <- function(
   targets <- fill_target_locf(as.data.frame(targets, stringsAsFactors = FALSE))
 
   problems <- check_sheet_columns(targets, "target", IMURUN_TARGET_SCHEMA)
-  for (col in c("cohort", "age_low", "age_high", "dose")) {
+  for (col in c("year", "age_low", "age_high", "dose")) {
     problems <- c(problems, check_numeric_column(targets, "target", col))
   }
   # Stop on structural/type errors before value checks, which would otherwise
@@ -221,7 +220,7 @@ validate_targets <- function(
     stop(format_validation_error(problems), call. = FALSE)
   }
 
-  cohort <- suppressWarnings(as.integer(targets$cohort))
+  year <- suppressWarnings(as.integer(targets$year))
   age_low <- suppressWarnings(as.integer(targets$age_low))
   age_high <- suppressWarnings(as.integer(targets$age_high))
   dose <- if ("dose" %in% names(targets)) {
@@ -262,44 +261,38 @@ validate_targets <- function(
       )
     )
   }
-  bad_cohort <- which(cohort < 1L | cohort > max_cohort)
-  if (length(bad_cohort) > 0) {
+
+  ref_cohort <- year - age_high
+  bad_cohort_low <- which(ref_cohort < 1L)
+  if (length(bad_cohort_low) > 0) {
     problems <- c(
       problems,
       sprintf(
-        "[target] cohort out of range [1, %d] at row(s): %s",
-        max_cohort,
-        paste(utils::head(bad_cohort, 20L), collapse = ", ")
+        "[target] year must be greater than age_high so cohort is positive (row(s): %s)",
+        paste(utils::head(bad_cohort_low, 20L), collapse = ", ")
       )
     )
   }
 
-  # The snapshot expansion holds `age + cohort` constant, so a span reaches
-  # cohort + (age_high - age_low) at its youngest age (younger = later birth
-  # cohort). A reference cohort that is itself in range can still expand past the
-  # model's cohort count; catch that here, before predict() would fail deep
-  # inside imuGAP (#38). Only rows whose reference cohort and span are otherwise
-  # valid are considered, so this does not pile onto the checks above.
-  reach <- cohort + (age_high - age_low)
-  over <- which(
-    !is.na(reach) &
-      cohort >= 1L & cohort <= max_cohort &
-      age_low <= age_high &
-      reach > max_cohort
-  )
-  for (i in over) {
+  max_derived_cohort <- year - age_low
+  bad_cohort_high <- which(max_derived_cohort > max_cohort)
+  if (length(bad_cohort_high) > 0) {
     problems <- c(
       problems,
       sprintf(
         paste0(
-          "[target] cohort %d over ages %d-%d expands to cohort %d, beyond ",
-          "the model's %d cohorts; lower the reference cohort to <= %d (row %d)"
+          "[target] target year %d and youngest age %d expands to cohort %d, beyond ",
+          "the model's %d cohorts; adjust target year or youngest age (row(s): %s)"
         ),
-        cohort[i], age_low[i], age_high[i], reach[i],
-        max_cohort, max_cohort - (age_high[i] - age_low[i]), i
+        year[bad_cohort_high[1L]],
+        age_low[bad_cohort_high[1L]],
+        max_derived_cohort[bad_cohort_high[1L]],
+        max_cohort,
+        paste(utils::head(bad_cohort_high, 20L), collapse = ", ")
       )
     )
   }
+
   bad_age <- which(age_low < 1L | age_high > max_age)
   if (length(bad_age) > 0) {
     problems <- c(

@@ -6,10 +6,10 @@ test_that("install_cli installs a launcher pointing at the bundled script", {
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
 
-  result <- imurun::install_cli(path = dir)
+  result <- install_cli(path = dir)
   expect_true(result)
 
-  script <- system.file("scripts", "imurun.R", package = "imurun")
+  script <- system.file("scripts", "imurun.R", package = "imuRUN")
   if (.Platform$OS.type == "windows") {
     shim <- file.path(dir, "imurun.cmd")
     expect_true(file.exists(shim))
@@ -26,7 +26,7 @@ test_that("install_cli installs a launcher pointing at the bundled script", {
 
 test_that("install_cli errors for non-existent directory", {
   expect_error(
-    imurun::install_cli(path = file.path(tempdir(), "nonexistent_xyz_123")),
+    imuRUN::install_cli(path = file.path(tempdir(), "nonexistent_xyz_123")),
     "does not exist"
   )
 })
@@ -40,7 +40,7 @@ test_that("install_cli replaces an existing launcher at the target", {
   target <- file.path(dir, if (is_windows) "imurun.cmd" else "imurun")
   writeLines("old", target)
 
-  imurun::install_cli(path = dir)
+  imuRUN::install_cli(path = dir)
 
   if (is_windows) {
     # the stale contents are replaced by the shim

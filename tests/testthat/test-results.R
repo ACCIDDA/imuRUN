@@ -22,12 +22,21 @@ fake_results <- function(n = 2L) {
 fake_inputs <- function() {
   list(
     obs = data.frame(
-      obs_id = 1L, loc_id = "A", cohort = 5L, age = 5L,
-      dose = 2L, positive = 3L, sample_n = 10L, stringsAsFactors = FALSE
+      obs_id = 1L,
+      loc_id = "A",
+      year = 10L,
+      age = 5L,
+      dose = 2L,
+      positive = 3L,
+      sample_n = 10L,
+      stringsAsFactors = FALSE
     ),
     locs = data.frame(loc_id = "A", parent_id = NA, stringsAsFactors = FALSE),
     target = data.frame(
-      loc_id = "A", cohort = 5L, age_low = 5L, age_high = 6L,
+      loc_id = "A",
+      year = 11L,
+      age_low = 5L,
+      age_high = 6L,
       stringsAsFactors = FALSE
     )
   )
@@ -109,10 +118,10 @@ test_that("write_results_workbook writes the inputs plus a results sheet", {
 
   expect_identical(write_results_workbook(fake_inputs(), res, path), path)
   expect_true(file.exists(path))
-  sheets <- readxl::excel_sheets(path)
+  sheets <- unname(openxlsx2::wb_load(path)$get_sheet_names())
   expect_identical(sheets, c("observations", "locations", "target", "results"))
 
-  back <- as.data.frame(readxl::read_excel(path, sheet = "results"))
+  back <- as.data.frame(openxlsx2::read_xlsx(path, sheet = "results"))
   expect_identical(nrow(back), nrow(res))
   expect_equal(back$est_median, res$est_median)
   expect_true(all(c("target_id", "loc_id", "cohort", "age") %in% names(back)))
@@ -127,30 +136,36 @@ test_that("write_results_workbook leaves the original input sheets intact", {
 
   # the point of the amended workbook is that the request travels with the
   # answer, so the target sheet must survive verbatim
-  back <- as.data.frame(readxl::read_excel(path, sheet = "target"))
-  expect_identical(as.character(back$loc_id), as.character(inputs$target$loc_id))
+  back <- as.data.frame(openxlsx2::read_xlsx(path, sheet = "target"))
+  expect_identical(
+    as.character(back$loc_id),
+    as.character(inputs$target$loc_id)
+  )
   expect_identical(as.integer(back$age_low), as.integer(inputs$target$age_low))
-  expect_identical(as.integer(back$age_high), as.integer(inputs$target$age_high))
+  expect_identical(
+    as.integer(back$age_high),
+    as.integer(inputs$target$age_high)
+  )
 })
 
 test_that("write_results_workbook amends the supplied workbook in place", {
   skip_if_no_readxl()
   skip_if_not_installed("openxlsx2")
-  skip_if_not_installed("writexl")
   dir <- withr::local_tempdir()
   path <- file.path(dir, "input.xlsx")
   inputs <- fake_inputs()
-  writexl::write_xlsx(
+  openxlsx2::write_xlsx(
     list(
       instructions = data.frame(Note = "keep this sheet and its content"),
       observations = inputs$obs,
       locations = inputs$locs,
       configuration = data.frame(
-        Setting = c("iter", "chains"), Value = c(2000L, 4L)
+        Setting = c("iter", "chains"),
+        Value = c(2000L, 4L)
       ),
       target = inputs$target
     ),
-    path
+    file = path
   )
 
   expect_identical(
@@ -158,15 +173,19 @@ test_that("write_results_workbook amends the supplied workbook in place", {
     path
   )
   expect_identical(
-    readxl::excel_sheets(path),
+    unname(openxlsx2::wb_load(path)$get_sheet_names()),
     c(
-      "instructions", "observations", "locations", "configuration", "target",
+      "instructions",
+      "observations",
+      "locations",
+      "configuration",
+      "target",
       "results"
     )
   )
-  note <- readxl::read_excel(path, sheet = "instructions")
+  note <- openxlsx2::read_xlsx(path, sheet = "instructions")
   expect_identical(note$Note, "keep this sheet and its content")
-  result <- readxl::read_excel(path, sheet = "results")
+  result <- openxlsx2::read_xlsx(path, sheet = "results")
   expect_equal(result$est_median, fake_results()$est_median)
 
   expect_error(
@@ -174,7 +193,11 @@ test_that("write_results_workbook amends the supplied workbook in place", {
     "already contains a results sheet"
   )
   expect_no_error(write_results_workbook(
-    inputs, fake_results(), path, overwrite = TRUE, source = path
+    inputs,
+    fake_results(),
+    path,
+    overwrite = TRUE,
+    source = path
   ))
 })
 
@@ -187,7 +210,12 @@ test_that("write_results_workbook refuses to clobber unless asked", {
     "already exists"
   )
   expect_no_error(
-    write_results_workbook(fake_inputs(), fake_results(), path, overwrite = TRUE)
+    write_results_workbook(
+      fake_inputs(),
+      fake_results(),
+      path,
+      overwrite = TRUE
+    )
   )
 })
 
@@ -195,7 +223,11 @@ test_that("write_results_workbook refuses to clobber unless asked", {
 
 test_that("parse_output_options pulls the output flags out of the arguments", {
   p <- parse_output_options(c(
-    "data.xlsx", "--results", "out.xlsx", "--csv=res.csv", "--overwrite"
+    "data.xlsx",
+    "--results",
+    "out.xlsx",
+    "--csv=res.csv",
+    "--overwrite"
   ))
   expect_identical(p$options$results, "out.xlsx")
   expect_identical(p$options$csv, "res.csv")
@@ -210,7 +242,10 @@ test_that("parse_output_options leaves unrelated arguments alone", {
 })
 
 test_that("parse_output_options errors on a flag with no value", {
-  expect_error(parse_output_options(c("in.xlsx", "--csv")), "--csv needs a value")
+  expect_error(
+    parse_output_options(c("in.xlsx", "--csv")),
+    "--csv needs a value"
+  )
   expect_error(parse_output_options(c("in.xlsx", "--results")), "needs a value")
   expect_error(parse_output_options(c("in.xlsx", "--csv=")), "needs a value")
 })

@@ -24,6 +24,6 @@ if (!requireNamespace("imurun", quietly = TRUE)) {
 # --- Entry guard -------------------------------------------------------------
 
 if (!interactive()) {
-  status <- imurun::run_fit(commandArgs(trailingOnly = TRUE))
+  status <- imurun::cli_run_fit(commandArgs(trailingOnly = TRUE))
   quit(status = status, save = "no")
 }

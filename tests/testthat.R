@@ -1,4 +1,4 @@
 library(testthat)
-library(imurun)
+library(imuRUN)
 
-test_check("imurun")
+test_check("imuRUN")

@@ -1,15 +1,14 @@
-# Tests for the Stan-free core of the by-target prediction feature (#14):
-# parse_loc_list, expand_targets, validate_targets, summarize_targets. None of
-# these need a Stan toolchain; the real predict/gqs path is gated under #19.
+# Tests for the Stan-free core of the by-target prediction feature:
+# parse_loc_list, expand_targets, validate_targets, summarize_targets.
 
 # --- parse_loc_list ----------------------------------------------------------
 
 test_that("parse_loc_list splits on ; and ,, trims, and drops empties", {
-  expect_equal(imurun:::parse_loc_list("A"), "A")
-  expect_equal(imurun:::parse_loc_list("A; B ,C"), c("A", "B", "C"))
-  expect_equal(imurun:::parse_loc_list("A;;B"), c("A", "B"))
-  expect_equal(imurun:::parse_loc_list(""), character(0))
-  expect_equal(imurun:::parse_loc_list(NA), character(0))
+  expect_equal(imuRUN:::parse_loc_list("A"), "A")
+  expect_equal(imuRUN:::parse_loc_list("A; B ,C"), c("A", "B", "C"))
+  expect_equal(imuRUN:::parse_loc_list("A;;B"), c("A", "B"))
+  expect_equal(imuRUN:::parse_loc_list(""), character(0))
+  expect_equal(imuRUN:::parse_loc_list(NA), character(0))
 })
 
 # --- expand_targets ----------------------------------------------------------
@@ -17,7 +16,7 @@ test_that("parse_loc_list splits on ; and ,, trims, and drops empties", {
 test_that("expand_targets fans out locations x age span, defaulting a blank dose", {
   tg <- data.frame(
     loc_id = "A;B",
-    cohort = 5,
+    year = 12,
     age_low = 5,
     age_high = 7,
     stringsAsFactors = FALSE
@@ -27,8 +26,7 @@ test_that("expand_targets fans out locations x age span, defaulting a blank dose
   expect_equal(nrow(ex), 6L) # 2 locations x 3 ages
   expect_equal(sort(unique(ex$loc_id)), c("A", "B"))
   expect_equal(sort(unique(ex$age)), 5:7)
-  # snapshot mode: cohort derived per age so age + cohort is constant, with the
-  # sheet's cohort (5) as the reference at the oldest age (7).
+  # snapshot mode: cohort derived per age so age + cohort is constant (= year = 12)
   expect_true(all(ex$age + ex$cohort == 12L))
   expect_equal(unique(ex$cohort[ex$age == 7L]), 5L)
   expect_true(all(ex$dose == 2L)) # blank dose -> default_dose
@@ -43,7 +41,7 @@ test_that("expand_targets fans out locations x age span, defaulting a blank dose
 test_that("expand_targets honours an explicit dose and a target_id label", {
   tg <- data.frame(
     loc_id = "A",
-    cohort = 5,
+    year = 10,
     age_low = 5,
     age_high = 5,
     dose = 1,
@@ -59,7 +57,7 @@ test_that("expand_targets honours an explicit dose and a target_id label", {
 test_that("expand_targets de-duplicates identical target identities across rows", {
   tg <- data.frame(
     loc_id = c("A", "A"),
-    cohort = c(5, 5),
+    year = c(10, 10),
     age_low = c(5, 5),
     age_high = c(5, 5),
     stringsAsFactors = FALSE
@@ -69,10 +67,10 @@ test_that("expand_targets de-duplicates identical target identities across rows"
   expect_equal(ex$obs_id, 1L)
 })
 
-test_that("expand_targets carries cohort/age/dose into location-only rows (LOCF)", {
+test_that("expand_targets carries year/age/dose into location-only rows (LOCF)", {
   tg <- data.frame(
     loc_id = c("A", "B"),
-    cohort = c(5, NA),
+    year = c(12, NA),
     age_low = c(5, NA),
     age_high = c(7, NA),
     dose = c(1, NA),
@@ -80,7 +78,7 @@ test_that("expand_targets carries cohort/age/dose into location-only rows (LOCF)
   )
   ex <- expand_targets(tg, default_dose = 2L)
 
-  # Row 2 (B) is location-only, so it inherits row 1's cohort/age span/dose.
+  # Row 2 (B) is location-only, so it inherits row 1's year/age span/dose.
   expect_setequal(unique(ex$loc_id), c("A", "B"))
   expect_setequal(unique(ex$age), 5:7)
   expect_true(all(ex$dose == 1L)) # inherited dose, not default_dose
@@ -92,7 +90,7 @@ test_that("expand_targets carries cohort/age/dose into location-only rows (LOCF)
 test_that("validate_targets accepts a clean sheet", {
   ok <- data.frame(
     loc_id = "A;B",
-    cohort = 5,
+    year = 12,
     age_low = 5,
     age_high = 7,
     dose = 2,
@@ -104,11 +102,11 @@ test_that("validate_targets accepts a clean sheet", {
   )
 })
 
-test_that("validate_targets reports a missing column and a non-numeric cohort", {
+test_that("validate_targets reports a missing column and a non-numeric year", {
   bad <- data.frame(
     loc_id = "A",
-    cohort = "x",
-    age_low = 1, # age_high missing, cohort non-numeric
+    year = "x",
+    age_low = 1, # age_high missing, year non-numeric
     stringsAsFactors = FALSE
   )
   err <- tryCatch(
@@ -118,13 +116,13 @@ test_that("validate_targets reports a missing column and a non-numeric cohort", 
   expect_true(inherits(err, "error"))
   expect_match(err$message, "\\[target\\]")
   expect_match(err$message, "age_high")
-  expect_match(err$message, "cohort")
+  expect_match(err$message, "year")
 })
 
 test_that("validate_targets collects unknown loc, bad span, and out-of-range values", {
   bad <- data.frame(
     loc_id = "A;Nowhere",
-    cohort = 99,
+    year = 99,
     age_low = 3,
     age_high = 2,
     dose = 9,
@@ -142,11 +140,9 @@ test_that("validate_targets collects unknown loc, bad span, and out-of-range val
 })
 
 test_that("validate_targets rejects a snapshot span that expands past n_cohort", {
-  # The reference cohort 15 is itself in range [1, 15], but the snapshot fans
-  # ages 1-5 out to cohort 15 + (5 - 1) = 19 -- beyond the model (#38).
   bad <- data.frame(
     loc_id = "A",
-    cohort = 15,
+    year = 20,
     age_low = 1,
     age_high = 5,
     dose = 2,
@@ -159,10 +155,8 @@ test_that("validate_targets rejects a snapshot span that expands past n_cohort",
   expect_true(inherits(err, "error"))
   expect_match(err$message, "expands to cohort 19")
   expect_match(err$message, "beyond the model's 15 cohorts")
-  expect_match(err$message, "lower the reference cohort to <= 11")
 
-  # A reference cohort low enough that the whole span stays in range passes.
-  ok <- transform(bad, cohort = 11)
+  ok <- transform(bad, year = 12)
   expect_no_error(
     validate_targets(ok, loc_ids = "A", max_cohort = 15, max_age = 8)
   )
@@ -232,45 +226,37 @@ test_that("summarize_targets respects a non-default ci_level and validates input
 # --- reading the (required) target sheet/file --------------------------------
 
 test_that("read_workbook errors when the target sheet is absent", {
-  skip_if_not_installed("readxl")
-  skip_if_not_installed("writexl")
-  # The target sheet is required, so a workbook without one is an error.
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
-  writexl::write_xlsx(
+  openxlsx2::write_xlsx(
     list(
       observations = data.frame(
-        loc_id = "A", cohort = 5, age = 5, dose = 2, positive = 3, sample_n = 10
+        loc_id = "A",
+        year = 10,
+        age = 5,
+        dose = 2,
+        positive = 3,
+        sample_n = 10
       ),
       locations = data.frame(loc_id = "A", parent_id = NA)
     ),
-    tmp
+    file = tmp
   )
-  expect_error(imurun::read_workbook(tmp), "target")
+  expect_error(imuRUN::read_workbook(tmp), "target")
 })
 
 test_that("read_workbook reads the target sheet", {
-  skip_if_not_installed("readxl")
-  skip_if_not_installed("writexl")
   tmp <- tempfile(fileext = ".xlsx")
   on.exit(unlink(tmp), add = TRUE)
-  writexl::write_xlsx(
+  openxlsx2::write_xlsx(
     list(
       observations = data.frame(obs_id = 1, positive = 1, sample_n = 10),
-      populations = data.frame(
-        obs_id = 1,
-        loc_id = "A",
-        cohort = 5,
-        age = 5,
-        dose = 2,
-        weight = 1
-      ),
       locations = data.frame(loc_id = "A", parent_id = NA),
-      target = data.frame(loc_id = "A", cohort = 5, age_low = 5, age_high = 7)
+      target = data.frame(loc_id = "A", year = 12, age_low = 5, age_high = 7)
     ),
-    tmp
+    file = tmp
   )
-  target <- imurun::read_workbook(tmp)$target
+  target <- imuRUN::read_workbook(tmp)$target
   expect_true(is.data.frame(target))
   expect_true(all(IMURUN_TARGET_SCHEMA %in% names(target)))
 })
@@ -279,7 +265,7 @@ test_that("read_inputs reads the target.csv in directory mode", {
   dir <- tempfile("imurun_target_dir_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-  for (n in c("observations", "populations", "locations")) {
+  for (n in c("observations", "locations")) {
     write.csv(
       data.frame(a = 1),
       file.path(dir, paste0(n, ".csv")),
@@ -287,9 +273,9 @@ test_that("read_inputs reads the target.csv in directory mode", {
     )
   }
   write.csv(
-    data.frame(loc_id = "A", cohort = 5, age_low = 5, age_high = 7),
+    data.frame(loc_id = "A", year = 12, age_low = 5, age_high = 7),
     file.path(dir, "target.csv"),
     row.names = FALSE
   )
-  expect_equal(imurun::read_inputs(dir)$target$loc_id, "A")
+  expect_equal(imuRUN::read_inputs(dir)$target$loc_id, "A")
 })

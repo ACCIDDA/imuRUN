@@ -174,7 +174,7 @@ build_populations <- function(obs) {
   }
   age_min <- int_col("age_min")
   age_max <- int_col("age_max")
-  cohort <- int_col("cohort")
+  year <- int_col("year")
 
   # An unusable span is passed through as a single row so the canonicalizer can
   # name the bad value; expanding it here would either error or invent rows.
@@ -191,7 +191,7 @@ build_populations <- function(obs) {
   data.frame(
     obs_id = obs$obs_id[idx],
     loc_id = obs$loc_id[idx],
-    cohort = cohort[idx] + age_max[idx] - age,
+    cohort = year[idx] - age,
     age = age,
     dose = suppressWarnings(as.integer(obs$dose))[idx],
     weight = 1 / n_ages[idx],
@@ -211,38 +211,36 @@ build_populations <- function(obs) {
 #' Problems detected include:
 #' \itemize{
 #'   \item missing or renamed required columns (per [IMURUN_SCHEMA]);
-#'   \item non-numeric count columns (`positive`, `sample_n`, `cohort`,
+#'   \item non-numeric count columns (`positive`, `sample_n`, `year`,
 #'     `age_min`, `age_max`, `dose`);
 #'   \item fractional age-span endpoints;
 #'   \item an inverted age span (`age_min > age_max`);
 #'   \item age spans outside an explicit `max_age` or too large to expand
 #'     safely;
 #'   \item `loc_id` values in `observations` but absent from `locations`;
-#'   \item `dose`, `cohort`, and `age` values out of range;
+#'   \item `dose`, `year`, and `age` values out of range;
 #'   \item structural location problems (duplicate or missing root, cycles).
 #' }
 #'
 #' The imuGAP populations are constructed from the observations
 #' ([build_populations()]); there is no populations sheet.
 #'
-#' On success the canonicalized frames are returned invisibly. On failure a
+#' On success `TRUE` is returned invisibly. On failure a
 #' single error is raised whose message lists every problem found.
 #'
 #' @param inputs a named list with `obs` and `locs` (as returned by
 #'   [read_inputs()]), or a path passed straight to [read_inputs()].
 #' @param max_cohort,max_age integer upper bounds for the derived `cohort` and
 #'   `age` values. Default to the largest value present in the populations built
-#'   from `observations` -- which, for a multi-age observation, reaches past its
-#'   own reference cohort -- so that validation does not impose a model
+#'   from `observations` so that validation does not impose a model
 #'   configuration; supply explicit bounds to enforce a particular schedule.
 #' @param max_dose integer; the maximum allowed `dose` (default `2`).
 #'
-#' @return Invisibly, a named list of the canonicalized `obs`, `pops`, and
-#'   `locs` frames (`pops` derived from `obs`).
+#' @return Invisibly, `TRUE` on success.
 #'
 #' @examples
-#' wb <- system.file("extdata", "imurun_example.xlsx", package = "imurun")
-#' if (nzchar(wb) && requireNamespace("readxl", quietly = TRUE)) {
+#' wb <- system.file("extdata", "imurun_example.xlsx", package = "imuRUN")
+#' if (nzchar(wb)) {
 #'   validate_inputs(read_inputs(wb))
 #' }
 #'
@@ -276,10 +274,9 @@ validate_inputs <- function(
   problems <- c(problems, check_sheet_columns(obs, "observations"))
   problems <- c(problems, check_sheet_columns(locs, "locations"))
 
-  # 2. Numeric-type checks for count columns that are present. loc/cohort/age/
-  #    dose now live on the observations sheet (populations is derived from it).
+  # 2. Numeric-type checks for count columns that are present.
   for (col in c(
-    "cohort",
+    "year",
     "age_min",
     "age_max",
     "dose",
@@ -289,10 +286,7 @@ validate_inputs <- function(
     problems <- c(problems, check_numeric_column(obs, "observations", col))
   }
 
-  # 3. Age-span checks must all happen before build_populations(). In
-  #    particular, coercing fractional endpoints would silently change the
-  #    requested mixture, while expanding an unbounded typo could exhaust
-  #    memory before the canonicalizer sees it.
+  # 3. Age-span checks must all happen before build_populations().
   if (all(c("age_min", "age_max") %in% names(obs))) {
     problems <- c(
       problems,
@@ -302,8 +296,10 @@ validate_inputs <- function(
 
     age_min <- suppressWarnings(as.numeric(as.character(obs$age_min)))
     age_max <- suppressWarnings(as.numeric(as.character(obs$age_max)))
-    whole <- is.finite(age_min) & is.finite(age_max) &
-      age_min == trunc(age_min) & age_max == trunc(age_max)
+    whole <- is.finite(age_min) &
+      is.finite(age_max) &
+      age_min == trunc(age_min) &
+      age_max == trunc(age_max)
 
     inverted <- which(whole & age_min > age_max)
     if (length(inverted) > 0) {
@@ -317,8 +313,12 @@ validate_inputs <- function(
     }
 
     bounded <- whole & age_min <= age_max
-    if (!is.null(max_age) && length(max_age) == 1L &&
-          is.numeric(max_age) && is.finite(max_age)) {
+    if (
+      !is.null(max_age) &&
+        length(max_age) == 1L &&
+        is.numeric(max_age) &&
+        is.finite(max_age)
+    ) {
       outside <- which(bounded & (age_min < 1 | age_max > max_age))
       if (length(outside) > 0) {
         problems <- c(
@@ -346,9 +346,9 @@ validate_inputs <- function(
     }
 
     spans <- age_max[bounded] - age_min[bounded] + 1
-    if (length(spans) > 0 &&
-          (any(spans > MAX_EXPANDED_POPULATION_ROWS) ||
-             sum(spans) > MAX_EXPANDED_POPULATION_ROWS)) {
+    too_large <- any(spans > MAX_EXPANDED_POPULATION_ROWS) ||
+      sum(spans) > MAX_EXPANDED_POPULATION_ROWS
+    if (length(spans) > 0 && too_large) {
       problems <- c(
         problems,
         sprintf(
@@ -385,11 +385,6 @@ validate_inputs <- function(
     }
   )
 
-  # The bounds are taken from the *expanded* populations, not the sheet: an
-  # observation's span derives cohorts above its own reference cohort
-  # (`cohort + age_max - age`), so bounding by the sheet's `cohort` column would
-  # reject the very rows the expansion just created. run_fit() sizes the model
-  # from the same frame, so the two agree by construction.
   pops_raw <- build_populations(obs)
   if (is.null(max_cohort)) {
     max_cohort <- suppressWarnings(max(pops_raw$cohort, na.rm = TRUE))
@@ -398,13 +393,26 @@ validate_inputs <- function(
     max_age <- suppressWarnings(max(pops_raw$age, na.rm = TRUE))
   }
 
-  # populations are derived from the observations. Canonicalizing them needs
-  # valid obs + locs; only attempt it when those succeeded, otherwise its
-  # set-equivalence checks are meaningless. Attribute failures to observations,
-  # since that is the sheet the user actually provides.
-  c_pops <- NULL
+  # Check that derived cohorts are positive
+  bad_cohorts <- which(!is.na(pops_raw$cohort) & pops_raw$cohort < 1L)
+  if (length(bad_cohorts) > 0) {
+    problems <- c(
+      problems,
+      sprintf(
+        paste0(
+          "[observations] year must be greater than oldest age so derived ",
+          "cohort is positive (row(s): %s)"
+        ),
+        paste(
+          utils::head(unique(pops_raw$obs_id[bad_cohorts]), 20L),
+          collapse = ", "
+        )
+      )
+    )
+  }
+
   if (!is.null(c_obs) && !is.null(c_locs)) {
-    c_pops <- tryCatch(
+    tryCatch(
       imuGAP::canonicalize_populations(
         pops_raw,
         c_obs,
@@ -424,7 +432,7 @@ validate_inputs <- function(
     stop(format_validation_error(problems), call. = FALSE)
   }
 
-  invisible(list(obs = c_obs, pops = c_pops, locs = c_locs))
+  invisible(TRUE)
 }
 
 #' Assemble a multi-problem validation error message

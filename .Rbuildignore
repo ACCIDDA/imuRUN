@@ -14,3 +14,13 @@
 ^\.playwright-mcp$
 ^CITATION\.cff$
 ^cran-comments\.md$
+^justfile$
+^AGENTS\.md$
+^\.agents$
+^\.claude$
+^\.cursorrules$
+^\.cursor$
+^Rplots\.pdf$
+^vignettes/.*\.html$
+^vignettes/.*\.pdf$
+^.*\.tar\.gz$

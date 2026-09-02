@@ -6,13 +6,18 @@
 
 test_that("parse_sampler_config reads populated settings and skips blanks", {
   config <- data.frame(
-    Setting = c("iter", "chains", "seed", "warmup"),
-    Value = c("1500", "2", "", NA),
+    Setting = c("iter", "chains", "seed", "warmup", "df", "adapt_delta"),
+    Value = c("1500", "2", "", NA, "4", "0.95"),
     stringsAsFactors = FALSE
   )
+  res <- parse_sampler_config(config)
   expect_identical(
-    parse_sampler_config(config),
-    list(iter = 1500L, chains = 2L)
+    res$stan_opts,
+    list(iter = 1500L, chains = 2L, control = list(adapt_delta = 0.95))
+  )
+  expect_identical(
+    res$imugap_opts,
+    list(df = 4L)
   )
 })
 
@@ -22,7 +27,10 @@ test_that("parse_sampler_config validates the sheet structure and values", {
     "Setting.*Value"
   )
   expect_error(
-    parse_sampler_config(data.frame(Setting = "iters", Value = 10)),
+    parse_sampler_config(data.frame(
+      Setting = "invalid_setting_xyz",
+      Value = 10
+    )),
     "unknown setting"
   )
   expect_error(
@@ -31,7 +39,8 @@ test_that("parse_sampler_config validates the sheet structure and values", {
   )
   expect_error(
     parse_sampler_config(data.frame(
-      Setting = c("iter", "iter"), Value = c(10, 20)
+      Setting = c("iter", "iter"),
+      Value = c(10, 20)
     )),
     "repeated"
   )
@@ -39,9 +48,10 @@ test_that("parse_sampler_config validates the sheet structure and values", {
 
 test_that("CLI settings override the workbook and both override defaults", {
   config <- data.frame(
-    Setting = c("iter", "chains"), Value = c(1000, 2)
+    Setting = c("iter", "chains"),
+    Value = c(1000, 2)
   )
-  from_workbook <- parse_sampler_config(config)
+  from_workbook <- parse_sampler_config(config)$stan_opts
   from_cli <- parse_sampler_options(c("--iter", "500"))$overrides
   combined <- utils::modifyList(from_workbook, from_cli)
   actual <- utils::modifyList(IMURUN_SAMPLER_DEFAULTS, combined)
@@ -94,7 +104,8 @@ test_that("parse_sampler_options errors when a flag has no value", {
 
 test_that("--seed accepts 0 (a valid, conventional seed)", {
   expect_identical(
-    parse_sampler_options(c("--seed", "0"))$overrides, list(seed = 0L)
+    parse_sampler_options(c("--seed", "0"))$overrides,
+    list(seed = 0L)
   )
 })
 
@@ -110,7 +121,8 @@ test_that("a repeated flag takes the last value", {
 test_that("overrides merge over the imurun sampler defaults", {
   merged <- function(args) {
     utils::modifyList(
-      IMURUN_SAMPLER_DEFAULTS, parse_sampler_options(args)$overrides
+      IMURUN_SAMPLER_DEFAULTS,
+      parse_sampler_options(args)$overrides
     )
   }
   expect_identical(merged(character(0)), list(iter = 2000L, chains = 4L))
@@ -127,7 +139,10 @@ test_that("overrides flow through to imuGAP::stan_options()", {
   skip_if_not_installed("imuGAP")
   build <- function(args) {
     ov <- parse_sampler_options(args)$overrides
-    do.call(imuGAP::stan_options, utils::modifyList(IMURUN_SAMPLER_DEFAULTS, ov))
+    do.call(
+      imuGAP::stan_options,
+      utils::modifyList(IMURUN_SAMPLER_DEFAULTS, ov)
+    )
   }
   base <- build(character(0))
   expect_equal(base$iter, 2000L)

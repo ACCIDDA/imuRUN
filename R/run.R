@@ -1,7 +1,7 @@
 #' Usage text for the imurun command-line interface
 #'
 #' @description The help/usage string printed by the bundled `imurun` CLI and
-#' by [run_fit()] when invoked with no arguments or a help flag.
+#' by [cli_run_fit()] when invoked with no arguments or a help flag.
 #'
 #' @keywords internal
 USAGE <- "imurun.R -- Minimal CLI for imuGAP model fitting
@@ -15,9 +15,8 @@ Usage: imurun <input> [output_dir] [sampler options]
 <input> is either a directory of CSV/RDS files or a single .xlsx workbook.
 
 A directory must contain:
-  observations.csv (or .rds)      -- columns: obs_id, loc_id, cohort, age_min, age_max, dose,
-                                     positive, sample_n. cohort is the reference cohort, that of
-                                     age_max; a single 'age' column works for a one-age count.
+  observations.csv (or .rds)      -- columns: obs_id, loc_id, year, age_min, age_max, dose,
+                                     positive, sample_n.
   locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
 
 A workbook must have one sheet per input with the same column names
@@ -39,7 +38,6 @@ Output options:
 
 Output: for workbook input, a 'results' sheet of per-target medians and credible
 intervals is added to that workbook; directory input writes results.xlsx.
-fit.rds is also written for post-processing. output_dir defaults to input_dir.
 Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
 "
 
@@ -58,12 +56,6 @@ IMURUN_IMUGAP_ARGS <- list(df = 5L, dose_schedule = c(1L, 4L))
 IMURUN_SAMPLER_DEFAULTS <- list(iter = 2000L, chains = 4L)
 
 #' Coerce a command-line flag value to a whole number
-#'
-#' @description Validates a sampler-option flag value the same friendly way the
-#' input schema is checked: a clear, single-line message naming the flag and the
-#' offending value, rather than a raw coercion warning. Values at or above `min`
-#' are accepted; `--seed` uses `min = 0` (0 is a valid, conventional seed), while
-#' the count flags use `min = 1`.
 #'
 #' @param val the raw string value supplied after the flag.
 #' @param flag the flag name (e.g. `"--iter"`), used in the error message.
@@ -98,29 +90,20 @@ assert_flag_int <- function(val, flag, min = 1L) {
 
 #' Pull sampler-option overrides out of the command-line arguments
 #'
-#' @description Lets a user set 'Stan' sampler settings from a command wrapper:
-#' it scans `args` for the recognized sampler flags (`--iter`, `--chains`,
-#' `--seed`, `--warmup`), each written `--iter N` or `--iter=N`, validates their
-#' values, and returns them separated from the remaining (positional) arguments.
-#' Precedence is simple: an explicit flag overrides the built-in default; unset
-#' options fall back to [imuGAP::stan_options()]'s defaults. Unknown flags are
-#' left untouched in `rest` so the caller can handle them.
-#'
 #' @param args character vector of command-line style arguments.
 #'
 #' @return A list with `overrides` (a named list of the supplied sampler
 #'   options, coerced to integers) and `rest` (the arguments with the recognized
 #'   sampler flags and their values removed).
 #'
-#' @examples
-#' parse_sampler_options(c("data.xlsx", "--iter", "4000", "--chains=2"))
-#'
-#' @export
+#' @keywords internal
 parse_sampler_options <- function(args) {
   spec <- c(
-    iter = "--iter", chains = "--chains", seed = "--seed", warmup = "--warmup"
+    iter = "--iter",
+    chains = "--chains",
+    seed = "--seed",
+    warmup = "--warmup"
   )
-  # --seed may be 0; the count flags must be at least 1.
   mins <- c(iter = 1L, chains = 1L, seed = 0L, warmup = 1L)
   overrides <- list()
   keep <- rep(TRUE, length(args))
@@ -129,7 +112,6 @@ parse_sampler_options <- function(args) {
   while (i <= n) {
     a <- args[[i]]
     if (is.na(a)) {
-      # Not a flag; leave it in `rest` for the caller to reject.
       i <- i + 1L
       next
     }
@@ -163,128 +145,473 @@ parse_sampler_options <- function(args) {
   list(overrides = overrides, rest = args[keep])
 }
 
-#' Read sampler settings from a workbook configuration sheet
+#' Read calculation settings from a workbook configuration sheet or list
 #'
 #' @description Parses the `Setting`/`Value` rows supplied in generated imurun
-#' workbooks. Recognized settings are `iter`, `chains`, `seed`, and `warmup`;
-#' blank values use the package/default value. The same whole-number rules as
-#' the compatibility CLI flags apply. Unknown or repeated populated settings
-#' are reported rather than silently ignored.
+#' workbooks or a configuration list, categorizing them into `stan_opts`
+#' (for `flexstanr::stan_options` / `imuGAP::stan_options`) and `imugap_opts`
+#' (for `imuGAP::imugap_options`).
 #'
-#' @param config optional data.frame read from the `configuration` sheet.
+#' @param config optional data.frame or list with configuration settings.
 #'
-#' @return A named list of sampler-option overrides.
+#' @return A named list with `stan_opts` and `imugap_opts` sub-lists.
 #'
 #' @keywords internal
 parse_sampler_config <- function(config) {
-  if (is.null(config) || nrow(config) == 0L) {
-    return(list())
+  if (is.null(config)) {
+    return(list(stan_opts = list(), imugap_opts = list()))
   }
-  names_lower <- tolower(trimws(names(config)))
-  setting_col <- match("setting", names_lower)
-  value_col <- match("value", names_lower)
-  if (is.na(setting_col) || is.na(value_col)) {
-    stop(
-      "[configuration] expected columns 'Setting' and 'Value'.",
-      call. = FALSE
-    )
+  if (is.list(config) && !is.data.frame(config)) {
+    stan_opts <- if ("stan_opts" %in% names(config)) {
+      config$stan_opts
+    } else if ("stan_options" %in% names(config)) {
+      config$stan_options
+    } else {
+      list()
+    }
+    imugap_opts <- if ("imugap_opts" %in% names(config)) {
+      config$imugap_opts
+    } else if ("imugap_options" %in% names(config)) {
+      config$imugap_options
+    } else {
+      list()
+    }
+    return(list(stan_opts = stan_opts, imugap_opts = imugap_opts))
   }
+  if (is.data.frame(config)) {
+    if (nrow(config) == 0L) {
+      return(list(stan_opts = list(), imugap_opts = list()))
+    }
+    names_lower <- tolower(trimws(names(config)))
+    setting_col <- match("setting", names_lower)
+    value_col <- match("value", names_lower)
+    if (is.na(setting_col) || is.na(value_col)) {
+      stop(
+        "[configuration] expected columns 'Setting' and 'Value'.",
+        call. = FALSE
+      )
+    }
 
-  settings <- tolower(trimws(as.character(config[[setting_col]])))
-  raw_values <- config[[value_col]]
-  values <- trimws(as.character(raw_values))
-  populated <- !is.na(raw_values) & nzchar(values)
-  missing_name <- which(populated & (is.na(settings) | !nzchar(settings)))
-  if (length(missing_name) > 0L) {
-    stop(
-      sprintf(
-        "[configuration] missing Setting at row(s): %s",
-        paste(utils::head(missing_name, 20L), collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  }
+    settings <- tolower(trimws(as.character(config[[setting_col]])))
+    raw_values <- config[[value_col]]
+    values <- trimws(as.character(raw_values))
+    populated <- !is.na(raw_values) & nzchar(values)
+    missing_name <- which(populated & (is.na(settings) | !nzchar(settings)))
+    if (length(missing_name) > 0L) {
+      stop(
+        sprintf(
+          "[configuration] missing Setting at row(s): %s",
+          paste(utils::head(missing_name, 20L), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
 
-  allowed <- c("iter", "chains", "seed", "warmup")
-  unknown <- which(populated & !settings %in% allowed)
-  if (length(unknown) > 0L) {
-    stop(
-      sprintf(
-        "[configuration] unknown setting(s): %s",
-        paste(unique(settings[unknown]), collapse = ", ")
-      ),
-      call. = FALSE
+    stan_arg_names <- c(
+      "iter",
+      "warmup",
+      "thin",
+      "chains",
+      "cores",
+      "seed",
+      "init",
+      "refresh"
     )
-  }
-  duplicate <- unique(settings[populated & duplicated(settings)])
-  if (length(duplicate) > 0L) {
-    stop(
-      sprintf(
-        "[configuration] setting(s) repeated: %s",
-        paste(duplicate, collapse = ", ")
-      ),
-      call. = FALSE
-    )
-  }
+    control_arg_names <- c("adapt_delta", "max_treedepth", "stepsize", "metric")
+    imugap_arg_names <- c("df", "dose_schedule", "age_order")
+    allowed <- c(stan_arg_names, control_arg_names, imugap_arg_names)
 
-  mins <- c(iter = 1L, chains = 1L, seed = 0L, warmup = 1L)
-  overrides <- list()
-  for (i in which(populated)) {
-    setting <- settings[[i]]
-    overrides[[setting]] <- assert_flag_int(
-      values[[i]], sprintf("[configuration] %s", setting), mins[[setting]]
-    )
+    unknown <- which(populated & !settings %in% allowed)
+    if (length(unknown) > 0L) {
+      stop(
+        sprintf(
+          "[configuration] unknown setting(s): %s",
+          paste(unique(settings[unknown]), collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+    duplicate <- unique(settings[populated & duplicated(settings)])
+    if (length(duplicate) > 0L) {
+      stop(
+        sprintf(
+          "[configuration] setting(s) repeated: %s",
+          paste(duplicate, collapse = ", ")
+        ),
+        call. = FALSE
+      )
+    }
+
+    stan_opts <- list()
+    control_opts <- list()
+    imugap_opts <- list()
+
+    for (i in which(populated)) {
+      s <- settings[[i]]
+      v <- values[[i]]
+      if (s %in% stan_arg_names) {
+        if (s %in% c("iter", "warmup", "thin", "chains", "cores", "refresh")) {
+          stan_opts[[s]] <- assert_flag_int(
+            v,
+            sprintf("[configuration] %s", s),
+            min = 1L
+          )
+        } else if (s == "seed") {
+          stan_opts[[s]] <- assert_flag_int(
+            v,
+            sprintf("[configuration] %s", s),
+            min = 0L
+          )
+        } else {
+          stan_opts[[s]] <- v
+        }
+      } else if (s %in% control_arg_names) {
+        if (s %in% c("adapt_delta", "stepsize")) {
+          num_v <- suppressWarnings(as.numeric(v))
+          if (is.na(num_v)) {
+            stop(
+              sprintf("[configuration] %s must be numeric (got '%s').", s, v),
+              call. = FALSE
+            )
+          }
+          control_opts[[s]] <- num_v
+        } else if (s == "max_treedepth") {
+          control_opts[[s]] <- assert_flag_int(
+            v,
+            sprintf("[configuration] %s", s),
+            min = 1L
+          )
+        } else {
+          control_opts[[s]] <- v
+        }
+      } else if (s %in% imugap_arg_names) {
+        if (s == "df") {
+          imugap_opts[[s]] <- assert_flag_int(
+            v,
+            sprintf("[configuration] %s", s),
+            min = 1L
+          )
+        } else {
+          imugap_opts[[s]] <- v
+        }
+      }
+    }
+    if (length(control_opts) > 0L) {
+      stan_opts$control <- control_opts
+    }
+    return(list(stan_opts = stan_opts, imugap_opts = imugap_opts))
   }
-  overrides
+  list(stan_opts = list(), imugap_opts = list())
 }
 
 #' Run the imurun fitting pipeline
 #'
-#' @description The spreadsheet-first fitting entry point, also used by the
-#' optional `imurun` command wrapper. Given a workbook or directory of inputs,
-#' it validates the observations, locations, target requests, and workbook
-#' configuration; fits with `imuGAP::sampling()`; writes `fit.rds`; and adds a
-#' human-readable `results` sheet to the supplied workbook (or creates
-#' `results.xlsx` for directory input).
+#' @description The spreadsheet-first fitting entry point. Given a workbook or
+#' directory of inputs, it validates the observations, locations, target
+#' requests, and configuration; fits with `imuGAP::sampling()`; and outputs
+#' requested deliverables (`results` sheet in workbook, results CSV, and/or `fit.rds`).
 #'
-#' The function never throws for expected failure modes; instead it prints a
-#' human-readable message and returns an integer exit code, so it can drive a
-#' shell command directly. The exit-code taxonomy is:
-#' \describe{
-#'   \item{0}{Success (or usage/validation-only request).}
-#'   \item{1}{Input validation failed: the schema, or an invalid or unknown
-#'     command-line option.}
-#'   \item{2}{Model fitting failed.}
-#'   \item{3}{Input/output error (missing directory, unreadable or unwritable
-#'     files).}
-#' }
+#' @param input character path to a `.xlsx` workbook or input directory, or a
+#'   pre-loaded `inputs` list (from [read_inputs()]).
+#' @param output_dir character path to output directory. Defaults to the directory
+#'   of `input` (for workbooks) or `input` itself (for directory inputs).
+#' @param dryrun logical; if `TRUE`, validates inputs without fitting the model
+#'   and returns `invisible(0L)` on success. Default is `FALSE`.
+#' @param result character vector of requested outputs, e.g. `c("xlsx")` (default),
+#'   `c("rds")`, `c("csv")`, or combinations/custom paths.
+#' @param overwrite logical; if `TRUE` (default), overwrites existing output files.
+#'   If `FALSE` and a destination exists, prompts in interactive sessions or stops.
+#' @param ... optional arguments passed to override configuration settings.
 #'
-#' @param args character vector whose first non-flag value is the input workbook
-#'   or directory and whose optional second value is the output directory. A
-#'   leading `-h`/`--help` either prints usage (when alone) or requests
-#'   validation-only mode. Workbook sampler settings come from its
-#'   `configuration` sheet; `--iter`, `--chains`, `--seed`, and `--warmup` may
-#'   override them for automation. See [parse_sampler_options()].
-#'
-#' @return Invisibly, an integer exit code (see Description).
+#' @return Invisibly, an integer exit code (`0L` for success).
 #'
 #' @examples
-#' # Usage text, no fitting:
-#' run_fit(character(0))
-#'
-#' # Validate inputs only (no Stan toolchain required):
-#' dir <- tempfile("imurun_validate_")
-#' dir.create(dir)
 #' \dontrun{
-#' # Fit, amend the workbook, and write fit.rds (requires a Stan toolchain):
-#' run_fit("path/to/inputs")
+#' # Validate inputs only:
+#' run_fit("imurun_example.xlsx", dryrun = TRUE)
+#'
+#' # Fit and update spreadsheet with results:
+#' run_fit("imurun_example.xlsx")
+#'
+#' # Fit and save raw RDS object:
+#' run_fit("imurun_example.xlsx", result = c("rds"))
 #' }
 #'
 #' @export
-run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
-  # Pull sampler-option flags out first so the positional input/output parsing
-  # below is not confused by them, and a malformed value fails early with a
-  # clear message (exit code 1, alongside schema validation).
+run_fit <- function(
+  input,
+  output_dir = NULL,
+  dryrun = FALSE,
+  result = c("xlsx"),
+  overwrite = TRUE,
+  ...
+) {
+  # If a character vector of CLI-style arguments was passed as `input`
+  if (
+    is.character(input) && (length(input) > 1L || any(startsWith(input, "-")))
+  ) {
+    return(cli_run_fit(input))
+  }
+
+  is_workbook <- FALSE
+  input_path <- NULL
+  input_stem <- "imurun_fit"
+
+  if (is.character(input)) {
+    if (length(input) != 1L || !nzchar(trimws(input))) {
+      stop("Invalid input path.", call. = FALSE)
+    }
+    input_path <- normalizePath(input, mustWork = FALSE)
+    is_workbook <- tolower(tools::file_ext(input_path)) == "xlsx"
+    input_stem <- tools::file_path_sans_ext(basename(input_path))
+
+    if (is_workbook) {
+      if (!file.exists(input_path)) {
+        stop("Input workbook not found: ", input, call. = FALSE)
+      }
+      if (is.null(output_dir)) {
+        output_dir <- dirname(input_path)
+      }
+    } else {
+      if (!dir.exists(input_path)) {
+        stop("Input directory not found: ", input, call. = FALSE)
+      }
+      check_all_inputs(input_path)
+      if (is.null(output_dir)) {
+        output_dir <- input_path
+      }
+    }
+    message("[->] Loading inputs...")
+    inputs <- read_inputs(input_path)
+    message("[OK] Inputs loaded.")
+  } else if (is.list(input)) {
+    inputs <- input
+    if (is.null(output_dir)) {
+      output_dir <- "."
+    }
+  } else {
+    stop(
+      "'input' must be a workbook path, directory path, or inputs list.",
+      call. = FALSE
+    )
+  }
+
+  # Parse configuration
+  parsed_config <- parse_sampler_config(inputs$config)
+  extra_args <- list(...)
+  if (length(extra_args) > 0L) {
+    parsed_config$stan_opts <- utils::modifyList(
+      parsed_config$stan_opts,
+      extra_args
+    )
+  }
+
+  message("[->] Validating schema...")
+  validate_inputs(inputs)
+  message("[OK] Schema validated.")
+
+  # Re-canonicalize for the fit
+  locs <- imuGAP::canonicalize_locations(inputs$locs)
+  obs <- imuGAP::canonicalize_observations(inputs$obs)
+  pops_raw <- build_populations(as.data.frame(
+    inputs$obs,
+    stringsAsFactors = FALSE
+  ))
+  max_cohort <- max(as.integer(pops_raw$cohort))
+  max_age <- max(as.integer(pops_raw$age))
+  pops <- imuGAP::canonicalize_populations(
+    pops_raw,
+    obs,
+    locs,
+    max_cohort = max_cohort,
+    max_age = max_age
+  )
+
+  imugap_args <- utils::modifyList(
+    IMURUN_IMUGAP_ARGS,
+    parsed_config$imugap_opts
+  )
+  n_doses <- length(imugap_args$dose_schedule)
+
+  # Validate targets
+  validate_targets(
+    inputs$target,
+    loc_ids = as.character(inputs$locs$loc_id),
+    max_cohort = max_cohort,
+    max_age = max_age,
+    max_dose = n_doses
+  )
+
+  if (isTRUE(dryrun)) {
+    message("[OK] Validation passed (dryrun mode).")
+    return(invisible(0L))
+  }
+
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+
+  # Parse output destinations from `result`
+  write_xlsx <- FALSE
+  write_csv <- FALSE
+  write_rds <- FALSE
+  xlsx_dest <- NULL
+  csv_dest <- NULL
+  rds_dest <- NULL
+
+  for (r in result) {
+    r_lower <- tolower(trimws(r))
+    if (r_lower == "xlsx") {
+      write_xlsx <- TRUE
+      xlsx_dest <- if (is_workbook) {
+        input_path
+      } else {
+        file.path(output_dir, paste0(input_stem, ".xlsx"))
+      }
+    } else if (r_lower == "csv") {
+      write_csv <- TRUE
+      csv_dest <- file.path(output_dir, paste0(input_stem, ".csv"))
+    } else if (r_lower == "rds") {
+      write_rds <- TRUE
+      rds_dest <- file.path(output_dir, paste0(input_stem, ".rds"))
+    } else if (grepl("\\.xlsx$", r_lower)) {
+      write_xlsx <- TRUE
+      xlsx_dest <- r
+    } else if (grepl("\\.csv$", r_lower)) {
+      write_csv <- TRUE
+      csv_dest <- r
+    } else if (grepl("\\.rds$", r_lower)) {
+      write_rds <- TRUE
+      rds_dest <- r
+    } else {
+      stop("Unrecognized result specification: ", r, call. = FALSE)
+    }
+  }
+
+  # Overwrite checks
+  check_destination <- function(dest, is_wb_self = FALSE) {
+    if (is.null(dest)) {
+      return()
+    }
+    if (!file.exists(dest)) {
+      return()
+    }
+    if (is_wb_self) {
+      sheets <- openxlsx2::wb_load(dest)$get_sheet_names()
+      if (!any(tolower(sheets) == "results")) return()
+    }
+    if (!isTRUE(overwrite)) {
+      if (interactive()) {
+        ans <- readline(paste0(
+          "Destination '",
+          dest,
+          "' already exists. Overwrite? [y/N] "
+        ))
+        if (!tolower(trimws(ans)) %in% c("y", "yes")) {
+          stop("Aborted by user.", call. = FALSE)
+        }
+      } else {
+        stop(
+          sprintf(
+            "Destination '%s' already exists; set overwrite = TRUE to replace.",
+            dest
+          ),
+          call. = FALSE
+        )
+      }
+    }
+  }
+
+  if (write_rds) {
+    check_destination(rds_dest)
+  }
+  if (write_csv) {
+    check_destination(csv_dest)
+  }
+  if (write_xlsx) {
+    check_destination(
+      xlsx_dest,
+      is_wb_self = (is_workbook &&
+        identical(
+          normalizePath(xlsx_dest, mustWork = FALSE),
+          normalizePath(input_path, mustWork = FALSE)
+        ))
+    )
+  }
+
+  # Stan options
+  stan_settings <- utils::modifyList(
+    IMURUN_SAMPLER_DEFAULTS,
+    parsed_config$stan_opts
+  )
+  stan_opts <- do.call(imuGAP::stan_options, stan_settings)
+
+  message("[->] Launching imuGAP...")
+  fit <- imuGAP::sampling(
+    observations = obs,
+    populations = pops,
+    locations = locs,
+    imugap_opts = do.call(imuGAP::imugap_options, imugap_args),
+    stan_opts = stan_opts
+  )
+  message("[OK] Model complete.")
+
+  if (write_rds && !is.null(rds_dest)) {
+    saveRDS(fit, rds_dest)
+    message("[OK] Wrote ", rds_dest)
+  }
+
+  # Predict targets
+  message("[->] Predicting targets...")
+  targets <- expand_targets(inputs$target, default_dose = n_doses)
+  if (nrow(targets) == 0L) {
+    stop("The target sheet expanded to no targets.", call. = FALSE)
+  }
+  draws <- as_target_draws(stats::predict(fit, target = targets))
+  draws$target_id <- targets$target_id[match(draws$obs_id, targets$obs_id)]
+  results <- summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
+  message("[OK] Summarized ", nrow(results), " target(s).")
+
+  if (write_xlsx && !is.null(xlsx_dest)) {
+    write_results_workbook(
+      inputs,
+      results,
+      xlsx_dest,
+      overwrite = TRUE,
+      source = if (
+        is_workbook &&
+          identical(
+            normalizePath(xlsx_dest, mustWork = FALSE),
+            normalizePath(input_path, mustWork = FALSE)
+          )
+      ) {
+        input_path
+      } else {
+        NULL
+      }
+    )
+    message("[OK] Wrote ", xlsx_dest)
+  }
+  if (write_csv && !is.null(csv_dest)) {
+    write_results_csv(results, csv_dest, overwrite = TRUE)
+    message("[OK] Wrote ", csv_dest)
+  }
+
+  invisible(0L)
+}
+
+#' Command-line interface dispatcher for imurun
+#'
+#' @description Parses command-line arguments and dispatches to [run_fit()],
+#' [imurun_init()], or [imurun_copy_example()]. Returns an integer exit code.
+#'
+#' @param args character vector of command-line arguments.
+#'
+#' @return Invisibly, an integer exit code (`0L` = success, `1L` = validation,
+#'   `2L` = model error, `3L` = I/O error).
+#'
+#' @export
+cli_run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   parsed <- tryCatch(parse_sampler_options(args), error = identity)
   if (inherits(parsed, "error")) {
     message("ERROR: ", conditionMessage(parsed))
@@ -293,8 +620,6 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   sampler_overrides <- parsed$overrides
   args <- parsed$rest
 
-  # Same treatment for the output flags, so they are stripped before the
-  # positional input/output parsing and a missing value fails early.
   out_parsed <- tryCatch(parse_output_options(args), error = identity)
   if (inherits(out_parsed, "error")) {
     message("ERROR: ", conditionMessage(out_parsed))
@@ -304,14 +629,12 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
   overwrite <- isTRUE(output_opts$overwrite)
   args <- out_parsed$rest
 
-  # Reject a mistyped or unknown option instead of silently treating it as a
-  # path. The only options imurun accepts are the sampler flags (stripped
-  # above) plus the help flag.
   looks_flag <- !is.na(args) & startsWith(args, "-")
   unknown <- setdiff(args[looks_flag], c("-h", "--help"))
   if (length(unknown) > 0) {
     message(
-      "ERROR: unknown option(s): ", paste(unknown, collapse = ", "),
+      "ERROR: unknown option(s): ",
+      paste(unknown, collapse = ", "),
       ". See 'imurun --help'."
     )
     return(invisible(1L))
@@ -324,11 +647,11 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(0L))
   }
 
-  # Subcommands: scaffold a template or copy the example workbook.
+  # Subcommands
   if (args[1] %in% c("init", "example")) {
     target <- if (length(args) >= 2) args[2] else "."
     copier <- if (args[1] == "init") imurun_init else imurun_copy_example
-    res <- tryCatch(copier(target), error = identity)
+    res <- tryCatch(copier(target, overwrite = overwrite), error = identity)
     if (inherits(res, "error")) {
       message("ERROR: ", conditionMessage(res))
       return(invisible(3L))
@@ -336,254 +659,44 @@ run_fit <- function(args = commandArgs(trailingOnly = TRUE)) {
     return(invisible(0L))
   }
 
-  if (help_flag) {
-    input <- args[2]
-    output_dir <- input
-  } else {
-    input <- args[1]
-    output_dir <- if (length(args) >= 2) args[2] else input
+  input <- if (help_flag) args[2] else args[1]
+  output_dir <- if (!help_flag && length(args) >= 2) args[2] else NULL
+
+  result_spec <- "xlsx"
+  if (!is.null(output_opts$results)) {
+    result_spec <- c(result_spec, output_opts$results)
+  }
+  if (!is.null(output_opts$csv)) {
+    result_spec <- c(result_spec, output_opts$csv)
   }
 
-  is_workbook <- tolower(tools::file_ext(input)) == "xlsx"
-
-  if (is_workbook) {
-    if (!file.exists(input)) {
-      message("ERROR: Input workbook not found: ", input)
-      return(invisible(3L))
-    }
-    output_dir <- if (help_flag || length(args) < 2) dirname(input) else output_dir
-  } else {
-    if (!dir.exists(input)) {
-      message("ERROR: Input directory not found: ", input)
-      return(invisible(3L))
-    }
-    err <- tryCatch(
-      {
-        check_all_inputs(input)
-        NULL
-      },
-      error = identity
-    )
-    if (!is.null(err)) {
-      message("ERROR: ", conditionMessage(err))
-      return(invisible(3L))
-    }
-  }
-
-  message("[->] Loading inputs...")
-  inputs <- tryCatch(read_inputs(input), error = identity)
-  if (inherits(inputs, "error")) {
-    message("ERROR: ", conditionMessage(inputs))
-    return(invisible(3L))
-  }
-  message("[OK] Inputs loaded.")
-
-  # Workbook configuration is the primary sampler-option surface. Keep the
-  # already-supported flags as explicit overrides for scripts and existing
-  # callers: defaults < workbook < command line.
-  config_overrides <- tryCatch(
-    parse_sampler_config(inputs$config),
-    error = identity
-  )
-  if (inherits(config_overrides, "error")) {
-    message("ERROR: ", conditionMessage(config_overrides))
-    return(invisible(1L))
-  }
-  sampler_settings <- utils::modifyList(config_overrides, sampler_overrides)
-
-  message("[->] Validating schema...")
-  validated <- tryCatch(validate_inputs(inputs), error = identity)
-  if (inherits(validated, "error")) {
-    message("ERROR: ", conditionMessage(validated))
-    return(invisible(1L))
-  }
-  message("[OK] Schema validated.")
-
-  if (help_flag) {
-    message("[OK] Validation passed.")
-    return(invisible(0L))
-  }
-
-  # Re-canonicalize for the fit. imurun has no populations sheet: the imuGAP
-  # populations are derived from the observations (one weight-1 row each).
-  canonical <- tryCatch(
-    {
-      locs <- imuGAP::canonicalize_locations(inputs$locs)
-      obs <- imuGAP::canonicalize_observations(inputs$obs)
-      pops_raw <- build_populations(
-        as.data.frame(inputs$obs, stringsAsFactors = FALSE)
+  res <- tryCatch(
+    do.call(
+      run_fit,
+      c(
+        list(
+          input = input,
+          output_dir = output_dir,
+          dryrun = help_flag,
+          result = result_spec,
+          overwrite = overwrite
+        ),
+        sampler_overrides
       )
-      max_cohort <- max(as.integer(pops_raw$cohort))
-      max_age <- max(as.integer(pops_raw$age))
-      pops <- imuGAP::canonicalize_populations(
-        pops_raw, obs, locs,
-        max_cohort = max_cohort,
-        max_age = max_age
-      )
-      # Carry the bounds out: the target sheet is validated against the same
-      # cohort/age extent the model was actually fit over.
-      list(
-        locs = locs, obs = obs, pops = pops,
-        max_cohort = max_cohort, max_age = max_age
-      )
-    },
-    error = identity
-  )
-  if (inherits(canonical, "error")) {
-    message("ERROR: ", conditionMessage(canonical))
-    return(invisible(1L))
-  }
-
-  stan_opts <- do.call(
-    imuGAP::stan_options,
-    utils::modifyList(IMURUN_SAMPLER_DEFAULTS, sampler_settings)
-  )
-
-  # The model's dose count: the default for a blank `target` dose cell and the
-  # upper bound the target sheet is checked against.
-  n_doses <- length(IMURUN_IMUGAP_ARGS$dose_schedule)
-
-  # Validate the target sheet BEFORE fitting. A typo in a target row is a
-  # spreadsheet mistake, and finding it after a half-hour fit would be a poor
-  # trade when the check costs nothing.
-  target_err <- tryCatch(
-    {
-      validate_targets(
-        inputs$target,
-        loc_ids = as.character(inputs$locs$loc_id),
-        max_cohort = canonical$max_cohort,
-        max_age = canonical$max_age,
-        max_dose = n_doses
-      )
-      NULL
-    },
-    error = identity
-  )
-  if (!is.null(target_err)) {
-    message("ERROR: ", conditionMessage(target_err))
-    return(invisible(1L))
-  }
-
-  if (!dir.exists(output_dir)) {
-    ok <- dir.create(output_dir, recursive = TRUE)
-    if (!ok) {
-      message("ERROR: Could not create output directory: ", output_dir)
-      return(invisible(3L))
-    }
-  }
-
-  # Workbook inputs are amended in place by default, per the spreadsheet-first
-  # workflow. --results requests an amended copy instead; directory inputs have
-  # no source workbook and continue to produce results.xlsx.
-  results_source <- if (is_workbook) input else NULL
-  results_path <- if (!is.null(output_opts$results)) {
-    output_opts$results
-  } else if (is_workbook) {
-    input
-  } else {
-    file.path(output_dir, "results.xlsx")
-  }
-  csv_path <- output_opts$csv
-  fit_path <- file.path(output_dir, "fit.rds")
-  clobber_err <- tryCatch(
-    {
-      for (p in c(fit_path, csv_path)) {
-        assert_no_clobber(p, overwrite)
-      }
-      assert_results_destination(results_source, results_path, overwrite)
-      NULL
-    },
-    error = identity
-  )
-  if (!is.null(clobber_err)) {
-    message("ERROR: ", conditionMessage(clobber_err))
-    return(invisible(3L))
-  }
-
-  message("[->] Launching imuGAP...")
-  fit <- tryCatch(
-    imuGAP::sampling(
-      observations = canonical$obs,
-      populations = canonical$pops,
-      locations = canonical$locs,
-      imugap_opts = do.call(imuGAP::imugap_options, IMURUN_IMUGAP_ARGS),
-      stan_opts = stan_opts
     ),
     error = identity
   )
-  if (inherits(fit, "error")) {
-    message("ERROR: ", conditionMessage(fit))
-    return(invisible(2L))
-  }
-  message("[OK] Model complete.")
 
-  save_err <- tryCatch(
-    {
-      saveRDS(fit, fit_path)
-      NULL
-    },
-    error = identity
-  )
-  if (!is.null(save_err)) {
-    message(
-      "ERROR: Failed to save output to ",
-      fit_path,
-      ": ",
-      conditionMessage(save_err)
-    )
-    return(invisible(3L))
+  if (inherits(res, "error")) {
+    msg <- conditionMessage(res)
+    message("ERROR: ", msg)
+    if (grepl("validation|schema|setting|column", msg, ignore.case = TRUE)) {
+      return(invisible(1L))
+    } else if (grepl("Stan|model|sampling|predict", msg, ignore.case = TRUE)) {
+      return(invisible(2L))
+    } else {
+      return(invisible(3L))
+    }
   }
-  message("[OK] Wrote ", fit_path)
-
-  # By-target predictions. fit.rds is the raw fit object; the amended workbook
-  # is the practical deliverable for a user who does not want to post-process
-  # the fit in R.
-  message("[->] Predicting targets...")
-  results <- tryCatch(
-    {
-      targets <- expand_targets(inputs$target, default_dose = n_doses)
-      if (nrow(targets) == 0L) {
-        stop("the target sheet expanded to no targets.", call. = FALSE)
-      }
-      draws <- as_target_draws(stats::predict(fit, target = targets))
-      # predict() echoes imuGAP's own identity columns (loc_id/cohort/age/dose)
-      # but not `target_id`, which is imurun's label from the target sheet.
-      # Carry it across on obs_id so each result row names the request it came
-      # from; summarize_targets() then keeps it as an identity column.
-      draws$target_id <- targets$target_id[match(draws$obs_id, targets$obs_id)]
-      summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
-    },
-    error = identity
-  )
-  if (inherits(results, "error")) {
-    message("ERROR: ", conditionMessage(results))
-    return(invisible(2L))
-  }
-  message("[OK] Summarized ", nrow(results), " target(s).")
-
-  # Outputs. The clobber checks already ran before the fit, so pass
-  # overwrite = TRUE here: refusing now would discard a completed fit.
-  write_err <- tryCatch(
-    {
-      write_results_workbook(
-        inputs, results, results_path,
-        overwrite = TRUE, source = results_source
-      )
-      if (!is.null(csv_path)) {
-        write_results_csv(results, csv_path, overwrite = TRUE)
-      }
-      NULL
-    },
-    error = identity
-  )
-  if (!is.null(write_err)) {
-    message("ERROR: ", conditionMessage(write_err))
-    return(invisible(3L))
-  }
-  message("[OK] Wrote ", results_path)
-  if (!is.null(csv_path)) {
-    message("[OK] Wrote ", csv_path)
-  }
-
   invisible(0L)
 }

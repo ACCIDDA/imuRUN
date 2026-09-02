@@ -14,7 +14,7 @@ test_that("find_input_file reads CSV from directory", {
     file.path(dir, "observations.csv"),
     row.names = FALSE
   )
-  result <- imurun::find_input_file(dir, "observations")
+  result <- imuRUN::find_input_file(dir, "observations")
   expect_equal(result$positive, 1:3)
   expect_equal(result$sample_n, 10:12)
 })
@@ -26,7 +26,7 @@ test_that("find_input_file reads RDS from directory", {
 
   expected <- data.frame(id = 1:5, parent_id = c(NA, 1, 1, 2, 2))
   saveRDS(expected, file.path(dir, "locations.rds"))
-  result <- imurun::find_input_file(dir, "locations")
+  result <- imuRUN::find_input_file(dir, "locations")
   expect_equal(result, expected)
 })
 
@@ -36,7 +36,7 @@ test_that("find_input_file errors with clear message when file missing", {
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
 
   expect_error(
-    imurun::find_input_file(dir, "nonexistent"),
+    imuRUN::find_input_file(dir, "nonexistent"),
     "Expected 'nonexistent\\.csv' or 'nonexistent\\.rds'"
   )
 })
@@ -49,7 +49,7 @@ test_that("check_all_inputs reports all missing files at once", {
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
 
   expect_error(
-    imurun::check_all_inputs(dir),
+    imuRUN::check_all_inputs(dir),
     "observations.*locations"
   )
 })
@@ -64,7 +64,7 @@ test_that("check_all_inputs reports only the actually missing files", {
     file.path(dir, "observations.csv"),
     row.names = FALSE
   )
-  err <- tryCatch(imurun::check_all_inputs(dir), error = identity)
+  err <- tryCatch(imuRUN::check_all_inputs(dir), error = identity)
   expect_true(inherits(err, "error"))
   expect_false(grepl("observations", err$message))
   expect_true(grepl("locations", err$message))
@@ -90,7 +90,7 @@ test_that("check_all_inputs passes when all files present", {
     file.path(dir, "target.csv"),
     row.names = FALSE
   )
-  expect_no_error(imurun::check_all_inputs(dir))
+  expect_no_error(imuRUN::check_all_inputs(dir))
 })
 
 # --- load_by_ext -------------------------------------------------------------
@@ -99,7 +99,7 @@ test_that("load_by_ext reads CSV correctly", {
   path <- tempfile(fileext = ".csv")
   on.exit(unlink(path))
   write.csv(data.frame(x = 1:3), path, row.names = FALSE)
-  result <- imurun::load_by_ext(path)
+  result <- imuRUN::load_by_ext(path)
   expect_equal(result$x, 1:3)
 })
 
@@ -108,21 +108,21 @@ test_that("load_by_ext reads RDS correctly", {
   on.exit(unlink(path))
   expected <- data.frame(x = 1:3)
   saveRDS(expected, path)
-  expect_equal(imurun::load_by_ext(path), expected)
+  expect_equal(imuRUN::load_by_ext(path), expected)
 })
 
 test_that("load_by_ext rejects unsupported extensions", {
   path <- tempfile(fileext = ".json")
   writeLines("{}", path)
   on.exit(unlink(path))
-  expect_error(imurun::load_by_ext(path), "Unsupported extension")
+  expect_error(imuRUN::load_by_ext(path), "Unsupported extension")
 })
 
 test_that("load_by_ext includes filename in error for corrupt files", {
   path <- tempfile(fileext = ".rds")
   writeLines("not a valid rds file", path)
   on.exit(unlink(path))
-  expect_error(imurun::load_by_ext(path), "Failed to read")
+  expect_error(imuRUN::load_by_ext(path), "Failed to read")
 })
 
 # --- read_inputs -------------------------------------------------------------
@@ -142,12 +142,12 @@ test_that("read_inputs returns all inputs", {
     file.path(dir, "locations.rds")
   )
   write.csv(
-    data.frame(loc_id = 1, cohort = 5, age_low = 1, age_high = 1),
+    data.frame(loc_id = 1, year = 2020, age_low = 1, age_high = 1),
     file.path(dir, "target.csv"),
     row.names = FALSE
   )
 
-  inputs <- imurun::read_inputs(dir)
+  inputs <- imuRUN::read_inputs(dir)
   expect_named(inputs, c("obs", "locs", "target"))
   expect_equal(inputs$obs$positive, 1:2)
 })
@@ -162,5 +162,5 @@ test_that("read_inputs errors when an input is missing", {
     file.path(dir, "observations.csv"),
     row.names = FALSE
   )
-  expect_error(imurun::read_inputs(dir), "Missing input files")
+  expect_error(imuRUN::read_inputs(dir), "Missing input files")
 })
