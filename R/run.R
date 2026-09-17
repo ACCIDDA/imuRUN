@@ -417,6 +417,9 @@ run_fit <- function(
     inputs$obs,
     stringsAsFactors = FALSE
   ))
+  # imuGAP numbers cohorts from 1; `earliest` is the birth cohort numbered 1.
+  earliest <- min(as.integer(pops_raw$cohort))
+  pops_raw$cohort <- pops_raw$cohort - earliest + 1L
   max_cohort <- max(as.integer(pops_raw$cohort))
   max_age <- max(as.integer(pops_raw$age))
   pops <- imuGAP::canonicalize_populations(
@@ -439,7 +442,8 @@ run_fit <- function(
     loc_ids = as.character(inputs$locs$loc_id),
     max_cohort = max_cohort,
     max_age = max_age,
-    max_dose = n_doses
+    max_dose = n_doses,
+    earliest = earliest
   )
 
   if (isTRUE(dryrun)) {
@@ -564,11 +568,16 @@ run_fit <- function(
   # Predict targets
   message("[->] Predicting targets...")
   targets <- expand_targets(inputs$target, default_dose = n_doses)
+  # imuGAP numbers cohorts from 1; keep the birth cohort to report.
+  targets$abs_cohort <- targets$cohort
+  targets$cohort <- targets$cohort - earliest + 1L
   if (nrow(targets) == 0L) {
     stop("The target sheet expanded to no targets.", call. = FALSE)
   }
   draws <- as_target_draws(stats::predict(fit, target = targets))
   draws$target_id <- targets$target_id[match(draws$obs_id, targets$obs_id)]
+  # Report birth cohorts (year - age) rather than imuGAP's 1-based numbering.
+  draws$cohort <- targets$abs_cohort[match(draws$obs_id, targets$obs_id)]
   results <- summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
   message("[OK] Summarized ", nrow(results), " target(s).")
 

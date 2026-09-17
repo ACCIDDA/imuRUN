@@ -184,3 +184,48 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
   )
   expect_identical(forced, 0L)
 })
+
+test_that("calendar years fit and report birth cohorts (gated)", {
+  skip_on_cran()
+  if (!nzchar(Sys.getenv("IMURUN_RUN_INTEGRATION"))) {
+    skip("set IMURUN_RUN_INTEGRATION=1 to run the end-to-end fit")
+  }
+  skip_if_no_readxl()
+  out <- withr::local_tempdir()
+
+  # The example with small sampler settings, its years optionally shifted.
+  fit_example <- function(name, shift) {
+    path <- file.path(out, name)
+    expect_true(file.copy(example_wb(), path))
+    wb <- openxlsx2::wb_load(path)
+    wb$add_data(
+      "configuration",
+      data.frame(Value = c(100L, 1L, 1L, NA_integer_)),
+      start_col = 2,
+      start_row = 2,
+      col_names = FALSE
+    )
+    for (sheet in c("observations", "target")) {
+      years <- openxlsx2::read_xlsx(path, sheet = sheet)[[2L]]
+      wb$add_data(
+        sheet,
+        data.frame(year = years + shift),
+        start_col = 2,
+        start_row = 2,
+        col_names = FALSE,
+        na.strings = ""
+      )
+    }
+    openxlsx2::wb_save(wb, path, overwrite = TRUE)
+    expect_identical(imuRUN::run_fit(path), 0L)
+    as.data.frame(openxlsx2::read_xlsx(path, sheet = "results"))
+  }
+
+  base <- fit_example("base.xlsx", 0L)
+  calendar <- fit_example("calendar.xlsx", 2000L)
+
+  # Shifting every year leaves imuGAP's inputs unchanged, so with the same seed
+  # the estimates match and only the reported birth cohorts move.
+  expect_equal(calendar$est_median, base$est_median)
+  expect_equal(calendar$cohort, base$cohort + 2000)
+})
