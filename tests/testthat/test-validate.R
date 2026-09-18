@@ -20,11 +20,11 @@ test_that("validate_inputs reports the corrupted workbook problems", {
     error = identity
   )
   expect_true(inherits(err, "error"))
-  # renamed sample_n -> missing required column, named in spreadsheet terms
+  # renamed Sampled -> missing required column, named in spreadsheet terms
   expect_match(err$message, "observations")
-  expect_match(err$message, "sample_n")
-  # non-numeric year
-  expect_match(err$message, "year")
+  expect_match(err$message, "missing required column\\(s\\): 'Sampled'")
+  # non-numeric year, on the first data row (spreadsheet row 2)
+  expect_match(err$message, "'Observation Year' must be numeric.*row\\(s\\): 2")
 })
 
 test_that("validate_inputs names a missing column and its sheet", {
@@ -44,7 +44,7 @@ test_that("validate_inputs names a missing column and its sheet", {
   )
   expect_true(inherits(err, "error"))
   expect_match(err$message, "\\[observations\\]")
-  expect_match(err$message, "sample_n")
+  expect_match(err$message, "'Sampled'")
 })
 
 test_that("validate_inputs catches a loc_id referenced but not defined", {
@@ -82,7 +82,10 @@ test_that("validate_inputs catches out-of-range dose", {
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "dose")
+  expect_match(
+    err$message,
+    "'Dose' contains values not in parent set: missing 9"
+  )
 })
 
 test_that("validate_inputs collects multiple problems at once", {
@@ -201,8 +204,9 @@ test_that("validate_inputs rejects an inverted age span, naming the row", {
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "age_min must be <= age_max")
-  expect_match(err$message, "row\\(s\\): 2")
+  expect_match(err$message, "'Youngest age' must be <= 'Oldest age'")
+  # the second data row is spreadsheet row 3
+  expect_match(err$message, "row\\(s\\): 3")
 })
 
 test_that("validate_inputs rejects fractional age endpoints before coercion", {
@@ -223,8 +227,8 @@ test_that("validate_inputs rejects fractional age endpoints before coercion", {
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "age_min.*whole numbers")
-  expect_match(err$message, "age_max.*whole numbers")
+  expect_match(err$message, "'Youngest age'.*whole numbers")
+  expect_match(err$message, "'Oldest age'.*whole numbers")
 })
 
 test_that("validate_inputs bounds age spans before allocating populations", {
@@ -242,7 +246,7 @@ test_that("validate_inputs bounds age spans before allocating populations", {
 
   expect_error(
     imuRUN::validate_inputs(list(obs = obs, locs = locs), max_age = 100),
-    "age span out of range"
+    "ages out of range"
   )
   expect_error(
     imuRUN::validate_inputs(list(obs = obs, locs = locs)),
@@ -281,5 +285,68 @@ test_that("validation checks derived cohort is positive", {
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "greater than oldest age")
+  expect_match(err$message, "greater than 'Oldest age'")
+})
+
+# --- spreadsheet terms: single ages and row-level values ---------------------
+
+test_that("a blank or absent Oldest age means a single age", {
+  locs <- data.frame(loc_id = "A", parent_id = NA)
+  blank <- data.frame(
+    obs_id = 1:2,
+    loc_id = "A",
+    year = 2020,
+    age_min = c(3, 4),
+    age_max = c(NA, 6),
+    dose = 1,
+    positive = 1,
+    sample_n = 10
+  )
+  expect_true(isTRUE(imuRUN::validate_inputs(list(obs = blank, locs = locs))))
+  expect_equal(expand_obs_age(blank)$age_max, c(3, 6))
+
+  absent <- blank[, setdiff(names(blank), "age_max")]
+  expect_equal(expand_obs_age(absent)$age_max, c(3, 4))
+})
+
+test_that("a blank Observation Year is named by column and spreadsheet row", {
+  obs <- data.frame(
+    obs_id = 1:2,
+    loc_id = "A",
+    year = c(2020, NA),
+    age = 1,
+    dose = 1,
+    positive = 1,
+    sample_n = 10
+  )
+  locs <- data.frame(loc_id = "A", parent_id = NA)
+  expect_error(
+    imuRUN::validate_inputs(list(obs = obs, locs = locs)),
+    "'Observation Year' is blank at row\\(s\\): 3"
+  )
+})
+
+test_that("validate_inputs accepts any dose within max_dose", {
+  obs <- data.frame(
+    obs_id = 1,
+    loc_id = "A",
+    year = 2020,
+    age = 1,
+    dose = 3,
+    positive = 1,
+    sample_n = 10
+  )
+  locs <- data.frame(loc_id = "A", parent_id = NA)
+  expect_error(imuRUN::validate_inputs(list(obs = obs, locs = locs)), "'Dose'")
+  expect_true(isTRUE(
+    imuRUN::validate_inputs(list(obs = obs, locs = locs), max_dose = 3L)
+  ))
+})
+
+test_that("canonicalizer errors use the sheet's names, not imuGAP's", {
+  e <- simpleError("`observations` column 'positive' must be <= 'sample_n'")
+  expect_identical(
+    friendly_canonical_error("observations", e),
+    "[observations] column 'Vaccinated' must be <= 'Sampled'"
+  )
 })

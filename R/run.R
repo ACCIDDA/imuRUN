@@ -37,7 +37,8 @@ Output options:
   --overwrite     replace existing output files (otherwise imurun refuses)
 
 Output: for workbook input, a 'results' sheet of per-target medians and credible
-intervals is added to that workbook; directory input writes results.xlsx.
+intervals is added to that workbook; directory input writes <dirname>.xlsx
+(inputs plus results) into output_dir.
 Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
 "
 
@@ -145,6 +146,105 @@ parse_sampler_options <- function(args) {
   list(overrides = overrides, rest = args[keep])
 }
 
+# Configuration settings imurun accepts, by where they go: `stan_options()`,
+# its `control` list, or `imugap_options()`. These are the arguments of
+# flexstanr 0.2.0 / imuGAP 0.2.0 that a spreadsheet user can set; `init` is
+# excluded because imuGAP constructs it.
+IMURUN_STAN_ARGS <- c(
+  "iter",
+  "warmup",
+  "thin",
+  "chains",
+  "cores",
+  "seed",
+  "refresh",
+  "backend",
+  "threading",
+  "max_cores"
+)
+IMURUN_CONTROL_ARGS <- c("adapt_delta", "max_treedepth", "stepsize", "metric")
+IMURUN_MODEL_ARGS <- c("df", "dose_schedule", "model")
+
+#' Read a yes/no configuration value
+#'
+#' @param v character; the raw value.
+#' @param setting character; the setting name, for the error message.
+#'
+#' @return `TRUE` or `FALSE`.
+#'
+#' @keywords internal
+assert_config_logical <- function(v, setting) {
+  x <- tolower(trimws(as.character(v)))
+  if (x %in% c("true", "yes", "1")) {
+    return(TRUE)
+  }
+  if (x %in% c("false", "no", "0")) {
+    return(FALSE)
+  }
+  stop(
+    sprintf("[configuration] %s must be TRUE or FALSE (got '%s').", setting, v),
+    call. = FALSE
+  )
+}
+
+#' Read a dose schedule from a configuration value
+#'
+#' @description A spreadsheet cell holds the schedule as text, e.g. `"1, 4"`:
+#' the age at which each dose is given, separated by commas, semicolons, or
+#' spaces.
+#'
+#' @param v character; the raw value.
+#'
+#' @return integer vector of dose ages.
+#'
+#' @keywords internal
+parse_dose_schedule <- function(v) {
+  toks <- strsplit(trimws(as.character(v)), "[;,[:space:]]+")[[1]]
+  toks <- toks[nzchar(toks)]
+  if (length(toks) == 0L) {
+    stop("[configuration] dose_schedule is blank.", call. = FALSE)
+  }
+  ages <- vapply(
+    toks,
+    assert_flag_int,
+    integer(1),
+    flag = "[configuration] dose_schedule",
+    min = 0L,
+    USE.NAMES = FALSE
+  )
+  if (is.unsorted(ages, strictly = TRUE)) {
+    stop(
+      sprintf(
+        "[configuration] dose_schedule ages must increase (got '%s').",
+        v
+      ),
+      call. = FALSE
+    )
+  }
+  ages
+}
+
+#' Route setting overrides to the sampler, its control list, or the model
+#'
+#' @description Splits `run_fit(...)` arguments the same way the configuration
+#' sheet is split, so `run_fit(x, adapt_delta = 0.9)` behaves like an
+#' `adapt_delta` row.
+#'
+#' @param args named list of overrides.
+#'
+#' @return A list with `stan_opts` and `imugap_opts`.
+#'
+#' @keywords internal
+split_setting_overrides <- function(args) {
+  nm <- names(args)
+  stan_opts <- args[!nm %in% c(IMURUN_CONTROL_ARGS, IMURUN_MODEL_ARGS)]
+  control <- args[nm %in% IMURUN_CONTROL_ARGS]
+  if (length(control) > 0L) {
+    stan_opts$control <- control
+  }
+  list(stan_opts = stan_opts, imugap_opts = args[nm %in% IMURUN_MODEL_ARGS])
+}
+
 #' Read calculation settings from a workbook configuration sheet or list
 #'
 #' @description Parses the `Setting`/`Value` rows supplied in generated imurun
@@ -207,18 +307,9 @@ parse_sampler_config <- function(config) {
       )
     }
 
-    stan_arg_names <- c(
-      "iter",
-      "warmup",
-      "thin",
-      "chains",
-      "cores",
-      "seed",
-      "init",
-      "refresh"
-    )
-    control_arg_names <- c("adapt_delta", "max_treedepth", "stepsize", "metric")
-    imugap_arg_names <- c("df", "dose_schedule", "age_order")
+    stan_arg_names <- IMURUN_STAN_ARGS
+    control_arg_names <- IMURUN_CONTROL_ARGS
+    imugap_arg_names <- IMURUN_MODEL_ARGS
     allowed <- c(stan_arg_names, control_arg_names, imugap_arg_names)
 
     unknown <- which(populated & !settings %in% allowed)
@@ -250,18 +341,22 @@ parse_sampler_config <- function(config) {
       s <- settings[[i]]
       v <- values[[i]]
       if (s %in% stan_arg_names) {
-        if (s %in% c("iter", "warmup", "thin", "chains", "cores", "refresh")) {
+        if (
+          s %in% c("iter", "warmup", "thin", "chains", "cores", "max_cores")
+        ) {
           stan_opts[[s]] <- assert_flag_int(
             v,
             sprintf("[configuration] %s", s),
             min = 1L
           )
-        } else if (s == "seed") {
+        } else if (s %in% c("seed", "refresh")) {
           stan_opts[[s]] <- assert_flag_int(
             v,
             sprintf("[configuration] %s", s),
             min = 0L
           )
+        } else if (s == "threading") {
+          stan_opts[[s]] <- assert_config_logical(v, s)
         } else {
           stan_opts[[s]] <- v
         }
@@ -291,6 +386,8 @@ parse_sampler_config <- function(config) {
             sprintf("[configuration] %s", s),
             min = 1L
           )
+        } else if (s == "dose_schedule") {
+          imugap_opts[[s]] <- parse_dose_schedule(v)
         } else {
           imugap_opts[[s]] <- v
         }
@@ -390,7 +487,7 @@ run_fit <- function(
     inputs <- read_inputs(input_path)
     message("[OK] Inputs loaded.")
   } else if (is.list(input)) {
-    inputs <- input
+    inputs <- read_inputs(input)
     if (is.null(output_dir)) {
       output_dir <- "."
     }
@@ -401,18 +498,39 @@ run_fit <- function(
     )
   }
 
-  # Parse configuration
-  parsed_config <- parse_sampler_config(inputs$config)
-  extra_args <- list(...)
-  if (length(extra_args) > 0L) {
-    parsed_config$stan_opts <- utils::modifyList(
-      parsed_config$stan_opts,
-      extra_args
-    )
+  # A bad setting is a validation problem, reported on the configuration sheet.
+  as_config_problem <- function(expr) {
+    tryCatch(expr, error = function(e) {
+      msg <- conditionMessage(e)
+      if (!startsWith(msg, "[configuration]")) {
+        msg <- paste("[configuration]", msg)
+      }
+      stop(format_validation_error(msg), call. = FALSE)
+    })
   }
 
+  # Parse configuration; `...` overrides the sheet, routed the same way.
+  parsed_config <- as_config_problem(parse_sampler_config(inputs$config))
+  overrides <- split_setting_overrides(list(...))
+  stan_settings <- utils::modifyList(
+    utils::modifyList(IMURUN_SAMPLER_DEFAULTS, parsed_config$stan_opts),
+    overrides$stan_opts
+  )
+  imugap_args <- utils::modifyList(
+    utils::modifyList(IMURUN_IMUGAP_ARGS, parsed_config$imugap_opts),
+    overrides$imugap_opts
+  )
+  n_doses <- length(imugap_args$dose_schedule)
+
+  # Build the options now, so a bad setting fails validation (and dryrun)
+  # rather than surfacing only once the fit starts.
+  stan_opts <- as_config_problem(do.call(imuGAP::stan_options, stan_settings))
+  imugap_opts <- as_config_problem(
+    do.call(imuGAP::imugap_options, imugap_args)
+  )
+
   message("[->] Validating schema...")
-  validate_inputs(inputs)
+  validate_inputs(inputs, max_dose = n_doses)
   message("[OK] Schema validated.")
 
   # Re-canonicalize for the fit
@@ -427,19 +545,15 @@ run_fit <- function(
   pops_raw$cohort <- pops_raw$cohort - earliest + 1L
   max_cohort <- max(as.integer(pops_raw$cohort))
   max_age <- max(as.integer(pops_raw$age))
+
   pops <- imuGAP::canonicalize_populations(
     pops_raw,
     obs,
     locs,
     max_cohort = max_cohort,
-    max_age = max_age
+    max_age = max_age,
+    max_dose = n_doses
   )
-
-  imugap_args <- utils::modifyList(
-    IMURUN_IMUGAP_ARGS,
-    parsed_config$imugap_opts
-  )
-  n_doses <- length(imugap_args$dose_schedule)
 
   # Validate targets
   validate_targets(
@@ -548,19 +662,12 @@ run_fit <- function(
     )
   }
 
-  # Stan options
-  stan_settings <- utils::modifyList(
-    IMURUN_SAMPLER_DEFAULTS,
-    parsed_config$stan_opts
-  )
-  stan_opts <- do.call(imuGAP::stan_options, stan_settings)
-
   message("[->] Launching imuGAP...")
   fit <- imuGAP::sampling(
     observations = obs,
     populations = pops,
     locations = locs,
-    imugap_opts = do.call(imuGAP::imugap_options, imugap_args),
+    imugap_opts = imugap_opts,
     stan_opts = stan_opts
   )
   message("[OK] Model complete.")
@@ -586,6 +693,7 @@ run_fit <- function(
   # Report birth cohorts (year - age) rather than imuGAP's 1-based numbering.
   draws$cohort <- targets$abs_cohort[match(draws$obs_id, targets$obs_id)]
   results <- summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
+  results$n_draws <- NULL
   message("[OK] Summarized ", nrow(results), " target(s).")
 
   if (write_xlsx && !is.null(xlsx_dest)) {
