@@ -3,7 +3,7 @@
 # Thin CLI wrapper for imurun.
 #
 # This script does no model logic of its own: it parses arguments, ensures the
-# imurun package is available, and delegates to imurun::run_fit(). All loading,
+# imuRUN package is available, and delegates to imuRUN::cli_run_fit(). All loading,
 # validation, and fitting lives in the exported package functions so it can be
 # tested and reused from R directly.
 #
@@ -15,15 +15,15 @@
 
 # --- Package guard -----------------------------------------------------------
 
-if (!requireNamespace("imurun", quietly = TRUE)) {
+if (!requireNamespace("imuRUN", quietly = TRUE)) {
   stop(
-    "Package 'imurun' required. Install with: remotes::install_github(\"ACCIDDA/imurun\")"
+    "Package 'imuRUN' required. Install with: remotes::install_github(\"ACCIDDA/imuRUN\")"
   )
 }
 
 # --- Entry guard -------------------------------------------------------------
 
 if (!interactive()) {
-  status <- imurun::cli_run_fit(commandArgs(trailingOnly = TRUE))
+  status <- imuRUN::cli_run_fit(commandArgs(trailingOnly = TRUE))
   quit(status = status, save = "no")
 }

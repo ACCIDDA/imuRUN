@@ -83,3 +83,43 @@ test_that("run_fit accepts direct R arguments and dryrun = TRUE", {
     suppressMessages(imuRUN::run_fit(imuRUN::imurun_example(), dryrun = TRUE))
   )
 })
+
+# --- dryrun checks the settings and the dose schedule ------------------------
+
+dryrun_example <- function(edit) {
+  inputs <- imuRUN::read_inputs(imuRUN::imurun_example())
+  inputs <- edit(inputs)
+  tryCatch(
+    suppressMessages(imuRUN::run_fit(inputs, dryrun = TRUE)),
+    error = identity
+  )
+}
+
+test_that("dryrun reads a text dose_schedule and allows its extra doses", {
+  skip_if(!nzchar(imuRUN::imurun_example()), "example not installed")
+  res <- dryrun_example(function(x) {
+    x$config <- data.frame(Setting = "dose_schedule", Value = "1, 4, 6")
+    # dose 3 is given at age 6, so it can only be counted at older ages
+    x$obs$dose[which(x$obs$age_min > 6)[1]] <- 3
+    x
+  })
+  expect_identical(res, 0L)
+})
+
+test_that("dryrun reports a setting the options builders reject", {
+  skip_if(!nzchar(imuRUN::imurun_example()), "example not installed")
+  err <- dryrun_example(function(x) {
+    x$config <- data.frame(Setting = "backend", Value = "nope")
+    x
+  })
+  expect_s3_class(err, "error")
+  expect_match(err$message, "Input validation failed.*\\[configuration\\]")
+})
+
+test_that("the bundled CLI script loads the imuRUN package", {
+  script <- system.file("scripts", "imurun.R", package = "imuRUN")
+  skip_if(!nzchar(script), "CLI script not installed")
+  src <- readLines(script)
+  expect_true(any(grepl('requireNamespace("imuRUN"', src, fixed = TRUE)))
+  expect_false(any(grepl("imurun::", src, fixed = TRUE)))
+})

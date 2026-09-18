@@ -153,3 +153,52 @@ test_that("overrides flow through to imuGAP::stan_options()", {
   expect_equal(o$chains, 2L)
   expect_equal(o$seed, 7L)
 })
+
+# --- settings upstream accepts -----------------------------------------------
+
+test_that("parse_sampler_config accepts the flexstanr and imuGAP settings", {
+  config <- data.frame(
+    Setting = c(
+      "refresh",
+      "threading",
+      "max_cores",
+      "backend",
+      "model",
+      "dose_schedule"
+    ),
+    Value = c("0", "no", "2", "rstan", "default", "1, 4; 6"),
+    stringsAsFactors = FALSE
+  )
+  res <- parse_sampler_config(config)
+  expect_identical(
+    res$stan_opts,
+    list(refresh = 0L, threading = FALSE, max_cores = 2L, backend = "rstan")
+  )
+  expect_identical(
+    res$imugap_opts,
+    list(model = "default", dose_schedule = c(1L, 4L, 6L))
+  )
+})
+
+test_that("parse_sampler_config rejects settings imuGAP would refuse", {
+  for (s in c("init", "age_order")) {
+    expect_error(
+      parse_sampler_config(data.frame(Setting = s, Value = "1")),
+      "unknown setting"
+    )
+  }
+  expect_error(parse_dose_schedule("4, 1"), "must increase")
+  expect_error(parse_dose_schedule("1, x"), "whole number")
+  expect_error(assert_config_logical("maybe", "threading"), "TRUE or FALSE")
+})
+
+test_that("run_fit overrides are routed like configuration rows", {
+  res <- split_setting_overrides(
+    list(iter = 10L, adapt_delta = 0.9, df = 4L)
+  )
+  expect_identical(
+    res$stan_opts,
+    list(iter = 10L, control = list(adapt_delta = 0.9))
+  )
+  expect_identical(res$imugap_opts, list(df = 4L))
+})
