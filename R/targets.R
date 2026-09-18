@@ -183,13 +183,14 @@ expand_targets <- function(targets, default_dose) {
 #'
 #' @description Checks that `targets` matches [IMURUN_TARGET_SCHEMA], that every
 #' named location exists in `loc_ids`, that `age_low <= age_high`, and that the
-#' requested ages and derived cohorts fall within `max_age` and `max_cohort`.
+#' requested ages and birth cohorts fall within `max_age` and the observations'.
 #'
 #' @param targets data.frame of target requests.
 #' @param loc_ids character vector of valid location identifiers.
 #' @param max_cohort integer; upper bound on the derived cohort.
 #' @param max_age integer; upper bound on the requested age.
 #' @param max_dose integer; upper bound on the dose (default 2).
+#' @param earliest integer; the birth cohort numbered 1 (see [build_populations()]).
 #'
 #' @return Invisibly, `targets` on success; raises an error describing all
 #'   problems found otherwise.
@@ -206,7 +207,8 @@ validate_targets <- function(
   loc_ids,
   max_cohort,
   max_age,
-  max_dose = 2L
+  max_dose = 2L,
+  earliest = 1L
 ) {
   targets <- fill_target_locf(as.data.frame(targets, stringsAsFactors = FALSE))
 
@@ -262,32 +264,34 @@ validate_targets <- function(
     )
   }
 
+  latest <- earliest + max_cohort - 1L
   ref_cohort <- year - age_high
-  bad_cohort_low <- which(ref_cohort < 1L)
+  bad_cohort_low <- which(ref_cohort < earliest)
   if (length(bad_cohort_low) > 0) {
     problems <- c(
       problems,
       sprintf(
-        "[target] year must be greater than age_high so cohort is positive (row(s): %s)",
+        "[target] year - age_high is before the earliest birth cohort %d (row(s): %s)",
+        earliest,
         paste(utils::head(bad_cohort_low, 20L), collapse = ", ")
       )
     )
   }
 
   max_derived_cohort <- year - age_low
-  bad_cohort_high <- which(max_derived_cohort > max_cohort)
+  bad_cohort_high <- which(max_derived_cohort > latest)
   if (length(bad_cohort_high) > 0) {
     problems <- c(
       problems,
       sprintf(
         paste0(
-          "[target] target year %d and youngest age %d expands to cohort %d, beyond ",
-          "the model's %d cohorts; adjust target year or youngest age (row(s): %s)"
+          "[target] target year %d and youngest age %d give birth cohort %d, after ",
+          "the latest birth cohort %d; adjust target year or youngest age (row(s): %s)"
         ),
         year[bad_cohort_high[1L]],
         age_low[bad_cohort_high[1L]],
         max_derived_cohort[bad_cohort_high[1L]],
-        max_cohort,
+        latest,
         paste(utils::head(bad_cohort_high, 20L), collapse = ", ")
       )
     )

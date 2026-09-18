@@ -154,7 +154,9 @@ imuRUN::run_fit("imurun_example.xlsx", result = c("xlsx", "rds"))
 
 - `"xlsx"` (default): Adds or updates the **results** sheet in your Excel file.
 - `"csv"`: Creates a standalone CSV file containing the summarized target predictions.
-- `"rds"`: Saves the fitted model object (`.rds`) for advanced R analysis.
+- `"rds"`: Saves the fitted model object (`.rds`) for advanced R analysis. Its
+  `"imurun_cohort_origin"` attribute is the birth cohort imuGAP numbers 1
+  (see `?run_fit`).
 
 By default, `run_fit()` overwrites existing results when re-run. Set `overwrite = FALSE` if you prefer to be prompted before any files or sheets are overwritten.
 
