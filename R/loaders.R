@@ -1,135 +1,3 @@
-#' Supported input file extensions
-#'
-#' @description The file extensions imurun knows how to read, in precedence
-#' order. CSV takes precedence over RDS when both exist for the same input.
-#'
-#' @keywords internal
-SUPPORTED_EXT <- c("csv", "rds")
-
-#' Does an input exist under any supported extension?
-#'
-#' @description Tests whether a named input (e.g. `"observations"`) exists in a
-#' directory under any of the [SUPPORTED_EXT] extensions.
-#'
-#' @param dir character; directory to look in.
-#' @param name character; the input base name, without extension.
-#'
-#' @return Logical scalar; `TRUE` if a matching file exists.
-#'
-#' @keywords internal
-file_exists_any_ext <- function(dir, name) {
-  any(file.exists(file.path(dir, paste0(name, ".", SUPPORTED_EXT))))
-}
-
-#' Read a data file by its extension
-#'
-#' @description Reads a single input file, dispatching on its extension. CSV is
-#' read with [utils::read.csv()] (strings as character); RDS with
-#' [base::readRDS()]. Unsupported extensions and unreadable files raise an
-#' error that names the offending file.
-#'
-#' @param path character; path to the file to read.
-#'
-#' @return The object stored in the file (typically a `data.frame`).
-#'
-#' @examples
-#' path <- tempfile(fileext = ".csv")
-#' write.csv(data.frame(x = 1:3), path, row.names = FALSE)
-#' load_by_ext(path)
-#'
-#' @export
-load_by_ext <- function(path) {
-  ext <- tolower(tools::file_ext(path))
-  tryCatch(
-    switch(
-      ext,
-      csv = utils::read.csv(path, stringsAsFactors = FALSE),
-      rds = readRDS(path),
-      stop("Unsupported extension '.", ext, "'", call. = FALSE)
-    ),
-    error = function(e) {
-      stop("Failed to read '", basename(path), "': ", e$message, call. = FALSE)
-    }
-  )
-}
-
-#' Find and read a named input from a directory
-#'
-#' @description Looks for a named input (e.g. `"observations"`) in a directory,
-#' trying each supported extension in precedence order (CSV before RDS), and
-#' reads the first match with [load_by_ext()]. Errors with a clear message if
-#' no matching file is found.
-#'
-#' @param dir character; directory to look in.
-#' @param name character; the input base name, without extension.
-#'
-#' @return The object read from the matching file.
-#'
-#' @examples
-#' dir <- tempfile("imurun_find_")
-#' dir.create(dir)
-#' write.csv(data.frame(positive = 1:3, sample_n = 10:12),
-#'           file.path(dir, "observations.csv"), row.names = FALSE)
-#' find_input_file(dir, "observations")
-#'
-#' @export
-find_input_file <- function(dir, name) {
-  for (ext in SUPPORTED_EXT) {
-    path <- file.path(dir, paste0(name, ".", ext))
-    if (file.exists(path)) return(load_by_ext(path))
-  }
-  stop(
-    "Expected '",
-    name,
-    ".csv' or '",
-    name,
-    ".rds' in ",
-    dir,
-    "/",
-    call. = FALSE
-  )
-}
-
-#' Check that all required inputs are present
-#'
-#' @description Verifies that both required imuGAP inputs
-#' (`observations`, `locations`) exist in a directory under some
-#' supported extension. Reports every missing input at once rather than failing
-#' on the first.
-#'
-#' @param dir character; directory to check.
-#'
-#' @return Invisibly `NULL` on success; errors listing the missing inputs
-#'   otherwise.
-#'
-#' @examples
-#' dir <- tempfile("imurun_check_")
-#' dir.create(dir)
-#' for (n in c("observations", "locations", "target")) {
-#'   write.csv(data.frame(a = 1), file.path(dir, paste0(n, ".csv")),
-#'             row.names = FALSE)
-#' }
-#' check_all_inputs(dir)
-#'
-#' @export
-check_all_inputs <- function(dir) {
-  required <- c("observations", "locations", IMURUN_TARGET_SHEET)
-  missing <- required[
-    !vapply(required, function(n) file_exists_any_ext(dir, n), logical(1))
-  ]
-  if (length(missing) > 0) {
-    stop(
-      "Missing input files in ",
-      dir,
-      "/: ",
-      paste(missing, collapse = ", "),
-      " (expected .csv or .rds)",
-      call. = FALSE
-    )
-  }
-  invisible(NULL)
-}
-
 #' Rename friendly column headers to imurun's canonical names
 #'
 #' @description Renames any human-readable header present in
@@ -235,8 +103,7 @@ normalize_inputs <- function(result) {
 #'
 #' @description Reads the `observations` and `locations` sheets
 #' from a single Excel workbook into data frames. Reports every missing sheet at
-#' once (mirroring [check_all_inputs()] semantics) rather than failing on the
-#' first.
+#' once rather than failing on the first.
 #'
 #' Sheet names are matched case-insensitively against the required
 #' [IMURUN_SHEETS]. Uses the 'openxlsx2' package.
@@ -362,13 +229,14 @@ read_workbook <- function(path) {
   normalize_inputs(result)
 }
 
-#' Read all imuGAP inputs from a directory or workbook
+#' Read all imuGAP inputs from a workbook or list
 #'
 #' @description Convenience entry point that loads the raw (un-canonicalized)
-#' inputs regardless of storage format. Dispatches to [read_workbook()] when
-#' `path` is an `.xlsx` file, and [read_directory()] when `path` is a directory.
+#' inputs. Reads an `.xlsx` workbook with [read_workbook()], or normalizes an
+#' in-memory list of data frames.
 #'
-#' @param path character; path to a directory or a `.xlsx` file.
+#' @param path character; path to a `.xlsx` workbook, or a list with `obs` and
+#'   `locs` (and optionally `target` and `config`) data frames.
 #'
 #' @return A named list with `obs`, `locs`, and `target` (and optionally
 #'   `config`) data frames.
@@ -388,45 +256,15 @@ read_inputs <- function(path) {
   if (!is.character(path) || length(path) != 1L) {
     stop("'path' must be a single string.", call. = FALSE)
   }
-  if (dir.exists(path)) {
-    return(read_directory(path))
-  }
   if (grepl("\\.xlsx$", path, ignore.case = TRUE)) {
     return(read_workbook(path))
   }
   stop(
     "Path '",
     path,
-    "' is neither an existing directory nor a .xlsx file.",
+    "' is not a .xlsx workbook; imurun reads its inputs from a single workbook.",
     call. = FALSE
   )
-}
-
-#' Read imuGAP inputs from a directory of loose files
-#'
-#' @description Reads `observations`, `locations`, and `target` files from
-#' `dir` (each either `.csv` or `.rds`). Reports every missing file at once
-#' (mirroring [check_all_inputs()] semantics) rather than failing on the first.
-#'
-#' @param dir character; path to directory containing the input files.
-#'
-#' @return A named list with `obs`, `locs`, and `target` data frames.
-#'
-#' @examples
-#' dir <- system.file("extdata", package = "imuRUN")
-#'
-#' @export
-read_directory <- function(dir) {
-  if (!dir.exists(dir)) {
-    stop("Directory not found: ", dir, call. = FALSE)
-  }
-  check_all_inputs(dir)
-  result <- list(
-    obs = find_input_file(dir, "observations"),
-    locs = find_input_file(dir, "locations")
-  )
-  result$target <- find_input_file(dir, IMURUN_TARGET_SHEET)
-  normalize_inputs(result)
 }
 
 #' Write imurun inputs to an .xlsx workbook

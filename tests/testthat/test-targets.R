@@ -260,22 +260,3 @@ test_that("read_workbook reads the target sheet", {
   expect_true(is.data.frame(target))
   expect_true(all(IMURUN_TARGET_SCHEMA %in% names(target)))
 })
-
-test_that("read_inputs reads the target.csv in directory mode", {
-  dir <- tempfile("imurun_target_dir_")
-  dir.create(dir)
-  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-  for (n in c("observations", "locations")) {
-    write.csv(
-      data.frame(a = 1),
-      file.path(dir, paste0(n, ".csv")),
-      row.names = FALSE
-    )
-  }
-  write.csv(
-    data.frame(loc_id = "A", year = 12, age_low = 5, age_high = 7),
-    file.path(dir, "target.csv"),
-    row.names = FALSE
-  )
-  expect_equal(imuRUN::read_inputs(dir)$target$loc_id, "A")
-})

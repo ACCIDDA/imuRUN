@@ -135,7 +135,7 @@ write_results_csv <- function(results, path, overwrite = FALSE) {
 #' its worksheets, formatting, validation, and notes are preserved and a
 #' `results` sheet is added. `path` may be the same as `source` (the default fit
 #' workflow, which updates the supplied workbook) or a different path. Without
-#' `source`, a new workbook is constructed from `inputs` for directory inputs.
+#' `source`, a new workbook is constructed from `inputs` (as for list inputs).
 #'
 #' @details Each results row carries the `target_id` label and the resolved
 #' `loc_id`/`cohort`/`age`/`dose` identity, so a reader can trace it back to the

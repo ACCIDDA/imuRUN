@@ -12,15 +12,9 @@ Usage: imurun <input> [output_dir] [sampler options]
        imurun example [dir]           (write a filled example workbook)
        imurun -h | --help             (show this message)
 
-<input> is either a directory of CSV/RDS files or a single .xlsx workbook.
-
-A directory must contain:
-  observations.csv (or .rds)      -- columns: obs_id, loc_id, year, age_min, age_max, dose,
-                                     positive, sample_n.
-  locations.csv (or .rds)         -- columns: loc_id, parent_id (hierarchical; see package docs)
-
-A workbook must have one sheet per input with the same column names
-(run 'imurun init' to get a correctly-headed template).
+<input> is a single .xlsx workbook with one sheet per input (observations,
+locations, target, configuration). Run 'imurun init' to get a correctly-headed
+template.
 
 Sampler options belong in the workbook's 'configuration' sheet. The generated
 template supplies iter=2000 and chains=4; seed and warmup may be left blank.
@@ -36,8 +30,8 @@ Output options:
   --csv PATH      also write a results-only CSV
   --overwrite     replace existing output files (otherwise imurun refuses)
 
-Output: for workbook input, a 'results' sheet of per-target medians and credible
-intervals is added to that workbook; directory input writes results.xlsx.
+Output: a 'results' sheet of per-target medians and credible intervals is added
+to the input workbook (or to the --results copy).
 Exit codes: 0=success, 1=validation, 2=model, 3=I/O.
 "
 
@@ -306,15 +300,15 @@ parse_sampler_config <- function(config) {
 
 #' Run the imurun fitting pipeline
 #'
-#' @description The spreadsheet-first fitting entry point. Given a workbook or
-#' directory of inputs, it validates the observations, locations, target
+#' @description The spreadsheet-first fitting entry point. Given a workbook (or
+#' an in-memory inputs list), it validates the observations, locations, target
 #' requests, and configuration; fits with `imuGAP::sampling()`; and outputs
 #' requested deliverables (`results` sheet in workbook, results CSV, and/or `fit.rds`).
 #'
-#' @param input character path to a `.xlsx` workbook or input directory, or a
-#'   pre-loaded `inputs` list (from [read_inputs()]).
+#' @param input character path to a `.xlsx` workbook, or a pre-loaded `inputs`
+#'   list (from [read_inputs()]).
 #' @param output_dir character path to output directory. Defaults to the directory
-#'   of `input` (for workbooks) or `input` itself (for directory inputs).
+#'   of `input` (for workbooks) or the working directory (for list inputs).
 #' @param dryrun logical; if `TRUE`, validates inputs without fitting the model
 #'   and returns `invisible(0L)` on success. Default is `FALSE`.
 #' @param result character vector of requested outputs, e.g. `c("xlsx")` (default),
@@ -365,21 +359,14 @@ run_fit <- function(
     is_workbook <- tolower(tools::file_ext(input_path)) == "xlsx"
     input_stem <- tools::file_path_sans_ext(basename(input_path))
 
-    if (is_workbook) {
-      if (!file.exists(input_path)) {
-        stop("Input workbook not found: ", input, call. = FALSE)
-      }
-      if (is.null(output_dir)) {
-        output_dir <- dirname(input_path)
-      }
-    } else {
-      if (!dir.exists(input_path)) {
-        stop("Input directory not found: ", input, call. = FALSE)
-      }
-      check_all_inputs(input_path)
-      if (is.null(output_dir)) {
-        output_dir <- input_path
-      }
+    if (!is_workbook) {
+      stop("Input must be a .xlsx workbook: ", input, call. = FALSE)
+    }
+    if (!file.exists(input_path)) {
+      stop("Input workbook not found: ", input, call. = FALSE)
+    }
+    if (is.null(output_dir)) {
+      output_dir <- dirname(input_path)
     }
     message("[->] Loading inputs...")
     inputs <- read_inputs(input_path)
@@ -391,7 +378,7 @@ run_fit <- function(
     }
   } else {
     stop(
-      "'input' must be a workbook path, directory path, or inputs list.",
+      "'input' must be a .xlsx workbook path or an inputs list.",
       call. = FALSE
     )
   }
