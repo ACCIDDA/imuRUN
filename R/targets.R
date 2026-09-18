@@ -26,22 +26,31 @@ parse_loc_list <- function(x) {
 #' Carry non-location target columns forward into blank rows
 #'
 #' @description Fills the `target` sheet the way a spreadsheet user expects:
-#' a row that names only a `loc_id` (leaving `year`, `age_low`, `age_high`,
-#' and/or `dose` blank) inherits those values from the nearest row above that
-#' supplied them. Each of those columns is carried forward independently, so a
-#' run of location-only rows all share the preceding request's year/age/dose.
-#' A blank cell with no value above it is left blank (the first row cannot
-#' inherit, and a never-supplied `dose` still falls back to the default).
+#' a blank `year`, `age_low`, or `age_high` cell inherits the value from the
+#' nearest row above that supplied it. Each of those columns is carried forward
+#' independently, so a run of location-only rows all share the preceding
+#' request's year and ages. A blank cell with no value above it is left blank
+#' (the first row cannot inherit).
+#'
+#' `dose` is different: a blank `dose` means the final dose, so it is carried
+#' forward only into location-only rows (those that leave `year`, `age_low`, and
+#' `age_high` all blank), which repeat the request above them in full. A blank
+#' `dose` on a row that states its own year or ages stays blank and falls back
+#' to the default in [expand_targets()].
 #'
 #' @param targets data.frame of target-request rows.
 #'
-#' @return The `targets` data.frame with blank `year`/`age_low`/`age_high`/
-#'   `dose` cells filled from the row above.
+#' @return The `targets` data.frame with blank cells filled from the row above.
 #'
 #' @keywords internal
 fill_target_locf <- function(targets) {
   targets <- as.data.frame(targets, stringsAsFactors = FALSE)
   is_blank <- function(v) is.na(v) | !nzchar(trimws(as.character(v)))
+  request_cols <- intersect(c("year", "age_low", "age_high"), names(targets))
+  location_only <- rep(TRUE, nrow(targets))
+  for (col in request_cols) {
+    location_only <- location_only & is_blank(targets[[col]])
+  }
   fill_cols <- intersect(
     c("year", "age_low", "age_high", "dose"),
     names(targets)
@@ -49,8 +58,9 @@ fill_target_locf <- function(targets) {
   for (col in fill_cols) {
     v <- targets[[col]]
     blank <- is_blank(v)
+    may_fill <- if (col == "dose") location_only else rep(TRUE, length(v))
     for (i in seq_along(v)[-1L]) {
-      if (blank[i] && !blank[i - 1L]) {
+      if (blank[i] && !blank[i - 1L] && may_fill[i]) {
         v[i] <- v[i - 1L]
         blank[i] <- FALSE
       }
@@ -72,7 +82,9 @@ fill_target_locf <- function(targets) {
 #' `create_target(mode = "snapshot")` fans the row out over its location list
 #' (`loc_id`) and inclusive age span (`age_low`..`age_high`), deriving a cohort
 #' for each age so that `age + cohort = year` is held constant (`cohort_i = year - age_i`).
-#' A blank `dose` cell takes `default_dose` (typically the final dose).
+#' A blank `dose` cell takes `default_dose` (typically the final dose), except
+#' on a location-only row, which repeats the row above (see [fill_target_locf()]).
+#' A blank `target_id` stays `NA`.
 #' Every expanded row is an independent target carrying `weight = 1`. Identical
 #' target identities (across rows) are dropped as duplicates, and a unique integer
 #' `obs_id` is assigned so the posterior draws can be grouped unambiguously by
@@ -122,7 +134,7 @@ expand_targets <- function(targets, default_dose) {
     tid <- if (has_id && !is_blank(targets$target_id[i])) {
       as.character(targets$target_id[i])
     } else {
-      as.character(i)
+      NA_character_
     }
     ref_cohort <- as.integer(targets$year[i]) - as.integer(targets$age_high[i])
     grid <- as.data.frame(
@@ -236,7 +248,7 @@ validate_targets <- function(
     if (length(locs) == 0) {
       problems <- c(
         problems,
-        sprintf("[target] loc_id is blank at row(s): %d", i)
+        sprintf("[target] 'Location' is blank at row(s): %s", sheet_rows(i))
       )
       next
     }
@@ -245,9 +257,9 @@ validate_targets <- function(
       problems <- c(
         problems,
         sprintf(
-          "[target] unknown loc_id(s): %s (row(s): %d)",
+          "[target] 'Location' not on the locations sheet: %s (row(s): %s)",
           paste(unknown, collapse = ", "),
-          i
+          sheet_rows(i)
         )
       )
     }
@@ -258,8 +270,8 @@ validate_targets <- function(
     problems <- c(
       problems,
       sprintf(
-        "[target] age_low must be <= age_high at row(s): %s",
-        paste(utils::head(bad_span, 20L), collapse = ", ")
+        "[target] 'Youngest age' must be <= 'Oldest age' at row(s): %s",
+        sheet_rows(bad_span)
       )
     )
   }
@@ -271,9 +283,12 @@ validate_targets <- function(
     problems <- c(
       problems,
       sprintf(
-        "[target] year - age_high is before the earliest birth cohort %d (row(s): %s)",
+        paste0(
+          "[target] 'Target Year' - 'Oldest age' is before the earliest birth ",
+          "cohort %d (row(s): %s)"
+        ),
         earliest,
-        paste(utils::head(bad_cohort_low, 20L), collapse = ", ")
+        sheet_rows(bad_cohort_low)
       )
     )
   }
@@ -292,7 +307,7 @@ validate_targets <- function(
         age_low[bad_cohort_high[1L]],
         max_derived_cohort[bad_cohort_high[1L]],
         latest,
-        paste(utils::head(bad_cohort_high, 20L), collapse = ", ")
+        sheet_rows(bad_cohort_high)
       )
     )
   }
@@ -302,9 +317,9 @@ validate_targets <- function(
     problems <- c(
       problems,
       sprintf(
-        "[target] age out of range [1, %d] at row(s): %s",
+        "[target] ages out of range [1, %d] at row(s): %s",
         max_age,
-        paste(utils::head(bad_age, 20L), collapse = ", ")
+        sheet_rows(bad_age)
       )
     )
   }
@@ -313,9 +328,9 @@ validate_targets <- function(
     problems <- c(
       problems,
       sprintf(
-        "[target] dose out of range [1, %d] at row(s): %s",
+        "[target] 'Dose' out of range [1, %d] at row(s): %s",
         max_dose,
-        paste(utils::head(bad_dose, 20L), collapse = ", ")
+        sheet_rows(bad_dose)
       )
     )
   }

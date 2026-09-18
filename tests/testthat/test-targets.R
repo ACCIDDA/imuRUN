@@ -85,6 +85,33 @@ test_that("expand_targets carries year/age/dose into location-only rows (LOCF)",
   expect_true(all(ex$age + ex$cohort == 12L)) # inherited snapshot reference
 })
 
+test_that("a blank dose on a row with its own request means the final dose", {
+  tg <- data.frame(
+    loc_id = c("A", "B"),
+    year = c(12, 12),
+    age_low = c(5, 5),
+    age_high = c(5, 5),
+    dose = c(1, NA),
+    stringsAsFactors = FALSE
+  )
+  ex <- expand_targets(tg, default_dose = 2L)
+  expect_equal(ex$dose[ex$loc_id == "A"], 1L)
+  expect_equal(ex$dose[ex$loc_id == "B"], 2L) # not carried from the row above
+})
+
+test_that("expand_targets leaves a blank label blank", {
+  tg <- data.frame(
+    loc_id = c("A", "B"),
+    year = 12,
+    age_low = 5,
+    age_high = 5,
+    target_id = c("demo", ""),
+    stringsAsFactors = FALSE
+  )
+  ex <- expand_targets(tg, default_dose = 2L)
+  expect_equal(ex$target_id, c("demo", NA))
+})
+
 # --- validate_targets --------------------------------------------------------
 
 test_that("validate_targets accepts a clean sheet", {
@@ -115,8 +142,8 @@ test_that("validate_targets reports a missing column and a non-numeric year", {
   )
   expect_true(inherits(err, "error"))
   expect_match(err$message, "\\[target\\]")
-  expect_match(err$message, "age_high")
-  expect_match(err$message, "year")
+  expect_match(err$message, "missing required column\\(s\\): 'Oldest age'")
+  expect_match(err$message, "'Target Year' must be numeric.*row\\(s\\): 2")
 })
 
 test_that("validate_targets collects unknown loc, bad span, and out-of-range values", {
@@ -135,8 +162,8 @@ test_that("validate_targets collects unknown loc, bad span, and out-of-range val
   expect_true(inherits(err, "error"))
   expect_match(err$message, "Nowhere") # unknown location
   expect_match(err$message, "cohort") # cohort above its max
-  expect_match(err$message, "age_low must be <= age_high") # inverted span
-  expect_match(err$message, "dose") # dose above its max
+  expect_match(err$message, "'Youngest age' must be <= 'Oldest age'") # inverted span
+  expect_match(err$message, "'Dose' out of range") # dose above its max
 })
 
 test_that("validate_targets rejects a snapshot span that expands past n_cohort", {

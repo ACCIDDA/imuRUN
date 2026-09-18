@@ -36,5 +36,20 @@
 * Generated workbooks now include a `configuration` sheet for `iter`, `chains`,
   `seed`, and `warmup`. Command-line flags remain available as explicit
   automation/compatibility overrides.
+* Brought the backend in line with the getting-started vignette:
+  * The example workbook uses calendar years.
+  * A blank *Oldest age* means a single age.
+  * A blank target *Dose* means the final dose; location-only rows still
+    repeat the row above.
+  * A blank *Label* stays blank in the results, which no longer carry
+    `n_draws`.
+  * Validation messages name columns by their spreadsheet headers and rows by
+    spreadsheet row, and catch blank years and ages.
+  * The configuration sheet accepts every flexstanr/imuGAP setting a user can
+    set (`refresh = 0`, `backend`, `threading`, `max_cores`, `model`, and a
+    text `dose_schedule` such as `1, 4`) and rejects `init` and `age_order`.
+    Settings are checked by `dryrun`, and `run_fit(adapt_delta = )` works.
+  * The dose count follows `dose_schedule` rather than being fixed at 2.
+  * The bundled `imurun` command loads `imuRUN` (it looked for `imurun`).
 * Set up the development infrastructure: R CMD check, lint, test coverage,
   pkgdown, and spelling continuous-integration workflows.

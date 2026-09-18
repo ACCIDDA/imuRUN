@@ -10,7 +10,7 @@
 #   - The instructions tab is the FIRST sheet you see when the file opens, and
 #     ships in the example too. The tool works with or without it (the loader
 #     only reads the named data sheets), so users may delete it.
-#   - Columns use human-readable headers ("Location", "Birth cohort", ...). The
+#   - Columns use human-readable headers ("Location", "Oldest age", ...). The
 #     loader (R/loaders.R canonicalize_headers) maps them back to imuGAP's
 #     canonical names, accepting either form.
 #   - No populations sheet: each observation carries its own location/reference
@@ -26,7 +26,7 @@
 #     survive (@pearsonca, make_workbooks.R:125).
 #
 # Structure (openxlsx2): each data sheet gets an AutoFilter, a frozen header
-# row, auto-fit column widths, and a Dose dropdown (1/2). These are cosmetic --
+# row, auto-fit column widths, and a whole-number Dose check. These are cosmetic --
 # the loader reads values with openxlsx2 and is blind to filters/freeze/validation
 # -- so they never affect parsing, only human usability. The runtime results
 # writer also uses openxlsx2 to preserve these workbook features when adding the
@@ -43,27 +43,11 @@ suppressMessages({
   library(data.table)
 })
 
-# Canonical -> human-readable header maps. Keep in lock-step with
-# R/schema.R::IMURUN_HEADER_ALIASES (which maps the friendly labels back).
-obs_headers <- c(
-  loc_id = "Location",
-  year = "Observation Year",
-  age_min = "Youngest age",
-  age_max = "Oldest age",
-  dose = "Dose",
-  positive = "Vaccinated",
-  sample_n = "Sampled",
-  censored = "Censored"
-)
-loc_headers <- c(loc_id = "Location", parent_id = "Parent location")
-tgt_headers <- c(
-  loc_id = "Location",
-  year = "Target Year",
-  age_low = "Youngest age",
-  age_high = "Oldest age",
-  dose = "Dose",
-  target_id = "Label"
-)
+# Canonical -> human-readable header maps, shared with validation messages.
+source(file.path("R", "schema.R"))
+obs_headers <- IMURUN_FRIENDLY_HEADERS$observations
+loc_headers <- IMURUN_FRIENDLY_HEADERS$locations
+tgt_headers <- IMURUN_FRIENDLY_HEADERS$target
 sampler_config <- data.frame(
   Setting = c("iter", "chains", "seed", "warmup"),
   Value = c("2000", "4", "", ""),
@@ -123,13 +107,15 @@ instructions_lines <- c(
   "  seed              optional random seed for reproducibility",
   "  warmup            optional warmup iterations per chain",
   "  Leave seed/warmup blank to use the model defaults.",
+  "  Advanced settings may be added as extra rows, e.g. cores, thin, adapt_delta,",
+  "  max_treedepth, df, or dose_schedule (the age each dose is given, e.g. 1, 4).",
   "",
   "observations sheet -- one row per sampled count:",
   "  Location          the location of this count (must match a Location in the locations sheet)",
   "  Observation Year  timing of the observation",
   "  Youngest age      youngest age this count covers",
-  "  Oldest age        oldest age this count covers (put the same age in both for a single age)",
-  "  Dose              which dose this count is for: 1 or 2",
+  "  Oldest age        oldest age this count covers (for a single age, repeat it or leave blank)",
+  "  Dose              which dose this count is for (1 = first dose, 2 = second, ...)",
   "  Vaccinated        how many were found vaccinated",
   "  Sampled           how many were sampled (Vaccinated must be <= Sampled)",
   "  Censored          optional; leave blank, or put 1 for a right-censored observation",
@@ -178,7 +164,8 @@ add_instructions_sheet <- function(wb) {
 }
 
 # Add a data sheet with an AutoFilter, a frozen header row, auto-fit widths, and
-# (where the sheet has a Dose column) a 1/2 dropdown over `valid_rows` data rows.
+# (where the sheet has a Dose column) a whole-number >= 1 check over `valid_rows`
+# data rows. The dose count comes from dose_schedule, so it is not fixed here.
 add_data_sheet <- function(wb, sheet, df, valid_rows) {
   ncol_df <- ncol(df)
   wb$add_worksheet(sheet)
@@ -193,8 +180,9 @@ add_data_sheet <- function(wb, sheet, df, valid_rows) {
     wb$add_data_validation(
       sheet,
       dims = paste0(letter, 2, ":", letter, valid_rows + 1L),
-      type = "list",
-      value = '"1,2"'
+      type = "whole",
+      operator = "greaterThanOrEqual",
+      value = "1"
     )
   }
   invisible(wb)
@@ -235,11 +223,15 @@ obs_sim <- as.data.table(observations_sim)
 pop_sim <- as.data.table(populations_sim)
 loc_sim <- as.data.table(locations_sim)
 
+# imuGAP's simulated cohorts are numbered from 1. Shift them onto calendar
+# years so the example reads the way users enter data (e.g. 2024).
+YEAR_OFFSET <- 1995L
+
 # Derive Observation Year: in a snapshot observation, year = cohort + age is constant
 pop_span <- pop_sim[,
   .(
     loc_id = loc_id[1L],
-    year = cohort[1L] + age[1L],
+    year = cohort[1L] + age[1L] + YEAR_OFFSET,
     age_min = min(age),
     age_max = max(age),
     dose = dose[1L]
@@ -259,7 +251,6 @@ ex_loc <- as.data.frame(
 )
 
 # Sanity check: the example must pass canonicalization the way imurun runs it
-source(file.path("R", "schema.R"))
 source(file.path("R", "loaders.R"))
 source(file.path("R", "validate.R"))
 
@@ -272,7 +263,7 @@ stopifnot(
         setorder(copy(pop_sim), obs_id, age)[, .(
           obs_id = as.numeric(obs_id),
           loc_id = as.character(loc_id),
-          cohort = as.numeric(cohort),
+          cohort = as.numeric(cohort + YEAR_OFFSET),
           age = as.numeric(age),
           dose = as.numeric(dose),
           weight = as.numeric(weight)
@@ -285,12 +276,15 @@ stopifnot(
 
 loc_c <- imuGAP::canonicalize_locations(ex_loc)
 obs_c <- imuGAP::canonicalize_observations(ex_obs)
+# imurun numbers cohorts from the earliest birth cohort before handing them on.
+ex_pops_c <- ex_pops
+ex_pops_c$cohort <- ex_pops_c$cohort - min(ex_pops_c$cohort) + 1L
 imuGAP::canonicalize_populations(
-  ex_pops,
+  ex_pops_c,
   obs_c,
   loc_c,
-  max_cohort = max(ex_pops$cohort),
-  max_age = max(ex_pops$age)
+  max_cohort = max(ex_pops_c$cohort),
+  max_age = max(ex_pops_c$age)
 )
 
 # A small target example: a multi-location request plus a location-only row
