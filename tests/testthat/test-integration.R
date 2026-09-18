@@ -217,8 +217,11 @@ test_that("calendar years fit and report birth cohorts (gated)", {
       )
     }
     openxlsx2::wb_save(wb, path, overwrite = TRUE)
-    expect_identical(imuRUN::run_fit(path), 0L)
-    as.data.frame(openxlsx2::read_xlsx(path, sheet = "results"))
+    expect_identical(imuRUN::run_fit(path, result = c("xlsx", "rds")), 0L)
+    list(
+      results = as.data.frame(openxlsx2::read_xlsx(path, sheet = "results")),
+      fit = readRDS(sub("\\.xlsx$", ".rds", path))
+    )
   }
 
   base <- fit_example("base.xlsx", 0L)
@@ -226,6 +229,19 @@ test_that("calendar years fit and report birth cohorts (gated)", {
 
   # Shifting every year leaves imuGAP's inputs unchanged, so with the same seed
   # the estimates match and only the reported birth cohorts move.
-  expect_equal(calendar$est_median, base$est_median)
-  expect_equal(calendar$cohort, base$cohort + 2000)
+  expect_equal(calendar$results$est_median, base$results$est_median)
+  expect_equal(calendar$results$cohort, base$results$cohort + 2000)
+
+  # The saved fit carries the cohort origin, so a reloaded fit can map birth
+  # cohorts back to imuGAP's range of cohorts.
+  origin <- attr(calendar$fit, "imurun_cohort_origin")
+  expect_identical(origin, attr(base$fit, "imurun_cohort_origin") + 2000L)
+  inputs <- imuRUN::read_inputs(file.path(out, "calendar.xlsx"))
+  targets <- imuRUN::expand_targets(
+    inputs$target,
+    default_dose = calendar$fit$data$n_doses
+  )
+  targets$cohort <- targets$cohort - origin + 1L
+  expect_true(all(targets$cohort >= 1L))
+  expect_true(all(targets$cohort <= calendar$fit$data$n_cohort))
 })

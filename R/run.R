@@ -325,6 +325,11 @@ parse_sampler_config <- function(config) {
 #'
 #' @return Invisibly, an integer exit code (`0L` for success).
 #'
+#' @details imuGAP numbers birth cohorts from 1, so the saved `fit.rds` works in
+#'   rebased cohorts. Its `"imurun_cohort_origin"` attribute is the birth cohort
+#'   numbered 1; convert [expand_targets()] cohorts before calling `predict()`:
+#'   `targets$cohort <- targets$cohort - attr(fit, "imurun_cohort_origin") + 1L`.
+#'
 #' @examples
 #' \dontrun{
 #' # Validate inputs only:
@@ -561,6 +566,8 @@ run_fit <- function(
   message("[OK] Model complete.")
 
   if (write_rds && !is.null(rds_dest)) {
+    # The fit only knows rebased cohorts; keep the birth cohort numbered 1.
+    attr(fit, "imurun_cohort_origin") <- earliest
     saveRDS(fit, rds_dest)
     message("[OK] Wrote ", rds_dest)
   }
