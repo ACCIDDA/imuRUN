@@ -13,18 +13,29 @@ test_that("cli_run_fit returns 0 and prints usage for no args or --help", {
   expect_equal(result3, 0L)
 })
 
-test_that("cli_run_fit returns 3 for non-existent input directory", {
-  result <- suppressMessages(imuRUN::cli_run_fit(c("/nonexistent/path/xyz")))
+test_that("cli_run_fit returns 3 for a non-existent workbook", {
+  result <- suppressMessages(
+    imuRUN::cli_run_fit(c("/nonexistent/path/xyz.xlsx"))
+  )
   expect_equal(result, 3L)
 })
 
-test_that("cli_run_fit returns 3 when input files are missing", {
-  dir <- tempfile("test_run_missing_")
+test_that("cli_run_fit returns 3 for input that is not a .xlsx workbook", {
+  dir <- tempfile("test_run_dir_")
   dir.create(dir)
   on.exit(unlink(dir, recursive = TRUE), add = TRUE)
 
   result <- suppressMessages(imuRUN::cli_run_fit(c(dir)))
   expect_equal(result, 3L)
+})
+
+test_that("run_fit rejects a directory or other non-.xlsx path", {
+  dir <- tempfile("test_run_dir_")
+  dir.create(dir)
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+
+  expect_error(imuRUN::run_fit(dir), "must be a .xlsx workbook")
+  expect_error(imuRUN::run_fit("inputs.csv"), "must be a .xlsx workbook")
 })
 
 test_that("cli_run_fit strips sampler flags before the positional parsing", {

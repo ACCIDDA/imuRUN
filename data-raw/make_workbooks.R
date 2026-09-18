@@ -330,30 +330,6 @@ message(
   " loc)"
 )
 
-# --- CSV directory fixture (same example, directory read path) ---------------
-csv_dir <- file.path("tests", "testthat", "fixtures", "example_dir")
-dir.create(csv_dir, recursive = TRUE, showWarnings = FALSE)
-utils::write.csv(
-  ex_obs[, c(
-    "loc_id",
-    "year",
-    "age_min",
-    "age_max",
-    "dose",
-    "positive",
-    "sample_n"
-  )],
-  file.path(csv_dir, "observations.csv"),
-  row.names = FALSE
-)
-utils::write.csv(
-  ex_loc[, c("loc_id", "parent_id")],
-  file.path(csv_dir, "locations.csv"),
-  row.names = FALSE
-)
-utils::write.csv(ex_target, file.path(csv_dir, "target.csv"), row.names = FALSE)
-message("Wrote CSV directory fixture to ", csv_dir)
-
 # --- Test fixtures -----------------------------------------------------------
 fixture_dir <- file.path("tests", "testthat", "fixtures")
 dir.create(fixture_dir, recursive = TRUE, showWarnings = FALSE)

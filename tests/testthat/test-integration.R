@@ -5,7 +5,7 @@
 # per-function tests (test-loaders/-workbook/-validate/-targets) do not restate
 # it.
 
-# --- Golden: read the shared example (workbook and CSV directory) -------------
+# --- Golden: read the shared example workbook --------------------------------
 
 test_that("the example workbook reads data and sampler configuration", {
   skip_if_no_readxl()
@@ -16,19 +16,11 @@ test_that("the example workbook reads data and sampler configuration", {
   expect_gt(nrow(inputs$target), 0)
 })
 
-test_that("the example CSV directory reads into the same frames", {
-  inputs <- imuRUN::read_inputs(example_dir())
-  expect_named(inputs, c("obs", "locs", "target"))
-  expect_true("obs_id" %in% names(inputs$obs)) # auto-assigned (no id column)
-  expect_gt(nrow(inputs$obs), 0)
-})
-
 # --- Golden: validation passes clean, fails on the corrupt copy ---------------
 
 test_that("the clean example validates and the corrupt copy is rejected", {
   skip_if_no_readxl()
   expect_no_error(imuRUN::validate_inputs(imuRUN::read_inputs(example_wb())))
-  expect_no_error(imuRUN::validate_inputs(imuRUN::read_inputs(example_dir())))
   expect_error(
     imuRUN::validate_inputs(imuRUN::read_inputs(corrupt_wb())),
     "sample_n"
