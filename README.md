@@ -52,10 +52,13 @@ Once it is on CRAN you will be able to install the released version with:
 install.packages("imuRUN")
 ```
 
-`imuRUN` depends on [`imuGAP`](https://github.com/ACCIDDA/imuGAP); fitting is
-delegated to `imuGAP::sampling()`, which requires imuGAP's Stan-based model
-backend (a working Stan toolchain). Reading and writing `.xlsx` workbooks uses
-[`openxlsx2`](https://cran.r-project.org/package=openxlsx2).
+`imuRUN` depends on [`imuGAP`](https://github.com/ACCIDDA/imuGAP), which fits
+a precompiled Stan model. With R from [CRAN](https://cran.r-project.org/) on
+Windows or macOS, imuGAP installs ready-built and no compiler is needed. With
+Homebrew's R or on Linux, packages are built from source, so you need a C++
+compiler (Xcode Command Line Tools on macOS, or `build-essential` or equivalent
+on Linux), and the first install takes several minutes. Reading and writing
+`.xlsx` workbooks uses [`openxlsx2`](https://cran.r-project.org/package=openxlsx2).
 
 The R functions are the primary interface. To additionally make `imuRUN`
 available as a shell command, install the bundled wrapper onto your `PATH`:
