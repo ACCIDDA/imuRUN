@@ -66,7 +66,7 @@ Fill in the sheets with your data:
 
 - **observations**: One row per survey or count:
   - *Location*: Name of the location (must match a location in the *locations* sheet).
-  - *Observation Year*: Calendar year when the survey/count was recorded (e.g., `2024`).
+  - *Observation Year*: Calendar year when the survey/count was recorded (e.g., `2024`). Use a whole year from 1000 through 9999.
   - *Youngest age* and *Oldest age*: The age span surveyed (put the same age in both for a single age, or just use *Youngest age*).
   - *Dose*: Which dose this count represents (e.g., `1` or `2`).
   - *Vaccinated*: Number of individuals found to be vaccinated.
@@ -77,7 +77,7 @@ Fill in the sheets with your data:
   - *Parent location*: The name of its parent location. Leave *Parent location* blank for your single top-level root (e.g., the country or state).
 - **target**: The specific predictions you want:
   - *Location*: The location(s) to predict (use semicolons for multiple, e.g., `District A; District B`).
-  - *Target Year*: The calendar year for the prediction snapshot.
+  - *Target Year*: The calendar year for the prediction snapshot, also a whole year from 1000 through 9999.
   - *Youngest age* and *Oldest age*: The age range you want coverage estimated for.
   - *Dose* (optional): Leave blank to predict for the final dose, or specify a dose number.
   - *Label* (optional): A descriptive tag echoed into your results (e.g., `Schools 2025`).

@@ -66,6 +66,53 @@ test_that("birth cohorts are rebased and restored by target identity", {
   expect_true(all(restored$cohort + restored$age == 2025L))
 })
 
+test_that("workbook year errors fail during a dry run", {
+  skip_if_no_readxl()
+  out <- withr::local_tempdir()
+  path <- file.path(out, "example.xlsx")
+  expect_true(file.copy(example_wb(), path))
+  expect_identical(imuRUN::run_fit(path, dryrun = TRUE), 0L)
+
+  n_obs <- nrow(imuRUN::read_inputs(example_wb())$obs)
+  for (year in c(1000L, 9999L)) {
+    wb <- openxlsx2::wb_load(example_wb())
+    wb$add_data(
+      "observations",
+      data.frame(year = rep(year, n_obs)),
+      start_col = 2L,
+      start_row = 2L,
+      col_names = FALSE
+    )
+    wb$add_data(
+      "target",
+      data.frame(year = year, age_low = 2L),
+      start_col = 2L,
+      start_row = 2L,
+      col_names = FALSE
+    )
+    openxlsx2::wb_save(wb, path, overwrite = TRUE)
+    expect_identical(imuRUN::run_fit(path, dryrun = TRUE), 0L)
+  }
+
+  bad_year <- function(sheet, year) {
+    wb <- openxlsx2::wb_load(example_wb())
+    wb$add_data(
+      sheet,
+      data.frame(year = year),
+      start_col = 2L,
+      start_row = 2L,
+      col_names = FALSE
+    )
+    openxlsx2::wb_save(wb, path, overwrite = TRUE)
+    imuRUN::run_fit(path, dryrun = TRUE)
+  }
+  expect_error(
+    bad_year("observations", 999),
+    "'Observation Year'.*1000 through 9999"
+  )
+  expect_error(bad_year("target", 10000), "'Target Year'.*1000 through 9999")
+})
+
 # --- Integration: a real (tiny) fit, gated ------------------------------------
 
 test_that("the example fits end-to-end (gated)", {

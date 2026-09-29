@@ -89,6 +89,51 @@ check_whole_number_column <- function(df, sheet, col) {
   )
 }
 
+#' Identify nonblank values outside the accepted calendar-year range
+#'
+#' @param values a vector of year values.
+#'
+#' @return integer vector of invalid row indices.
+#'
+#' @keywords internal
+invalid_calendar_year_rows <- function(values) {
+  values <- if (is.numeric(values)) {
+    values
+  } else {
+    suppressWarnings(as.numeric(as.character(values)))
+  }
+  invalid <- !is.finite(values) |
+    values != trunc(values) |
+    values < 1000 |
+    values > 9999
+  which(!is.na(values) & invalid)
+}
+
+#' Check that a year column uses four-digit calendar years
+#'
+#' @param df data.frame; sheet contents.
+#' @param sheet character; sheet name (for messages).
+#' @param col character; year column name.
+#'
+#' @return character vector of problem messages (possibly length zero).
+#'
+#' @keywords internal
+check_calendar_year_column <- function(df, sheet, col = "year") {
+  if (!col %in% names(df)) {
+    return(character(0))
+  }
+  bad_rows <- invalid_calendar_year_rows(df[[col]])
+  if (length(bad_rows) == 0L) {
+    return(character(0))
+  }
+  sprintf(
+    "[%s] '%s' must be a whole calendar year from 1000 through 9999 (row(s): %s)",
+    sheet,
+    friendly_col(sheet, col),
+    sheet_rows(bad_rows)
+  )
+}
+
 # Expanding a malformed workbook must not be able to exhaust the R process
 # before validation can report the problem. A million derived population rows
 # is already far beyond a practical interactive imurun fit; keep the guard
@@ -185,7 +230,7 @@ build_populations <- function(obs) {
     if (is.null(obs[[name]])) {
       rep(NA_integer_, n)
     } else {
-      suppressWarnings(as.integer(obs[[name]]))
+      suppressWarnings(as.integer(as.character(obs[[name]])))
     }
   }
   age_min <- int_col("age_min")
@@ -306,6 +351,7 @@ validate_inputs <- function(
   )) {
     problems <- c(problems, check_numeric_column(obs, "observations", col))
   }
+  problems <- c(problems, check_calendar_year_column(obs, "observations"))
 
   # 3. Age-span checks must all happen before build_populations().
   if (all(c("age_min", "age_max") %in% names(obs))) {
