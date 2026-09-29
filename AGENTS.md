@@ -14,7 +14,7 @@ This document provides concise instructions and rules for AI coding assistants w
   * The R functions are the primary interface: [run_fit()](file:///home/holism/workspaces/ACCIDDA/imurun/R/run.R), [validate_inputs()](file:///home/holism/workspaces/ACCIDDA/imurun/R/validate.R), [imurun_init()](file:///home/holism/workspaces/ACCIDDA/imurun/R/init.R), [read_inputs()](file:///home/holism/workspaces/ACCIDDA/imurun/R/loaders.R), [write_results_workbook()](file:///home/holism/workspaces/ACCIDDA/imurun/R/results.R).
   * The CLI wrapper is installed onto `PATH` via `imuRUN::install_cli()` (creates a symlink on Unix or `imurun.cmd` shim on Windows pointing to `inst/scripts/imurun.R`).
 * **Required Evaluation Targets**:
-  * Every input must define evaluation targets (`target` sheet or `target.csv`), specifying requested locations, years, and age spans (`age_low` to `age_high`).
+  * Every input must define evaluation targets (`target` sheet or `target` list element), specifying requested locations, years, and age spans (`age_low` to `age_high`).
 * **Workbook Preservation**:
   * When amending an existing workbook in-place with model results, `imuRUN` preserves non-data tabs (e.g. `instructions`), column filters, and formatting.
 * **Untracked Artifacts**:
