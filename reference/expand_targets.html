@@ -88,7 +88,9 @@ Typically the model's final dose (<code>fit$data$n_doses</code>).</p></dd>
 <code>create_target(mode = "snapshot")</code> fans the row out over its location list
 (<code>loc_id</code>) and inclusive age span (<code>age_low</code>..<code>age_high</code>), deriving a cohort
 for each age so that <code>age + cohort = year</code> is held constant (<code>cohort_i = year - age_i</code>).
-A blank <code>dose</code> cell takes <code>default_dose</code> (typically the final dose).
+A blank <code>dose</code> cell takes <code>default_dose</code> (typically the final dose), except
+on a location-only row, which repeats the row above (see <code><a href="fill_target_locf.html">fill_target_locf()</a></code>).
+A blank <code>target_id</code> stays <code>NA</code>.
 Every expanded row is an independent target carrying <code>weight = 1</code>. Identical
 target identities (across rows) are dropped as duplicates, and a unique integer
 <code>obs_id</code> is assigned so the posterior draws can be grouped unambiguously by
@@ -108,16 +110,16 @@ target.</p>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">expand_targets</span><span class="op">(</span><span class="va">tg</span>, default_dose <span class="op">=</span> <span class="fl">2L</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    obs_id target_id           loc_id cohort age dose weight</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1         1   Bunting School     19   1    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       2         1 Cardinal Academy     19   1    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       3         1   Bunting School     18   2    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4       4         1 Cardinal Academy     18   2    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5       5         1   Bunting School     17   3    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6       6         1 Cardinal Academy     17   3    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7       7         1   Bunting School     16   4    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8       8         1 Cardinal Academy     16   4    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9       9         1   Bunting School     15   5    2      1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10     10         1 Cardinal Academy     15   5    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1      &lt;NA&gt;   Bunting School     19   1    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       2      &lt;NA&gt; Cardinal Academy     19   1    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       3      &lt;NA&gt;   Bunting School     18   2    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4       4      &lt;NA&gt; Cardinal Academy     18   2    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5       5      &lt;NA&gt;   Bunting School     17   3    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6       6      &lt;NA&gt; Cardinal Academy     17   3    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7       7      &lt;NA&gt;   Bunting School     16   4    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8       8      &lt;NA&gt; Cardinal Academy     16   4    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9       9      &lt;NA&gt;   Bunting School     15   5    2      1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10     10      &lt;NA&gt; Cardinal Academy     15   5    2      1</span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

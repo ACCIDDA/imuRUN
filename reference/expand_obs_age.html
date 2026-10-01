@@ -5,13 +5,17 @@ a count at one age. Rather than make every such row repeat itself, a sheet
 that carries a lone age column is read as age_min = age_max = age.
 Only applied when neither span column is present: a sheet that supplies
 age_min/age_max is authoritative, and any age column alongside them is
-an ordinary ignored extra column."><meta property="og:description" content="The observations sheet describes the inclusive age span a count
+an ordinary ignored extra column.
+Likewise a single age may be given as age_min alone: a blank (or absent)
+age_max takes that row's age_min."><meta property="og:description" content="The observations sheet describes the inclusive age span a count
 was drawn over (age_min..age_max), but the overwhelmingly common case is
 a count at one age. Rather than make every such row repeat itself, a sheet
 that carries a lone age column is read as age_min = age_max = age.
 Only applied when neither span column is present: a sheet that supplies
 age_min/age_max is authoritative, and any age column alongside them is
-an ordinary ignored extra column."></head><body>
+an ordinary ignored extra column.
+Likewise a single age may be given as age_min alone: a blank (or absent)
+age_max takes that row's age_min."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -63,6 +67,8 @@ that carries a lone <code>age</code> column is read as <code>age_min = age_max =
 <p>Only applied when neither span column is present: a sheet that supplies
 <code>age_min</code>/<code>age_max</code> is authoritative, and any <code>age</code> column alongside them is
 an ordinary ignored extra column.</p>
+<p>Likewise a single age may be given as <code>age_min</code> alone: a blank (or absent)
+<code>age_max</code> takes that row's <code>age_min</code>.</p>
     </div>
 
     <div class="section level2">
@@ -80,7 +86,8 @@ an ordinary ignored extra column.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>obs</code>, with <code>age_min</code>/<code>age_max</code> present whenever <code>age</code> was.</p>
+    <p><code>obs</code>, with <code>age_min</code>/<code>age_max</code> present whenever <code>age</code> was, and
+<code>age_max</code> filled from <code>age_min</code> wherever it was blank.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -13,11 +13,15 @@ fractional age-span endpoints;
 an inverted age span (age_min &amp;gt; age_max);
 age spans outside an explicit max_age or too large to expand
 safely;
+blank year or age_min cells;
 loc_id values in observations but absent from locations;
 dose, year, and age values out of range;
 structural location problems (duplicate or missing root, cycles).
 
 
+Columns are named by their spreadsheet headers (e.g. Sampled). Where imurun
+reports rows, they are spreadsheet row numbers, counting the header as row 1;
+problems found by the 'imuGAP' canonicalizers carry no row.
 The imuGAP populations are constructed from the observations
 (build_populations()); there is no populations sheet.
 On success TRUE is returned invisibly. On failure a
@@ -35,11 +39,15 @@ fractional age-span endpoints;
 an inverted age span (age_min &amp;gt; age_max);
 age spans outside an explicit max_age or too large to expand
 safely;
+blank year or age_min cells;
 loc_id values in observations but absent from locations;
 dose, year, and age values out of range;
 structural location problems (duplicate or missing root, cycles).
 
 
+Columns are named by their spreadsheet headers (e.g. Sampled). Where imurun
+reports rows, they are spreadsheet row numbers, counting the header as row 1;
+problems found by the 'imuGAP' canonicalizers carry no row.
 The imuGAP populations are constructed from the observations
 (build_populations()); there is no populations sheet.
 On success TRUE is returned invisibly. On failure a
@@ -101,10 +109,14 @@ than stopping at the first.</p>
 <li><p>an inverted age span (<code>age_min &gt; age_max</code>);</p></li>
 <li><p>age spans outside an explicit <code>max_age</code> or too large to expand
 safely;</p></li>
+<li><p>blank <code>year</code> or <code>age_min</code> cells;</p></li>
 <li><p><code>loc_id</code> values in <code>observations</code> but absent from <code>locations</code>;</p></li>
 <li><p><code>dose</code>, <code>year</code>, and <code>age</code> values out of range;</p></li>
 <li><p>structural location problems (duplicate or missing root, cycles).</p></li>
-</ul><p>The imuGAP populations are constructed from the observations
+</ul><p>Columns are named by their spreadsheet headers (e.g. <em>Sampled</em>). Where imurun
+reports rows, they are spreadsheet row numbers, counting the header as row 1;
+problems found by the 'imuGAP' canonicalizers carry no row.</p>
+<p>The imuGAP populations are constructed from the observations
 (<code><a href="build_populations.html">build_populations()</a></code>); there is no populations sheet.</p>
 <p>On success <code>TRUE</code> is returned invisibly. On failure a
 single error is raised whose message lists every problem found.</p>

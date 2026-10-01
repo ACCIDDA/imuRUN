@@ -21,11 +21,18 @@ Problems detected include:
 
 - age spans outside an explicit `max_age` or too large to expand safely;
 
+- blank `year` or `age_min` cells;
+
 - `loc_id` values in `observations` but absent from `locations`;
 
 - `dose`, `year`, and `age` values out of range;
 
 - structural location problems (duplicate or missing root, cycles).
+
+Columns are named by their spreadsheet headers (e.g. *Sampled*). Where
+imurun reports rows, they are spreadsheet row numbers, counting the
+header as row 1; problems found by the 'imuGAP' canonicalizers carry no
+row.
 
 The imuGAP populations are constructed from the observations
 ([`build_populations()`](https://accidda.github.io/imuRUN/reference/build_populations.md));

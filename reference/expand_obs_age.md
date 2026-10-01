@@ -10,6 +10,9 @@ Only applied when neither span column is present: a sheet that supplies
 `age_min`/`age_max` is authoritative, and any `age` column alongside
 them is an ordinary ignored extra column.
 
+Likewise a single age may be given as `age_min` alone: a blank (or
+absent) `age_max` takes that row's `age_min`.
+
 ## Usage
 
 ``` r
@@ -24,4 +27,5 @@ expand_obs_age(obs)
 
 ## Value
 
-`obs`, with `age_min`/`age_max` present whenever `age` was.
+`obs`, with `age_min`/`age_max` present whenever `age` was, and
+`age_max` filled from `age_min` wherever it was blank.

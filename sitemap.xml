@@ -10,6 +10,7 @@
 <url><loc>https://accidda.github.io/imuRUN/index.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/news/index.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/IMURUN_CONFIG_SHEET.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/IMURUN_FRIENDLY_HEADERS.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/IMURUN_HEADER_ALIASES.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/IMURUN_OPTIONAL.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/IMURUN_SCHEMA.html</loc></url>
@@ -21,6 +22,7 @@
 <url><loc>https://accidda.github.io/imuRUN/reference/SUPPORTED_EXT.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/USAGE.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/as_target_draws.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/assert_config_logical.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/assert_flag_int.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/assert_no_clobber.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/assert_results_destination.html</loc></url>
@@ -40,6 +42,7 @@
 <url><loc>https://accidda.github.io/imuRUN/reference/find_input_file.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/format_validation_error.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/friendly_canonical_error.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/friendly_col.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/imuRUN-package.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/imurun_copy_example.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/imurun_example.html</loc></url>
@@ -49,6 +52,7 @@
 <url><loc>https://accidda.github.io/imuRUN/reference/install_cli.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/load_by_ext.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/normalize_inputs.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/parse_dose_schedule.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/parse_loc_list.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/parse_output_options.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/parse_sampler_config.html</loc></url>
@@ -57,6 +61,8 @@
 <url><loc>https://accidda.github.io/imuRUN/reference/read_inputs.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/read_workbook.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/run_fit.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/sheet_rows.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/split_setting_overrides.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/summarize_targets.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/validate_inputs.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/validate_targets.html</loc></url>

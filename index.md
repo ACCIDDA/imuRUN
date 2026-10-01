@@ -23,11 +23,12 @@ workbook.
   schema (\[`IMURUN_SCHEMA`\]) via a layer over imuGAP’s canonicalizers
   that names the offending sheet, column, or row and collects *every*
   problem it can find rather than stopping at the first.
-- **Validate-only mode.** `run_fit(c("-h", <input>))` checks the
+- **Validate-only mode.** `run_fit(<input>, dryrun = TRUE)` checks the
   workbook without fitting.
 - **Human-readable results.** On success, the input workbook gains a
   `results` sheet containing medians and credible intervals beside the
-  request context; `fit.rds` is also saved for advanced post-processing.
+  request context. A results CSV and the fitted model (`.rds`, for
+  advanced post-processing) are available on request.
 - **Scriptable.** The engine functions
   ([`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md),
   [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md),
@@ -79,8 +80,9 @@ invoke the engine from R with `imuRUN::run_fit(...)`.
 
 [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md)
 accepts a workbook path (or a directory of CSV/RDS inputs). The
-generated workbook’s `configuration` sheet holds `iter`, `chains`,
-`seed`, and `warmup`; automation flags may override those values.
+generated workbook’s `configuration` sheet starts with `iter` and
+`chains`. Add `seed` or `warmup` as rows when needed; automation flags
+may override them.
 
 ### Walkthrough
 
@@ -106,7 +108,7 @@ generated workbook’s `configuration` sheet holds `iter`, `chains`,
 
     ``` r
 
-    imuRUN::run_fit(c("-h", "imurun_template.xlsx"))
+    imuRUN::run_fit("imurun_template.xlsx", dryrun = TRUE)
     ```
 
     Any problems are reported all at once, in spreadsheet terms.
@@ -119,9 +121,11 @@ generated workbook’s `configuration` sheet holds `iter`, `chains`,
     imuRUN::run_fit("imurun_template.xlsx")
     ```
 
-    imuRUN adds a **`results`** sheet to that workbook and writes
-    **`fit.rds`** beside it. It refuses to replace existing results
-    unless `--overwrite` is supplied.
+    imuRUN adds a **`results`** sheet to that workbook, replacing any
+    from an earlier run (pass `overwrite = FALSE` to be asked first).
+    Add `result = c("xlsx", "csv", "rds")` to also write a results CSV
+    and the fitted model. The `imurun` shell command instead refuses to
+    replace existing results unless `--overwrite` is supplied.
 
 The same steps work with a directory of CSV/RDS files in place of the
 workbook, for example `run_fit("data")` where `data/` contains
@@ -143,7 +147,7 @@ example <- imurun_copy_example(tempdir())
 inputs <- read_inputs(example)
 validate_inputs(inputs)
 
-# Or run the whole pipeline (amends the workbook and writes fit.rds)
+# Or run the whole pipeline (adds a results sheet to the workbook)
 run_fit(example)
 ```
 

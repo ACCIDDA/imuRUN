@@ -56,6 +56,16 @@
 <li>
 <code><a href="../reference/run_fit.html">run_fit()</a></code> now writes a human-readable result, not just <code>fit.rds</code>. The target sheet is expanded, predicted, and summarized into a <code>results</code> sheet in the workbook the user supplied, preserving its existing sheets and formatting. <code>--results</code> writes an amended copy instead, and <code>--csv</code> writes a results-only CSV. Existing results are not replaced unless <code>--overwrite</code> is passed. The target and configuration sheets are validated before fitting, so a bad row or sampler setting fails immediately rather than after the model runs.</li>
 <li>Generated workbooks now include a <code>configuration</code> sheet for <code>iter</code>, <code>chains</code>, <code>seed</code>, and <code>warmup</code>. Command-line flags remain available as explicit automation/compatibility overrides.</li>
+<li>Brought the backend in line with the getting-started vignette:
+<ul><li>The example workbook uses calendar years.</li>
+<li>A blank <em>Oldest age</em> means a single age.</li>
+<li>A blank target <em>Dose</em> means the final dose; location-only rows still repeat the row above.</li>
+<li>A blank <em>Label</em> stays blank in the results, which no longer carry <code>n_draws</code>.</li>
+<li>Validation messages name columns by their spreadsheet headers and rows by spreadsheet row, and catch blank years and ages.</li>
+<li>The configuration sheet accepts every flexstanr/imuGAP setting a user can set (<code>refresh = 0</code>, <code>backend</code>, <code>threading</code>, <code>max_cores</code>, <code>model</code>, and a text <code>dose_schedule</code> such as <code>1, 4</code>) and rejects <code>init</code> and <code>age_order</code>. Settings are checked by <code>dryrun</code>, and <code>run_fit(adapt_delta = )</code> works.</li>
+<li>The dose count follows <code>dose_schedule</code> rather than being fixed at 2.</li>
+<li>The bundled <code>imurun</code> command loads <code>imuRUN</code> (it looked for <code>imurun</code>).</li>
+</ul></li>
 <li>Set up the development infrastructure: R CMD check, lint, test coverage, pkgdown, and spelling continuous-integration workflows.</li>
 </ul></div>
   </main></div>

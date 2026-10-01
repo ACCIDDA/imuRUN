@@ -8,7 +8,8 @@ inclusive age span (`age_low`..`age_high`).
 A row that names only a `loc_id`, leaving
 `year`/`age_low`/`age_high`/`dose` blank, inherits those values from the
 row above (last-observation-carried- forward), so a run of locations
-sharing one request need not repeat them.
+sharing one request need not repeat them. A blank `dose` on a row that
+gives its own year or ages means the final dose.
 
 ## Usage
 

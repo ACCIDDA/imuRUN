@@ -5,13 +5,15 @@ locations (loc_id, a ;-separated list), a target year (year), and an
 inclusive age span (age_low..age_high).
 A row that names only a loc_id, leaving year/age_low/age_high/dose
 blank, inherits those values from the row above (last-observation-carried-
-forward), so a run of locations sharing one request need not repeat them."><meta property="og:description" content="Required columns of the (required) target sheet that drives
+forward), so a run of locations sharing one request need not repeat them.
+A blank dose on a row that gives its own year or ages means the final dose."><meta property="og:description" content="Required columns of the (required) target sheet that drives
 the by-target predictions. A target-request row names one or more
 locations (loc_id, a ;-separated list), a target year (year), and an
 inclusive age span (age_low..age_high).
 A row that names only a loc_id, leaving year/age_low/age_high/dose
 blank, inherits those values from the row above (last-observation-carried-
-forward), so a run of locations sharing one request need not repeat them."></head><body>
+forward), so a run of locations sharing one request need not repeat them.
+A blank dose on a row that gives its own year or ages means the final dose."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -62,7 +64,8 @@ locations (<code>loc_id</code>, a <code>;</code>-separated list), a target year 
 inclusive age span (<code>age_low</code>..<code>age_high</code>).</p>
 <p>A row that names only a <code>loc_id</code>, leaving <code>year</code>/<code>age_low</code>/<code>age_high</code>/<code>dose</code>
 blank, inherits those values from the row above (last-observation-carried-
-forward), so a run of locations sharing one request need not repeat them.</p>
+forward), so a run of locations sharing one request need not repeat them.
+A blank <code>dose</code> on a row that gives its own year or ages means the final dose.</p>
     </div>
 
     <div class="section level2">

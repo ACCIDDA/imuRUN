@@ -71,7 +71,8 @@ identifier – the loader assigns one automatically if you omit it, so it
 is not a user column), <code>loc_id</code> (must exist in locations),
 <code>year</code> (positive integer observation year), <code>age_min</code> and <code>age_max</code>
 (positive integers giving the inclusive age span the count was drawn
-over, with <code>age_min &lt;= age_max</code>), <code>dose</code> (integer in <code>1:max_dose</code>),
+over, with <code>age_min &lt;= age_max</code>; a blank <code>age_max</code> means the single age
+<code>age_min</code>), <code>dose</code> (integer in <code>1:max_dose</code>),
 <code>positive</code> (non-negative integer count of positive results), <code>sample_n</code>
 (positive integer sample size, with <code>positive &lt;= sample_n</code>). Optional:
 <code>censored</code> (<code>NA</code> or <code>1</code>).</p>

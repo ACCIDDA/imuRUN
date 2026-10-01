@@ -37,10 +37,13 @@ Each row's `year` represents the timing of the target snapshot.
 list (`loc_id`) and inclusive age span (`age_low`..`age_high`), deriving
 a cohort for each age so that `age + cohort = year` is held constant
 (`cohort_i = year - age_i`). A blank `dose` cell takes `default_dose`
-(typically the final dose). Every expanded row is an independent target
-carrying `weight = 1`. Identical target identities (across rows) are
-dropped as duplicates, and a unique integer `obs_id` is assigned so the
-posterior draws can be grouped unambiguously by target.
+(typically the final dose), except on a location-only row, which repeats
+the row above (see
+[`fill_target_locf()`](https://accidda.github.io/imuRUN/reference/fill_target_locf.md)).
+A blank `target_id` stays `NA`. Every expanded row is an independent
+target carrying `weight = 1`. Identical target identities (across rows)
+are dropped as duplicates, and a unique integer `obs_id` is assigned so
+the posterior draws can be grouped unambiguously by target.
 
 ## See also
 
@@ -57,14 +60,14 @@ tg <- data.frame(
 )
 expand_targets(tg, default_dose = 2L)
 #>    obs_id target_id           loc_id cohort age dose weight
-#> 1       1         1   Bunting School     19   1    2      1
-#> 2       2         1 Cardinal Academy     19   1    2      1
-#> 3       3         1   Bunting School     18   2    2      1
-#> 4       4         1 Cardinal Academy     18   2    2      1
-#> 5       5         1   Bunting School     17   3    2      1
-#> 6       6         1 Cardinal Academy     17   3    2      1
-#> 7       7         1   Bunting School     16   4    2      1
-#> 8       8         1 Cardinal Academy     16   4    2      1
-#> 9       9         1   Bunting School     15   5    2      1
-#> 10     10         1 Cardinal Academy     15   5    2      1
+#> 1       1      <NA>   Bunting School     19   1    2      1
+#> 2       2      <NA> Cardinal Academy     19   1    2      1
+#> 3       3      <NA>   Bunting School     18   2    2      1
+#> 4       4      <NA> Cardinal Academy     18   2    2      1
+#> 5       5      <NA>   Bunting School     17   3    2      1
+#> 6       6      <NA> Cardinal Academy     17   3    2      1
+#> 7       7      <NA>   Bunting School     16   4    2      1
+#> 8       8      <NA> Cardinal Academy     16   4    2      1
+#> 9       9      <NA>   Bunting School     15   5    2      1
+#> 10     10      <NA> Cardinal Academy     15   5    2      1
 ```

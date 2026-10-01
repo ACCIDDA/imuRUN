@@ -32,10 +32,11 @@ Each element of `IMURUN_SCHEMA` describes one sheet/input:
   it is not a user column), `loc_id` (must exist in locations), `year`
   (positive integer observation year), `age_min` and `age_max` (positive
   integers giving the inclusive age span the count was drawn over, with
-  `age_min <= age_max`), `dose` (integer in `1:max_dose`), `positive`
-  (non-negative integer count of positive results), `sample_n` (positive
-  integer sample size, with `positive <= sample_n`). Optional:
-  `censored` (`NA` or `1`).
+  `age_min <= age_max`; a blank `age_max` means the single age
+  `age_min`), `dose` (integer in `1:max_dose`), `positive` (non-negative
+  integer count of positive results), `sample_n` (positive integer
+  sample size, with `positive <= sample_n`). Optional: `censored` (`NA`
+  or `1`).
 
   A single-age observation may be written with one `age` column instead
   of `age_min`/`age_max`; the loader expands it to

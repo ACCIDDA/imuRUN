@@ -234,19 +234,10 @@ your data:</p>
 <td align="left">4</td>
 <td align="left">Number of parallel chains</td>
 </tr>
-<tr class="odd">
-<td align="left"><code>seed</code></td>
-<td align="left">blank</td>
-<td align="left">Optional random seed for exact reproducibility</td>
-</tr>
-<tr class="even">
-<td align="left"><code>warmup</code></td>
-<td align="left">blank</td>
-<td align="left">Optional warmup/burn-in iterations per chain</td>
-</tr>
 </tbody>
 </table>
-<p>Advanced sampler options from <a href="https://CRAN.R-project.org/package=flexstanr" class="external-link"><code>flexstanr::stan_options()</code></a>
+<p>Add <code>seed</code> for reproducibility or <code>warmup</code> to
+set warmup iterations when needed. Other sampler options from <a href="https://CRAN.R-project.org/package=flexstanr" class="external-link"><code>flexstanr::stan_options()</code></a>
 (e.g., <code>cores</code>, <code>thin</code>, <code>adapt_delta</code>,
 <code>max_treedepth</code>) and model options from <a href="https://CRAN.R-project.org/package=imuGAP" class="external-link"><code>imuGAP::imugap_options()</code></a>
 (e.g., <code>df</code>) can also be added as rows here.</p>
@@ -279,7 +270,7 @@ example, if text is entered in the <em>Sampled</em> column:</p>
 <span><span class="fu">imuRUN</span><span class="fu">::</span><span class="fu"><a href="../reference/validate_inputs.html">validate_inputs</a></span><span class="op">(</span><span class="va">broken</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> Input validation failed with 1 problem(s):</span></span>
-<span><span class="co">#&gt;   - [observations] column 'sample_n' must be numeric; non-numeric value(s) at row(s): 1</span></span></code></pre></div>
+<span><span class="co">#&gt;   - [observations] column 'Sampled' must be numeric; non-numeric value(s) at row(s): 2</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="fit-the-model">4. Fit the model<a class="anchor" aria-label="anchor" href="#fit-the-model"></a>

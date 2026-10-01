@@ -104,14 +104,13 @@ scenes.
 
 The **configuration** sheet keeps settings alongside your data:
 
-| Setting  | Default | Description                                    |
-|:---------|:--------|:-----------------------------------------------|
-| `iter`   | 2000    | Total iterations per MCMC chain                |
-| `chains` | 4       | Number of parallel chains                      |
-| `seed`   | blank   | Optional random seed for exact reproducibility |
-| `warmup` | blank   | Optional warmup/burn-in iterations per chain   |
+| Setting  | Default | Description                     |
+|:---------|:--------|:--------------------------------|
+| `iter`   | 2000    | Total iterations per MCMC chain |
+| `chains` | 4       | Number of parallel chains       |
 
-Advanced sampler options from
+Add `seed` for reproducibility or `warmup` to set warmup iterations when
+needed. Other sampler options from
 [`flexstanr::stan_options()`](https://CRAN.R-project.org/package=flexstanr)
 (e.g., `cores`, `thin`, `adapt_delta`, `max_treedepth`) and model
 options from
@@ -154,7 +153,7 @@ broken$obs$sample_n[1] <- "not a number"
 imuRUN::validate_inputs(broken)
 #> Error:
 #> ! Input validation failed with 1 problem(s):
-#>   - [observations] column 'sample_n' must be numeric; non-numeric value(s) at row(s): 1
+#>   - [observations] column 'Sampled' must be numeric; non-numeric value(s) at row(s): 2
 ```
 
 ## 4. Fit the model

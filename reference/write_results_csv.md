@@ -39,7 +39,7 @@ Invisibly, `path`.
 ``` r
 res <- data.frame(
   target_id = "1", loc_id = "A", cohort = 5L, age = 5L, dose = 2L,
-  n_draws = 100L, est_median = 0.8, est_lower = 0.7, est_upper = 0.9,
+  est_median = 0.8, est_lower = 0.7, est_upper = 0.9,
   ci_level = 0.95
 )
 out <- file.path(tempdir(), "results.csv")
