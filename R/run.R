@@ -55,6 +55,18 @@ IMURUN_IMUGAP_ARGS <- list(df = 5L, dose_schedule = c(1L, 4L))
 # configuration sheet, and CLI flags remain a compatibility/automation override.
 IMURUN_SAMPLER_DEFAULTS <- list(iter = 2000L, chains = 4L)
 
+# Apply the same birth-year origin to observations and prediction targets.
+rebase_cohorts <- function(rows, earliest) {
+  rows$cohort <- rows$cohort - earliest + 1L
+  rows
+}
+
+# imuGAP returns internal cohort numbers; report each target's birth year.
+reattach_birth_cohorts <- function(draws, targets) {
+  draws$cohort <- targets$abs_cohort[match(draws$obs_id, targets$obs_id)]
+  draws
+}
+
 #' Coerce a command-line flag value to a whole number
 #'
 #' @param val the raw string value supplied after the flag.
@@ -325,6 +337,11 @@ parse_sampler_config <- function(config) {
 #'
 #' @return Invisibly, an integer exit code (`0L` for success).
 #'
+#' @details imuGAP numbers birth cohorts from 1, so the saved `fit.rds` works in
+#'   rebased cohorts. Its `"imurun_cohort_origin"` attribute is the birth cohort
+#'   numbered 1; convert [expand_targets()] cohorts before calling `predict()`:
+#'   `targets$cohort <- targets$cohort - attr(fit, "imurun_cohort_origin") + 1L`.
+#'
 #' @examples
 #' \dontrun{
 #' # Validate inputs only:
@@ -417,6 +434,9 @@ run_fit <- function(
     inputs$obs,
     stringsAsFactors = FALSE
   ))
+  # imuGAP numbers cohorts from 1; `earliest` is the birth cohort numbered 1.
+  earliest <- min(as.integer(pops_raw$cohort))
+  pops_raw <- rebase_cohorts(pops_raw, earliest)
   max_cohort <- max(as.integer(pops_raw$cohort))
   max_age <- max(as.integer(pops_raw$age))
   pops <- imuGAP::canonicalize_populations(
@@ -439,7 +459,8 @@ run_fit <- function(
     loc_ids = as.character(inputs$locs$loc_id),
     max_cohort = max_cohort,
     max_age = max_age,
-    max_dose = n_doses
+    max_dose = n_doses,
+    earliest = earliest
   )
 
   if (isTRUE(dryrun)) {
@@ -557,6 +578,8 @@ run_fit <- function(
   message("[OK] Model complete.")
 
   if (write_rds && !is.null(rds_dest)) {
+    # The fit only knows rebased cohorts; keep the birth cohort numbered 1.
+    attr(fit, "imurun_cohort_origin") <- earliest
     saveRDS(fit, rds_dest)
     message("[OK] Wrote ", rds_dest)
   }
@@ -564,11 +587,16 @@ run_fit <- function(
   # Predict targets
   message("[->] Predicting targets...")
   targets <- expand_targets(inputs$target, default_dose = n_doses)
+  # imuGAP numbers cohorts from 1; keep the birth cohort to report.
+  targets$abs_cohort <- targets$cohort
+  targets <- rebase_cohorts(targets, earliest)
   if (nrow(targets) == 0L) {
     stop("The target sheet expanded to no targets.", call. = FALSE)
   }
   draws <- as_target_draws(stats::predict(fit, target = targets))
   draws$target_id <- targets$target_id[match(draws$obs_id, targets$obs_id)]
+  # Report birth cohorts (year - age) rather than imuGAP's 1-based numbering.
+  draws <- reattach_birth_cohorts(draws, targets)
   results <- summarize_targets(draws, ci_level = IMURUN_CI_LEVEL)
   message("[OK] Summarized ", nrow(results), " target(s).")
 

@@ -153,13 +153,23 @@ test_that("validate_targets rejects a snapshot span that expands past n_cohort",
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "expands to cohort 19")
-  expect_match(err$message, "beyond the model's 15 cohorts")
+  expect_match(err$message, "cohort 19, after the latest birth cohort 15")
 
   ok <- transform(bad, year = 12)
   expect_no_error(
     validate_targets(ok, loc_ids = "A", max_cohort = 15, max_age = 8)
   )
+})
+
+test_that("validate_targets checks calendar-year targets against earliest", {
+  # Observations cover birth cohorts 2010..2024 (earliest 2010, 15 cohorts).
+  check <- function(year, age_low, age_high) {
+    tg <- data.frame(loc_id = "A", year, age_low, age_high)
+    validate_targets(tg, "A", max_cohort = 15, max_age = 20, earliest = 2010L)
+  }
+  expect_no_error(check(2025, 1, 15)) # birth cohorts 2010..2024, the full range
+  expect_error(check(2025, 1, 16), "before the earliest birth cohort 2010")
+  expect_error(check(2026, 1, 5), "2025, after the latest birth cohort 2024")
 })
 
 # --- summarize_targets -------------------------------------------------------

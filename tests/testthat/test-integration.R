@@ -35,6 +35,45 @@ test_that("the clean example validates and the corrupt copy is rejected", {
   )
 })
 
+test_that("calendar-year targets validate before fitting", {
+  inputs <- imuRUN::read_inputs(example_wb())
+  inputs$obs$year <- as.integer(inputs$obs$year) + 2000L
+  inputs$target$year <- as.integer(inputs$target$year) + 2000L
+
+  expect_identical(imuRUN::run_fit(inputs, dryrun = TRUE), 0L)
+
+  latest <- max(imuRUN:::build_populations(inputs$obs)$cohort)
+  inputs$target$year[1L] <- latest + 2L
+  inputs$target$age_low[1L] <- 1L
+  inputs$target$age_high[1L] <- 1L
+  expect_error(
+    imuRUN::run_fit(inputs, dryrun = TRUE),
+    sprintf(
+      "birth cohort %d, after the latest birth cohort %d",
+      latest + 1L,
+      latest
+    )
+  )
+})
+
+test_that("birth cohorts are rebased and restored by target identity", {
+  populations <- data.frame(cohort = c(2010L, 2014L, 2024L))
+  targets <- data.frame(
+    obs_id = c(11L, 22L),
+    cohort = c(2010L, 2024L),
+    abs_cohort = c(2010L, 2024L)
+  )
+
+  expect_equal(imuRUN:::rebase_cohorts(populations, 2010L)$cohort, c(1, 5, 15))
+  targets <- imuRUN:::rebase_cohorts(targets, 2010L)
+  expect_equal(targets$cohort, c(1, 15))
+
+  draws <- data.frame(obs_id = c(22L, 11L, 22L), age = c(1L, 15L, 1L))
+  restored <- imuRUN:::reattach_birth_cohorts(draws, targets)
+  expect_equal(restored$cohort, c(2024, 2010, 2024))
+  expect_true(all(restored$cohort + restored$age == 2025L))
+})
+
 # --- Integration: a real (tiny) fit, gated ------------------------------------
 
 test_that("the example fits end-to-end (gated)", {
@@ -128,6 +167,14 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
   expect_true(file.exists(wb_path))
   expect_true(file.exists(csv))
 
+  fit <- readRDS(fit_path)
+  input_data <- imuRUN::read_inputs(input)
+  birth_cohorts <- imuRUN:::build_populations(input_data$obs)$cohort
+  expect_identical(
+    attr(fit, "imurun_cohort_origin"),
+    as.integer(min(birth_cohorts))
+  )
+
   # The workbook carries the request alongside the answer.
   expect_identical(
     openxlsx2::wb_load(wb_path)$get_sheet_names(),
@@ -159,6 +206,7 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
   expect_true(all(res$est_median >= 0 & res$est_median <= 1))
   expect_true(all(res$est_lower <= res$est_median))
   expect_true(all(res$est_median <= res$est_upper))
+  expect_true(all(res$cohort + res$age == input_data$target$year[1L]))
 
   # The CSV holds the same estimates as the workbook's results sheet.
   from_csv <- utils::read.csv(csv, stringsAsFactors = FALSE)
