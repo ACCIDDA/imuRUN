@@ -56,6 +56,16 @@ run_fit(
 
 Invisibly, an integer exit code (`0L` for success).
 
+## Details
+
+imuGAP numbers birth cohorts from 1, so the saved `fit.rds` works in
+rebased cohorts. Its `"imurun_cohort_origin"` attribute is the birth
+cohort numbered 1; convert
+[`expand_targets()`](https://accidda.github.io/imuRUN/reference/expand_targets.md)
+cohorts before calling
+[`predict()`](https://rdrr.io/r/stats/predict.html):
+`targets$cohort <- targets$cohort - attr(fit, "imurun_cohort_origin") + 1L`.
+
 ## Examples
 
 ``` r

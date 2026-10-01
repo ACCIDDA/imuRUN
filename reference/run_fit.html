@@ -105,6 +105,13 @@ If <code>FALSE</code> and a destination exists, prompts in interactive sessions 
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Invisibly, an integer exit code (<code>0L</code> for success).</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>imuGAP numbers birth cohorts from 1, so the saved <code>fit.rds</code> works in
+rebased cohorts. Its <code>"imurun_cohort_origin"</code> attribute is the birth cohort
+numbered 1; convert <code><a href="expand_targets.html">expand_targets()</a></code> cohorts before calling <code><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict()</a></code>:
+<code>targets$cohort &lt;- targets$cohort - attr(fit, "imurun_cohort_origin") + 1L</code>.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

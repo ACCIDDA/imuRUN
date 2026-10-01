@@ -314,7 +314,9 @@ can also export a CSV file or save the raw model object using the
 summarized target predictions.</li>
 <li>
 <code>"rds"</code>: Saves the fitted model object
-(<code>.rds</code>) for advanced R analysis.</li>
+(<code>.rds</code>) for advanced R analysis. Its
+<code>"imurun_cohort_origin"</code> attribute is the birth cohort imuGAP
+numbers 1 (see <code><a href="../reference/run_fit.html">?run_fit</a></code>).</li>
 </ul>
 <p>By default, <code><a href="../reference/run_fit.html">run_fit()</a></code> overwrites existing results when
 re-run. Set <code>overwrite = FALSE</code> if you prefer to be prompted

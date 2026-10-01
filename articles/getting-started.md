@@ -193,7 +193,9 @@ imuRUN::run_fit("imurun_example.xlsx", result = c("xlsx", "rds"))
 - `"csv"`: Creates a standalone CSV file containing the summarized
   target predictions.
 - `"rds"`: Saves the fitted model object (`.rds`) for advanced R
-  analysis.
+  analysis. Its `"imurun_cohort_origin"` attribute is the birth cohort
+  imuGAP numbers 1 (see
+  [`?run_fit`](https://accidda.github.io/imuRUN/reference/run_fit.md)).
 
 By default,
 [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md)
