@@ -95,10 +95,13 @@ The **configuration** sheet keeps settings alongside your data:
 |:---|:---|:---|
 | `iter` | 2000 | Total iterations per MCMC chain |
 | `chains` | 4 | Number of parallel chains |
-| `seed` | blank | Optional random seed for exact reproducibility |
-| `warmup` | blank | Optional warmup/burn-in iterations per chain |
 
-Advanced sampler options from [`flexstanr::stan_options()`](https://CRAN.R-project.org/package=flexstanr) (e.g., `cores`, `thin`, `adapt_delta`, `max_treedepth`) and model options from [`imuGAP::imugap_options()`](https://CRAN.R-project.org/package=imuGAP) (e.g., `df`) can also be added as rows here.
+Add `seed` for reproducibility or `warmup` to set warmup iterations when needed.
+Other sampler options from
+[`flexstanr::stan_options()`](https://CRAN.R-project.org/package=flexstanr)
+(e.g., `cores`, `thin`, `adapt_delta`, `max_treedepth`) and model options from
+[`imuGAP::imugap_options()`](https://CRAN.R-project.org/package=imuGAP)
+(e.g., `df`) can also be added as rows here.
 
 ## 3. Validate before you fit
 
@@ -173,4 +176,3 @@ Open your workbook and switch to the **results** sheet. Each row gives the cover
 | `ci_level` | The credible interval level (`0.95`) |
 
 Your original sheets (*instructions*, *observations*, *locations*, *target*, and *configuration*) remain untouched, keeping your input data, analysis settings, and results together in a single self-contained workbook.
-

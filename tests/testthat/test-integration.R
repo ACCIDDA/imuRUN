@@ -31,7 +31,7 @@ test_that("the clean example validates and the corrupt copy is rejected", {
   expect_no_error(imuRUN::validate_inputs(imuRUN::read_inputs(example_dir())))
   expect_error(
     imuRUN::validate_inputs(imuRUN::read_inputs(corrupt_wb())),
-    "sample_n"
+    "'Sampled'"
   )
 })
 
@@ -86,6 +86,9 @@ test_that("the example fits end-to-end (gated)", {
   obs <- imuGAP::canonicalize_observations(inputs$obs)
   locs <- imuGAP::canonicalize_locations(inputs$locs)
   pops_raw <- imuRUN:::build_populations(inputs$obs)
+  # imuGAP numbers cohorts from 1, as run_fit() does.
+  earliest <- min(as.integer(pops_raw$cohort))
+  pops_raw$cohort <- pops_raw$cohort - earliest + 1L
   max_cohort <- max(as.integer(pops_raw$cohort))
   max_age <- max(as.integer(pops_raw$age))
   pops <- imuGAP::canonicalize_populations(
@@ -115,10 +118,12 @@ test_that("the example fits end-to-end (gated)", {
       inputs$target,
       loc_ids = as.character(inputs$locs$loc_id),
       max_cohort = n_cohort,
-      max_age = fit$data$n_yr
+      max_age = fit$data$n_yr,
+      earliest = earliest
     )
   )
   exp <- imuRUN::expand_targets(inputs$target, default_dose = fit$data$n_doses)
+  exp$cohort <- exp$cohort - earliest + 1L
   expect_true(all(exp$cohort >= 1L & exp$cohort <= n_cohort))
 
   pred <- stats::predict(fit, target = exp)
@@ -146,9 +151,9 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
   wb <- openxlsx2::wb_load(input)
   wb$add_data(
     "configuration",
-    data.frame(Value = c(100L, 1L, 1L, NA_integer_)),
-    start_col = 2,
-    start_row = 2,
+    data.frame(Setting = c("iter", "chains", "seed"), Value = c(100L, 1L, 1L)),
+    start_col = 1L,
+    start_row = 2L,
     col_names = FALSE
   )
   openxlsx2::wb_save(wb, input, overwrite = TRUE)
@@ -177,7 +182,7 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
 
   # The workbook carries the request alongside the answer.
   expect_identical(
-    openxlsx2::wb_load(wb_path)$get_sheet_names(),
+    unname(openxlsx2::wb_load(wb_path)$get_sheet_names()),
     c(
       "instructions",
       "configuration",
@@ -203,6 +208,7 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
     ) %in%
       names(res)
   ))
+  expect_false("n_draws" %in% names(res))
   expect_true(all(res$est_median >= 0 & res$est_median <= 1))
   expect_true(all(res$est_lower <= res$est_median))
   expect_true(all(res$est_median <= res$est_upper))

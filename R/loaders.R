@@ -177,9 +177,13 @@ canonicalize_headers <- function(df, sheet = NULL) {
 #' `age_min`/`age_max` is authoritative, and any `age` column alongside them is
 #' an ordinary ignored extra column.
 #'
+#' Likewise a single age may be given as `age_min` alone: a blank (or absent)
+#' `age_max` takes that row's `age_min`.
+#'
 #' @param obs a data.frame of observations.
 #'
-#' @return `obs`, with `age_min`/`age_max` present whenever `age` was.
+#' @return `obs`, with `age_min`/`age_max` present whenever `age` was, and
+#'   `age_max` filled from `age_min` wherever it was blank.
 #'
 #' @keywords internal
 expand_obs_age <- function(obs) {
@@ -187,6 +191,14 @@ expand_obs_age <- function(obs) {
   if ("age" %in% nm && !any(c("age_min", "age_max") %in% nm)) {
     obs$age_min <- obs$age
     obs$age_max <- obs$age
+  }
+  if ("age_min" %in% names(obs)) {
+    if (!"age_max" %in% names(obs)) {
+      obs$age_max <- obs$age_min
+    } else {
+      blank <- is.na(obs$age_max) | !nzchar(trimws(as.character(obs$age_max)))
+      obs$age_max[blank] <- obs$age_min[blank]
+    }
   }
   obs
 }

@@ -17,7 +17,8 @@
 #'   is not a user column), `loc_id` (must exist in locations),
 #'   `year` (positive integer observation year), `age_min` and `age_max`
 #'   (positive integers giving the inclusive age span the count was drawn
-#'   over, with `age_min <= age_max`), `dose` (integer in `1:max_dose`),
+#'   over, with `age_min <= age_max`; a blank `age_max` means the single age
+#'   `age_min`), `dose` (integer in `1:max_dose`),
 #'   `positive` (non-negative integer count of positive results), `sample_n`
 #'   (positive integer sample size, with `positive <= sample_n`). Optional:
 #'   `censored` (`NA` or `1`).
@@ -76,6 +77,7 @@ IMURUN_SHEETS <- c("observations", "locations")
 #' A row that names only a `loc_id`, leaving `year`/`age_low`/`age_high`/`dose`
 #' blank, inherits those values from the row above (last-observation-carried-
 #' forward), so a run of locations sharing one request need not repeat them.
+#' A blank `dose` on a row that gives its own year or ages means the final dose.
 #'
 #' @format A character vector of the required target columns, in sheet order.
 #'
@@ -131,6 +133,66 @@ IMURUN_HEADER_ALIASES <- c(
   "Oldest age" = "age_high",
   "Label" = "target_id"
 )
+
+#' Human-readable column headers, per sheet
+#'
+#' @description The friendly header each canonical column carries in the
+#' shipped template and example workbooks. Validation messages name columns by
+#' these headers, so a problem points at the column the user actually sees.
+#' `data-raw/make_workbooks.R` writes the workbooks from this map.
+#'
+#' @keywords internal
+IMURUN_FRIENDLY_HEADERS <- list(
+  observations = c(
+    loc_id = "Location",
+    year = "Observation Year",
+    age_min = "Youngest age",
+    age_max = "Oldest age",
+    dose = "Dose",
+    positive = "Vaccinated",
+    sample_n = "Sampled",
+    censored = "Censored"
+  ),
+  locations = c(loc_id = "Location", parent_id = "Parent location"),
+  target = c(
+    loc_id = "Location",
+    year = "Target Year",
+    age_low = "Youngest age",
+    age_high = "Oldest age",
+    dose = "Dose",
+    target_id = "Label"
+  )
+)
+
+#' Name a column the way its sheet labels it
+#'
+#' @param sheet character; the sheet the column belongs to.
+#' @param col character vector of canonical column names.
+#'
+#' @return `col`, with each name that has a friendly header replaced by it.
+#'
+#' @keywords internal
+friendly_col <- function(sheet, col) {
+  map <- IMURUN_FRIENDLY_HEADERS[[sheet]]
+  hit <- col %in% names(map)
+  col[hit] <- unname(map[col[hit]])
+  col
+}
+
+#' Format data-row indices as spreadsheet row numbers
+#'
+#' @description Every input sheet has a header row, so data row `i` is
+#' spreadsheet row `i + 1` (and line `i + 1` of a CSV file). Lists at most the
+#' first 20.
+#'
+#' @param idx integer vector of data-row indices.
+#'
+#' @return character scalar, e.g. `"2, 5, 9"`.
+#'
+#' @keywords internal
+sheet_rows <- function(idx) {
+  paste(utils::head(as.integer(idx) + 1L, 20L), collapse = ", ")
+}
 
 #' Sheet-specific column-header aliases
 #'

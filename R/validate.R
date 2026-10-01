@@ -20,11 +20,14 @@ check_sheet_columns <- function(df, sheet, required = IMURUN_SCHEMA[[sheet]]) {
   if (length(missing) == 0) {
     return(character(0))
   }
+  quoted <- function(x) {
+    paste0("'", friendly_col(sheet, x), "'", collapse = ", ")
+  }
   sprintf(
     "[%s] missing required column(s): %s (found: %s)",
     sheet,
-    paste(missing, collapse = ", "),
-    if (length(names(df))) paste(names(df), collapse = ", ") else "<none>"
+    quoted(missing),
+    if (length(names(df))) quoted(names(df)) else "<none>"
   )
 }
 
@@ -55,8 +58,8 @@ check_numeric_column <- function(df, sheet, col) {
   sprintf(
     "[%s] column '%s' must be numeric; non-numeric value(s) at row(s): %s",
     sheet,
-    col,
-    paste(utils::head(bad_rows, 20L), collapse = ", ")
+    friendly_col(sheet, col),
+    sheet_rows(bad_rows)
   )
 }
 
@@ -81,8 +84,8 @@ check_whole_number_column <- function(df, sheet, col) {
   sprintf(
     "[%s] column '%s' must contain whole numbers; fractional value(s) at row(s): %s",
     sheet,
-    col,
-    paste(utils::head(bad_rows, 20L), collapse = ", ")
+    friendly_col(sheet, col),
+    sheet_rows(bad_rows)
   )
 }
 
@@ -102,7 +105,20 @@ MAX_EXPANDED_POPULATION_ROWS <- 1000000
 #'
 #' @keywords internal
 friendly_canonical_error <- function(sheet, e) {
-  sprintf("[%s] %s", sheet, conditionMessage(e))
+  # imuGAP names its internal tables (`populations`, `dt`, ...); the user only
+  # knows the sheet, which the prefix already gives.
+  msg <- gsub("`[A-Za-z_.]+` ", "", conditionMessage(e))
+  # ... and its columns by their canonical names; use the sheet's headers.
+  map <- IMURUN_FRIENDLY_HEADERS[[sheet]]
+  for (col in names(map)) {
+    msg <- gsub(
+      sprintf("'%s'", col),
+      sprintf("'%s'", map[[col]]),
+      msg,
+      fixed = TRUE
+    )
+  }
+  sprintf("[%s] %s", sheet, msg)
 }
 
 #' Construct an imuGAP populations frame from an observations frame
@@ -217,10 +233,15 @@ build_populations <- function(obs) {
 #'   \item an inverted age span (`age_min > age_max`);
 #'   \item age spans outside an explicit `max_age` or too large to expand
 #'     safely;
+#'   \item blank `year` or `age_min` cells;
 #'   \item `loc_id` values in `observations` but absent from `locations`;
 #'   \item `dose`, `year`, and `age` values out of range;
 #'   \item structural location problems (duplicate or missing root, cycles).
 #' }
+#'
+#' Columns are named by their spreadsheet headers (e.g. *Sampled*). Where imurun
+#' reports rows, they are spreadsheet row numbers, counting the header as row 1;
+#' problems found by the 'imuGAP' canonicalizers carry no row.
 #'
 #' The imuGAP populations are constructed from the observations
 #' ([build_populations()]); there is no populations sheet.
@@ -306,8 +327,8 @@ validate_inputs <- function(
       problems <- c(
         problems,
         sprintf(
-          "[observations] age_min must be <= age_max at row(s): %s",
-          paste(utils::head(inverted, 20L), collapse = ", ")
+          "[observations] 'Youngest age' must be <= 'Oldest age' at row(s): %s",
+          sheet_rows(inverted)
         )
       )
     }
@@ -324,9 +345,9 @@ validate_inputs <- function(
         problems <- c(
           problems,
           sprintf(
-            "[observations] age span out of range [1, %d] at row(s): %s",
+            "[observations] ages out of range [1, %d] at row(s): %s",
             as.integer(max_age),
-            paste(utils::head(outside, 20L), collapse = ", ")
+            sheet_rows(outside)
           )
         )
       }
@@ -337,8 +358,8 @@ validate_inputs <- function(
         problems <- c(
           problems,
           sprintf(
-            "[observations] age span must start at 1 or greater at row(s): %s",
-            paste(utils::head(nonpositive, 20L), collapse = ", ")
+            "[observations] 'Youngest age' must be 1 or greater at row(s): %s",
+            sheet_rows(nonpositive)
           )
         )
       }
@@ -354,7 +375,7 @@ validate_inputs <- function(
         sprintf(
           paste0(
             "[observations] age spans expand to more than %d population rows; ",
-            "check age_min and age_max"
+            "check 'Youngest age' and 'Oldest age'"
           ),
           MAX_EXPANDED_POPULATION_ROWS
         )
@@ -362,7 +383,25 @@ validate_inputs <- function(
     }
   }
 
-  # If columns or types are wrong, stop here: the canonicalizers below would
+  # 3b. imurun turns `year` and the age span into imuGAP's cohorts and ages, so
+  #     imuGAP never sees these columns and cannot name a blank one.
+  for (col in intersect(c("year", "age_min"), names(obs))) {
+    blank <- which(
+      is.na(obs[[col]]) | !nzchar(trimws(as.character(obs[[col]])))
+    )
+    if (length(blank) > 0) {
+      problems <- c(
+        problems,
+        sprintf(
+          "[observations] '%s' is blank at row(s): %s",
+          friendly_col("observations", col),
+          sheet_rows(blank)
+        )
+      )
+    }
+  }
+
+  # If columns or values are wrong, stop here: the canonicalizers below would
   # raise confusing low-level errors on top of what we already know.
   if (length(problems) > 0) {
     stop(format_validation_error(problems), call. = FALSE)
@@ -400,13 +439,10 @@ validate_inputs <- function(
       problems,
       sprintf(
         paste0(
-          "[observations] year must be greater than oldest age so derived ",
-          "cohort is positive (row(s): %s)"
+          "[observations] 'Observation Year' must be greater than 'Oldest age' ",
+          "so the birth cohort is positive (row(s): %s)"
         ),
-        paste(
-          utils::head(unique(pops_raw$obs_id[bad_cohorts]), 20L),
-          collapse = ", "
-        )
+        sheet_rows(unique(match(pops_raw$obs_id[bad_cohorts], obs$obs_id)))
       )
     )
   }
