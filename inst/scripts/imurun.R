@@ -7,8 +7,8 @@
 # validation, and fitting lives in the exported package functions so it can be
 # tested and reused from R directly.
 #
-# Usage: imurun <input_dir> [output_dir]
-#        imurun -h <input_dir>          (validate only, no model fitting)
+# Usage: imurun <workbook.xlsx> [output_dir]
+#        imurun -h <workbook.xlsx>      (validate only, no model fitting)
 #        imurun -h | --help             (show this message)
 #
 # Exit codes: 0=success, 1=validation, 2=model (reserved), 3=I/O.
