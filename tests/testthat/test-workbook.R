@@ -91,39 +91,6 @@ test_that("read_workbook errors when the file does not exist", {
   )
 })
 
-# --- directory mode ----------------------------------------------------------
-
-test_that("read_inputs reads a CSV directory", {
-  dir <- tempfile("test_dir_mode_")
-  dir.create(dir)
-  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-  write.csv(
-    data.frame(
-      obs_id = 1,
-      loc_id = 1,
-      year = 2020,
-      age = 1,
-      dose = 1,
-      positive = 1,
-      sample_n = 10
-    ),
-    file.path(dir, "observations.csv"),
-    row.names = FALSE
-  )
-  write.csv(
-    data.frame(loc_id = 1, parent_id = NA),
-    file.path(dir, "locations.csv"),
-    row.names = FALSE
-  )
-  write.csv(
-    data.frame(loc_id = 1, year = 2020, age_low = 1, age_high = 1),
-    file.path(dir, "target.csv"),
-    row.names = FALSE
-  )
-  inputs <- imuRUN::read_inputs(dir)
-  expect_named(inputs, c("obs", "locs", "target"))
-})
-
 # --- friendly headers, auto obs_id, instructions-tab tolerance ---------------
 
 test_that("read_inputs accepts human-readable headers and auto-assigns obs_id", {

@@ -1,6 +1,11 @@
 # imuRUN 0.1.0
 
 * Initial release.
+* Removed the folder input mode: `run_fit()` and `read_inputs()` no longer
+  accept a directory of `observations`/`locations`/`target` CSV or RDS files.
+  A `.xlsx` workbook (or an in-memory inputs list) is now the only input. The
+  exported helpers `load_by_ext()`, `find_input_file()`, `check_all_inputs()`,
+  and `read_directory()` are gone. CSV and RDS *outputs* are unchanged.
 * Exported the core CLI engine as ordinary R functions: `run_fit()`,
   `read_inputs()`, `load_by_ext()`, `find_input_file()`, and
   `check_all_inputs()`.
