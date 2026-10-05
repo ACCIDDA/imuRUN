@@ -77,7 +77,7 @@
 </h2>
 <ul>
 <li>
-<strong>Two input modes.</strong> Use a single <code>.xlsx</code> workbook or a directory containing <code>observations</code>, <code>locations</code>, and <code>target</code> files (CSV or RDS). imuRUN derives imuGAP’s population rows from each observation’s location, reference cohort, age span, and dose.</li>
+<strong>One workbook in.</strong> Describe the analysis in a single <code>.xlsx</code> workbook with <code>observations</code>, <code>locations</code>, and <code>target</code> sheets. imuRUN derives imuGAP’s population rows from each observation’s location, reference cohort, age span, and dose.</li>
 <li>
 <strong>Bundled template and example workbooks.</strong> <code><a href="reference/imurun_init.html">imurun_init()</a></code> writes a blank template with instructions and sampler configuration; <code><a href="reference/imurun_copy_example.html">imurun_copy_example()</a></code> writes a complete example derived from imuGAP’s <code>*_sim</code> data.</li>
 <li>
@@ -110,7 +110,7 @@
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p><code><a href="reference/run_fit.html">run_fit()</a></code> accepts a workbook path (or a directory of CSV/RDS inputs). The generated workbook’s <code>configuration</code> sheet starts with <code>iter</code> and <code>chains</code>. Add <code>seed</code> or <code>warmup</code> as rows when needed; automation flags may override them.</p>
+<p><code><a href="reference/run_fit.html">run_fit()</a></code> accepts a workbook path. The generated workbook’s <code>configuration</code> sheet starts with <code>iter</code> and <code>chains</code>. Add <code>seed</code> or <code>warmup</code> as rows when needed; automation flags may override them.</p>
 <div class="section level3">
 <h3 id="walkthrough">Walkthrough<a class="anchor" aria-label="anchor" href="#walkthrough"></a>
 </h3>
@@ -135,7 +135,6 @@
 <p>imuRUN adds a <strong><code>results</code></strong> sheet to that workbook, replacing any from an earlier run (pass <code>overwrite = FALSE</code> to be asked first). Add <code>result = c("xlsx", "csv", "rds")</code> to also write a results CSV and the fitted model. The <code>imurun</code> shell command instead refuses to replace existing results unless <code>--overwrite</code> is supplied.</p>
 </li>
 </ol>
-<p>The same steps work with a directory of CSV/RDS files in place of the workbook, for example <code>run_fit("data")</code> where <code>data/</code> contains <code>observations.csv</code>, <code>locations.csv</code>, and <code>target.csv</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="from-r">From R<a class="anchor" aria-label="anchor" href="#from-r"></a>

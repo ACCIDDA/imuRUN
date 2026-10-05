@@ -10,10 +10,10 @@ workbook.
 
 ## Features
 
-- **Two input modes.** Use a single `.xlsx` workbook or a directory
-  containing `observations`, `locations`, and `target` files (CSV or
-  RDS). imuRUN derives imuGAP’s population rows from each observation’s
-  location, reference cohort, age span, and dose.
+- **One workbook in.** Describe the analysis in a single `.xlsx`
+  workbook with `observations`, `locations`, and `target` sheets. imuRUN
+  derives imuGAP’s population rows from each observation’s location,
+  reference cohort, age span, and dose.
 - **Bundled template and example workbooks.**
   [`imurun_init()`](https://accidda.github.io/imuRUN/reference/imurun_init.md)
   writes a blank template with instructions and sampler configuration;
@@ -79,10 +79,9 @@ invoke the engine from R with `imuRUN::run_fit(...)`.
 ## Usage
 
 [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md)
-accepts a workbook path (or a directory of CSV/RDS inputs). The
-generated workbook’s `configuration` sheet starts with `iter` and
-`chains`. Add `seed` or `warmup` as rows when needed; automation flags
-may override them.
+accepts a workbook path. The generated workbook’s `configuration` sheet
+starts with `iter` and `chains`. Add `seed` or `warmup` as rows when
+needed; automation flags may override them.
 
 ### Walkthrough
 
@@ -127,10 +126,6 @@ may override them.
     and the fitted model. The `imurun` shell command instead refuses to
     replace existing results unless `--overwrite` is supplied.
 
-The same steps work with a directory of CSV/RDS files in place of the
-workbook, for example `run_fit("data")` where `data/` contains
-`observations.csv`, `locations.csv`, and `target.csv`.
-
 ### From R
 
 Every step is also available as an exported function, so you can drive
@@ -173,14 +168,10 @@ model-fitting package.
   : Canonical imuGAP input schema
 - [`IMURUN_TARGET_SCHEMA`](https://accidda.github.io/imuRUN/reference/IMURUN_TARGET_SCHEMA.md)
   : Target-request sheet schema
-- [`check_all_inputs()`](https://accidda.github.io/imuRUN/reference/check_all_inputs.md)
-  : Check that all required inputs are present
 - [`cli_run_fit()`](https://accidda.github.io/imuRUN/reference/cli_run_fit.md)
   : Command-line interface dispatcher for imurun
 - [`expand_targets()`](https://accidda.github.io/imuRUN/reference/expand_targets.md)
   : Expand a compact target-request sheet into explicit target rows
-- [`find_input_file()`](https://accidda.github.io/imuRUN/reference/find_input_file.md)
-  : Find and read a named input from a directory
 - [`imurun_copy_example()`](https://accidda.github.io/imuRUN/reference/imurun_copy_example.md)
   : Copy the bundled example workbook into a target directory
 - [`imurun_example()`](https://accidda.github.io/imuRUN/reference/imurun_example.md)
@@ -191,14 +182,10 @@ model-fitting package.
   : Locate the bundled blank template workbook
 - [`install_cli()`](https://accidda.github.io/imuRUN/reference/install_cli.md)
   : Install imurun CLI to PATH
-- [`load_by_ext()`](https://accidda.github.io/imuRUN/reference/load_by_ext.md)
-  : Read a data file by its extension
 - [`parse_output_options()`](https://accidda.github.io/imuRUN/reference/parse_output_options.md)
   : Pull output-path options out of the command-line arguments
-- [`read_directory()`](https://accidda.github.io/imuRUN/reference/read_directory.md)
-  : Read imuGAP inputs from a directory of loose files
 - [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md)
-  : Read all imuGAP inputs from a directory or workbook
+  : Read all imuGAP inputs from a workbook or list
 - [`read_workbook()`](https://accidda.github.io/imuRUN/reference/read_workbook.md)
   : Read all required sheets from an .xlsx workbook
 - [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md) :

@@ -1,11 +1,9 @@
-# Read all imuGAP inputs from a directory or workbook
+# Read all imuGAP inputs from a workbook or list
 
-Convenience entry point that loads the raw (un-canonicalized) inputs
-regardless of storage format. Dispatches to
-[`read_workbook()`](https://accidda.github.io/imuRUN/reference/read_workbook.md)
-when `path` is an `.xlsx` file, and
-[`read_directory()`](https://accidda.github.io/imuRUN/reference/read_directory.md)
-when `path` is a directory.
+Convenience entry point that loads the raw (un-canonicalized) inputs.
+Reads an `.xlsx` workbook with
+[`read_workbook()`](https://accidda.github.io/imuRUN/reference/read_workbook.md),
+or normalizes an in-memory list of data frames.
 
 ## Usage
 
@@ -17,7 +15,8 @@ read_inputs(path)
 
 - path:
 
-  character; path to a directory or a `.xlsx` file.
+  character; path to a `.xlsx` workbook, or a list with `obs` and `locs`
+  (and optionally `target` and `config`) data frames.
 
 ## Value
 

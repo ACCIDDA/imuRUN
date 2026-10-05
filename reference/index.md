@@ -6,14 +6,10 @@
   : Canonical imuGAP input schema
 - [`IMURUN_TARGET_SCHEMA`](https://accidda.github.io/imuRUN/reference/IMURUN_TARGET_SCHEMA.md)
   : Target-request sheet schema
-- [`check_all_inputs()`](https://accidda.github.io/imuRUN/reference/check_all_inputs.md)
-  : Check that all required inputs are present
 - [`cli_run_fit()`](https://accidda.github.io/imuRUN/reference/cli_run_fit.md)
   : Command-line interface dispatcher for imurun
 - [`expand_targets()`](https://accidda.github.io/imuRUN/reference/expand_targets.md)
   : Expand a compact target-request sheet into explicit target rows
-- [`find_input_file()`](https://accidda.github.io/imuRUN/reference/find_input_file.md)
-  : Find and read a named input from a directory
 - [`imurun_copy_example()`](https://accidda.github.io/imuRUN/reference/imurun_copy_example.md)
   : Copy the bundled example workbook into a target directory
 - [`imurun_example()`](https://accidda.github.io/imuRUN/reference/imurun_example.md)
@@ -24,14 +20,10 @@
   : Locate the bundled blank template workbook
 - [`install_cli()`](https://accidda.github.io/imuRUN/reference/install_cli.md)
   : Install imurun CLI to PATH
-- [`load_by_ext()`](https://accidda.github.io/imuRUN/reference/load_by_ext.md)
-  : Read a data file by its extension
 - [`parse_output_options()`](https://accidda.github.io/imuRUN/reference/parse_output_options.md)
   : Pull output-path options out of the command-line arguments
-- [`read_directory()`](https://accidda.github.io/imuRUN/reference/read_directory.md)
-  : Read imuGAP inputs from a directory of loose files
 - [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md)
-  : Read all imuGAP inputs from a directory or workbook
+  : Read all imuGAP inputs from a workbook or list
 - [`read_workbook()`](https://accidda.github.io/imuRUN/reference/read_workbook.md)
   : Read all required sheets from an .xlsx workbook
 - [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md) :

@@ -10,10 +10,10 @@ workbook.
 
 ## Features
 
-- **Two input modes.** Use a single `.xlsx` workbook or a directory
-  containing `observations`, `locations`, and `target` files (CSV or
-  RDS). imuRUN derives imuGAP’s population rows from each observation’s
-  location, reference cohort, age span, and dose.
+- **One workbook in.** Describe the analysis in a single `.xlsx`
+  workbook with `observations`, `locations`, and `target` sheets. imuRUN
+  derives imuGAP’s population rows from each observation’s location,
+  reference cohort, age span, and dose.
 - **Bundled template and example workbooks.**
   [`imurun_init()`](https://accidda.github.io/imuRUN/reference/imurun_init.md)
   writes a blank template with instructions and sampler configuration;
@@ -79,10 +79,9 @@ invoke the engine from R with `imuRUN::run_fit(...)`.
 ## Usage
 
 [`run_fit()`](https://accidda.github.io/imuRUN/reference/run_fit.md)
-accepts a workbook path (or a directory of CSV/RDS inputs). The
-generated workbook’s `configuration` sheet starts with `iter` and
-`chains`. Add `seed` or `warmup` as rows when needed; automation flags
-may override them.
+accepts a workbook path. The generated workbook’s `configuration` sheet
+starts with `iter` and `chains`. Add `seed` or `warmup` as rows when
+needed; automation flags may override them.
 
 ### Walkthrough
 
@@ -126,10 +125,6 @@ may override them.
     Add `result = c("xlsx", "csv", "rds")` to also write a results CSV
     and the fitted model. The `imurun` shell command instead refuses to
     replace existing results unless `--overwrite` is supplied.
-
-The same steps work with a directory of CSV/RDS files in place of the
-workbook, for example `run_fit("data")` where `data/` contains
-`observations.csv`, `locations.csv`, and `target.csv`.
 
 ### From R
 

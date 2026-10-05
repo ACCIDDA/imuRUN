@@ -1,9 +1,9 @@
 # Run the imurun fitting pipeline
 
-The spreadsheet-first fitting entry point. Given a workbook or directory
-of inputs, it validates the observations, locations, target requests,
-and configuration; fits with `imuGAP::sampling()`; and outputs requested
-deliverables (`results` sheet in workbook, results CSV, and/or
+The spreadsheet-first fitting entry point. Given a workbook (or an
+in-memory inputs list), it validates the observations, locations, target
+requests, and configuration; fits with `imuGAP::sampling()`; and outputs
+requested deliverables (`results` sheet in workbook, results CSV, and/or
 `fit.rds`).
 
 ## Usage
@@ -23,14 +23,14 @@ run_fit(
 
 - input:
 
-  character path to a `.xlsx` workbook or input directory, or a
-  pre-loaded `inputs` list (from
+  character path to a `.xlsx` workbook, or a pre-loaded `inputs` list
+  (from
   [`read_inputs()`](https://accidda.github.io/imuRUN/reference/read_inputs.md)).
 
 - output_dir:
 
   character path to output directory. Defaults to the directory of
-  `input` (for workbooks) or `input` itself (for directory inputs).
+  `input` (for workbooks) or the working directory (for list inputs).
 
 - dryrun:
 

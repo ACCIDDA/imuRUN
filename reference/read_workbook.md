@@ -1,10 +1,8 @@
 # Read all required sheets from an .xlsx workbook
 
 Reads the `observations` and `locations` sheets from a single Excel
-workbook into data frames. Reports every missing sheet at once
-(mirroring
-[`check_all_inputs()`](https://accidda.github.io/imuRUN/reference/check_all_inputs.md)
-semantics) rather than failing on the first.
+workbook into data frames. Reports every missing sheet at once rather
+than failing on the first.
 
 Sheet names are matched case-insensitively against the required
 [IMURUN_SHEETS](https://accidda.github.io/imuRUN/reference/IMURUN_SHEETS.md).

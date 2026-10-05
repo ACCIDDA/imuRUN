@@ -5,7 +5,7 @@ worksheets, formatting, validation, and notes are preserved and a
 `results` sheet is added. `path` may be the same as `source` (the
 default fit workflow, which updates the supplied workbook) or a
 different path. Without `source`, a new workbook is constructed from
-`inputs` for directory inputs.
+`inputs` (as for list inputs).
 
 ## Usage
 
