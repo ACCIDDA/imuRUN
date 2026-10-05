@@ -54,6 +54,21 @@ test_that("expand_targets honours an explicit dose and a target_id label", {
   expect_equal(ex$target_id, "demo")
 })
 
+test_that("expand_targets uses factor labels for numeric target fields", {
+  tg <- data.frame(
+    loc_id = "A",
+    year = factor("2024"),
+    age_low = factor("2"),
+    age_high = factor("3"),
+    dose = factor("2")
+  )
+  ex <- expand_targets(tg, default_dose = 1L)
+
+  expect_equal(ex$age, 2:3)
+  expect_equal(ex$cohort, 2024L - ex$age)
+  expect_true(all(ex$dose == 2L))
+})
+
 test_that("expand_targets de-duplicates identical target identities across rows", {
   tg <- data.frame(
     loc_id = c("A", "A"),

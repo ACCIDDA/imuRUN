@@ -122,6 +122,7 @@ expand_targets <- function(targets, default_dose) {
     if (length(locs) == 0) {
       next
     }
+    # Convert numeric target fields via factor labels, not integer level codes.
     ages <- seq.int(
       as.integer(as.character(targets$age_low[i])),
       as.integer(as.character(targets$age_high[i]))

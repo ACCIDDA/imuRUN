@@ -8,7 +8,6 @@
 # --- Golden: read the shared example workbook --------------------------------
 
 test_that("the example workbook reads data and sampler configuration", {
-  skip_if_no_readxl()
   inputs <- imuRUN::read_inputs(example_wb())
   expect_named(inputs, c("obs", "locs", "target", "config"))
   expect_gt(nrow(inputs$obs), 0)
@@ -19,7 +18,6 @@ test_that("the example workbook reads data and sampler configuration", {
 # --- Golden: validation passes clean, fails on the corrupt copy ---------------
 
 test_that("the clean example validates and the corrupt copy is rejected", {
-  skip_if_no_readxl()
   expect_no_error(imuRUN::validate_inputs(imuRUN::read_inputs(example_wb())))
   expect_error(
     imuRUN::validate_inputs(imuRUN::read_inputs(corrupt_wb())),
@@ -67,7 +65,6 @@ test_that("birth cohorts are rebased and restored by target identity", {
 })
 
 test_that("workbook year errors fail during a dry run", {
-  skip_if_no_readxl()
   out <- withr::local_tempdir()
   path <- file.path(out, "example.xlsx")
   expect_true(file.copy(example_wb(), path))
@@ -120,7 +117,6 @@ test_that("the example fits end-to-end (gated)", {
   if (!nzchar(Sys.getenv("IMURUN_RUN_INTEGRATION"))) {
     skip("set IMURUN_RUN_INTEGRATION=1 to run the end-to-end fit")
   }
-  skip_if_no_readxl()
   inputs <- imuRUN::read_inputs(example_wb())
   obs <- imuGAP::canonicalize_observations(inputs$obs)
   locs <- imuGAP::canonicalize_locations(inputs$locs)
@@ -182,7 +178,6 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
   if (!nzchar(Sys.getenv("IMURUN_RUN_INTEGRATION"))) {
     skip("set IMURUN_RUN_INTEGRATION=1 to run the end-to-end fit")
   }
-  skip_if_no_readxl()
   out <- withr::local_tempdir()
   input <- file.path(out, "imurun_example.xlsx")
   expect_true(file.copy(example_wb(), input))
