@@ -37,10 +37,10 @@ Invisibly, the resolved path to the copied workbook.
 ``` r
 dir <- tempfile("imurun_init_")
 imurun_init(dir)
-#> Created: /tmp/RtmpAzY3zO/imurun_init_1a85fe2fbf1/imurun_template.xlsx
+#> Created: /tmp/Rtmp4eG4gN/imurun_init_19df4bf1adf2/imurun_template.xlsx
 #> Next steps:
 #>   1. Open the workbook and fill the observations and locations
 #>      sheets (see the instructions sheet).
-#>   2. Validate it:  imuRUN::run_fit("/tmp/RtmpAzY3zO/imurun_init_1a85fe2fbf1/imurun_template.xlsx", dryrun = TRUE)
-#>   3. Fit it:       imuRUN::run_fit("/tmp/RtmpAzY3zO/imurun_init_1a85fe2fbf1/imurun_template.xlsx")
+#>   2. Validate it:  imuRUN::run_fit("/tmp/Rtmp4eG4gN/imurun_init_19df4bf1adf2/imurun_template.xlsx", dryrun = TRUE)
+#>   3. Fit it:       imuRUN::run_fit("/tmp/Rtmp4eG4gN/imurun_init_19df4bf1adf2/imurun_template.xlsx")
 ```
