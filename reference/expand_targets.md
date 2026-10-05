@@ -56,18 +56,18 @@ the posterior draws can be grouped unambiguously by target.
 ``` r
 tg <- data.frame(
   loc_id = "Bunting School; Cardinal Academy",
-  year = 20, age_low = 1, age_high = 5
+  year = 2020, age_low = 1, age_high = 5
 )
 expand_targets(tg, default_dose = 2L)
 #>    obs_id target_id           loc_id cohort age dose weight
-#> 1       1      <NA>   Bunting School     19   1    2      1
-#> 2       2      <NA> Cardinal Academy     19   1    2      1
-#> 3       3      <NA>   Bunting School     18   2    2      1
-#> 4       4      <NA> Cardinal Academy     18   2    2      1
-#> 5       5      <NA>   Bunting School     17   3    2      1
-#> 6       6      <NA> Cardinal Academy     17   3    2      1
-#> 7       7      <NA>   Bunting School     16   4    2      1
-#> 8       8      <NA> Cardinal Academy     16   4    2      1
-#> 9       9      <NA>   Bunting School     15   5    2      1
-#> 10     10      <NA> Cardinal Academy     15   5    2      1
+#> 1       1      <NA>   Bunting School   2019   1    2      1
+#> 2       2      <NA> Cardinal Academy   2019   1    2      1
+#> 3       3      <NA>   Bunting School   2018   2    2      1
+#> 4       4      <NA> Cardinal Academy   2018   2    2      1
+#> 5       5      <NA>   Bunting School   2017   3    2      1
+#> 6       6      <NA> Cardinal Academy   2017   3    2      1
+#> 7       7      <NA>   Bunting School   2016   4    2      1
+#> 8       8      <NA> Cardinal Academy   2016   4    2      1
+#> 9       9      <NA>   Bunting School   2015   5    2      1
+#> 10     10      <NA> Cardinal Academy   2015   5    2      1
 ```

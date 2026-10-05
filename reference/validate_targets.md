@@ -4,7 +4,8 @@ Checks that `targets` matches
 [IMURUN_TARGET_SCHEMA](https://accidda.github.io/imuRUN/reference/IMURUN_TARGET_SCHEMA.md),
 that every named location exists in `loc_ids`, that
 `age_low <= age_high`, and that the requested ages and birth cohorts
-fall within `max_age` and the observations'.
+fall within `max_age` and the observations'. Target years must be whole
+calendar years from 1000 through 9999.
 
 ## Usage
 
@@ -61,6 +62,7 @@ found otherwise.
 ## Examples
 
 ``` r
-tg <- data.frame(loc_id = "A;B", year = 12, age_low = 5, age_high = 7)
-validate_targets(tg, loc_ids = c("A", "B"), max_cohort = 15, max_age = 8)
+tg <- data.frame(loc_id = "A;B", year = 2025, age_low = 5, age_high = 7)
+validate_targets(tg, loc_ids = c("A", "B"), max_cohort = 15,
+                 max_age = 8, earliest = 2010)
 ```

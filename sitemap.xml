@@ -27,6 +27,7 @@
 <url><loc>https://accidda.github.io/imuRUN/reference/assert_results_destination.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/build_populations.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/canonicalize_headers.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/check_calendar_year_column.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/check_numeric_column.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/check_sheet_columns.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/check_whole_number_column.html</loc></url>
@@ -46,6 +47,7 @@
 <url><loc>https://accidda.github.io/imuRUN/reference/imurun_template.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/index.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/install_cli.html</loc></url>
+<url><loc>https://accidda.github.io/imuRUN/reference/invalid_calendar_year_rows.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/normalize_inputs.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/parse_dose_schedule.html</loc></url>
 <url><loc>https://accidda.github.io/imuRUN/reference/parse_loc_list.html</loc></url>

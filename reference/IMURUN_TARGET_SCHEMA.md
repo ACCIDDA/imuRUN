@@ -2,8 +2,9 @@
 
 Required columns of the (required) `target` sheet that drives the
 by-target predictions. A target-request row names one or more locations
-(`loc_id`, a `;`-separated list), a target year (`year`), and an
-inclusive age span (`age_low`..`age_high`).
+(`loc_id`, a `;`-separated list), a target year (`year`, a whole
+calendar year from 1000 through 9999), and an inclusive age span
+(`age_low`..`age_high`).
 
 A row that names only a `loc_id`, leaving
 `year`/`age_low`/`age_high`/`dose` blank, inherits those values from the
