@@ -54,6 +54,21 @@ test_that("expand_targets honours an explicit dose and a target_id label", {
   expect_equal(ex$target_id, "demo")
 })
 
+test_that("expand_targets uses factor labels for numeric target fields", {
+  tg <- data.frame(
+    loc_id = "A",
+    year = factor("2024"),
+    age_low = factor("2"),
+    age_high = factor("3"),
+    dose = factor("2")
+  )
+  ex <- expand_targets(tg, default_dose = 1L)
+
+  expect_equal(ex$age, 2:3)
+  expect_equal(ex$cohort, 2024L - ex$age)
+  expect_true(all(ex$dose == 2L))
+})
+
 test_that("expand_targets de-duplicates identical target identities across rows", {
   tg <- data.frame(
     loc_id = c("A", "A"),
@@ -117,7 +132,7 @@ test_that("expand_targets leaves a blank label blank", {
 test_that("validate_targets accepts a clean sheet", {
   ok <- data.frame(
     loc_id = "A;B",
-    year = 12,
+    year = 2025,
     age_low = 5,
     age_high = 7,
     dose = 2,
@@ -125,7 +140,13 @@ test_that("validate_targets accepts a clean sheet", {
     stringsAsFactors = FALSE
   )
   expect_no_error(
-    validate_targets(ok, loc_ids = c("A", "B"), max_cohort = 15, max_age = 8)
+    validate_targets(
+      ok,
+      loc_ids = c("A", "B"),
+      max_cohort = 15,
+      max_age = 8,
+      earliest = 2010
+    )
   )
 })
 
@@ -149,14 +170,20 @@ test_that("validate_targets reports a missing column and a non-numeric year", {
 test_that("validate_targets collects unknown loc, bad span, and out-of-range values", {
   bad <- data.frame(
     loc_id = "A;Nowhere",
-    year = 99,
+    year = 2030,
     age_low = 3,
     age_high = 2,
     dose = 9,
     stringsAsFactors = FALSE
   )
   err <- tryCatch(
-    validate_targets(bad, loc_ids = c("A", "B"), max_cohort = 15, max_age = 8),
+    validate_targets(
+      bad,
+      loc_ids = c("A", "B"),
+      max_cohort = 15,
+      max_age = 8,
+      earliest = 2010
+    ),
     error = identity
   )
   expect_true(inherits(err, "error"))
@@ -169,22 +196,34 @@ test_that("validate_targets collects unknown loc, bad span, and out-of-range val
 test_that("validate_targets rejects a snapshot span that expands past n_cohort", {
   bad <- data.frame(
     loc_id = "A",
-    year = 20,
+    year = 2030,
     age_low = 1,
     age_high = 5,
     dose = 2,
     stringsAsFactors = FALSE
   )
   err <- tryCatch(
-    validate_targets(bad, loc_ids = "A", max_cohort = 15, max_age = 8),
+    validate_targets(
+      bad,
+      loc_ids = "A",
+      max_cohort = 15,
+      max_age = 8,
+      earliest = 2010
+    ),
     error = identity
   )
   expect_true(inherits(err, "error"))
-  expect_match(err$message, "cohort 19, after the latest birth cohort 15")
+  expect_match(err$message, "cohort 2029, after the latest birth cohort 2024")
 
-  ok <- transform(bad, year = 12)
+  ok <- transform(bad, year = 2025)
   expect_no_error(
-    validate_targets(ok, loc_ids = "A", max_cohort = 15, max_age = 8)
+    validate_targets(
+      ok,
+      loc_ids = "A",
+      max_cohort = 15,
+      max_age = 8,
+      earliest = 2010
+    )
   )
 })
 
@@ -197,6 +236,63 @@ test_that("validate_targets checks calendar-year targets against earliest", {
   expect_no_error(check(2025, 1, 15)) # birth cohorts 2010..2024, the full range
   expect_error(check(2025, 1, 16), "before the earliest birth cohort 2010")
   expect_error(check(2026, 1, 5), "2025, after the latest birth cohort 2024")
+})
+
+test_that("target years must be whole calendar years after carry-forward", {
+  check <- function(year, earliest) {
+    tg <- data.frame(loc_id = "A", year, age_low = 1L, age_high = 1L)
+    validate_targets(
+      tg,
+      "A",
+      max_cohort = 1L,
+      max_age = 1L,
+      earliest = earliest
+    )
+  }
+
+  expect_no_error(check(1000, 999L))
+  expect_no_error(check(9999, 9998L))
+  for (year in list(999, "0999", 10000, 2024.5, 2024 + 1e-12, Inf)) {
+    expect_error(
+      check(year, 2023L),
+      "'Target Year'.*1000 through 9999.*row\\(s\\): 2"
+    )
+  }
+  expect_no_error(check(factor("2024"), 2023L))
+  expect_equal(
+    expand_targets(
+      data.frame(
+        loc_id = "A",
+        year = factor("2024"),
+        age_low = 1L,
+        age_high = 1L
+      ),
+      default_dose = 1L
+    )$cohort,
+    2023
+  )
+
+  tg <- data.frame(
+    loc_id = c("A", "A"),
+    year = c(NA, 2024),
+    age_low = 1L,
+    age_high = 1L
+  )
+  expect_error(
+    validate_targets(tg, "A", max_cohort = 1L, max_age = 1L, earliest = 2023L),
+    "'Target Year' is blank at row\\(s\\): 2"
+  )
+  tg$year <- c(NaN, 2024)
+  err <- tryCatch(
+    validate_targets(tg, "A", max_cohort = 1L, max_age = 1L, earliest = 2023L),
+    error = identity
+  )
+  expect_match(err$message, "'Target Year' is blank at row\\(s\\): 2")
+  expect_false(grepl("birth cohort", err$message, fixed = TRUE))
+  tg$year <- c(2024, NA)
+  expect_no_error(
+    validate_targets(tg, "A", max_cohort = 1L, max_age = 1L, earliest = 2023L)
+  )
 })
 
 # --- summarize_targets -------------------------------------------------------

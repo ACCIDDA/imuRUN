@@ -15,7 +15,7 @@
 #' * `observations`: One row per observation. Columns: `obs_id` (a unique
 #'   identifier -- the loader assigns one automatically if you omit it, so it
 #'   is not a user column), `loc_id` (must exist in locations),
-#'   `year` (positive integer observation year), `age_min` and `age_max`
+#'   `year` (whole calendar year from 1000 through 9999), `age_min` and `age_max`
 #'   (positive integers giving the inclusive age span the count was drawn
 #'   over, with `age_min <= age_max`; a blank `age_max` means the single age
 #'   `age_min`), `dose` (integer in `1:max_dose`),
@@ -71,7 +71,8 @@ IMURUN_SHEETS <- c("observations", "locations")
 #'
 #' @description Required columns of the (required) `target` sheet that drives
 #' the by-target predictions. A target-request row names one or more
-#' locations (`loc_id`, a `;`-separated list), a target year (`year`), and an
+#' locations (`loc_id`, a `;`-separated list), a target year (`year`, a whole
+#' calendar year from 1000 through 9999), and an
 #' inclusive age span (`age_low`..`age_high`).
 #'
 #' A row that names only a `loc_id`, leaving `year`/`age_low`/`age_high`/`dose`

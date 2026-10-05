@@ -8,7 +8,6 @@
 # --- Golden: read the shared example workbook --------------------------------
 
 test_that("the example workbook reads data and sampler configuration", {
-  skip_if_no_readxl()
   inputs <- imuRUN::read_inputs(example_wb())
   expect_named(inputs, c("obs", "locs", "target", "config"))
   expect_gt(nrow(inputs$obs), 0)
@@ -19,7 +18,6 @@ test_that("the example workbook reads data and sampler configuration", {
 # --- Golden: validation passes clean, fails on the corrupt copy ---------------
 
 test_that("the clean example validates and the corrupt copy is rejected", {
-  skip_if_no_readxl()
   expect_no_error(imuRUN::validate_inputs(imuRUN::read_inputs(example_wb())))
   expect_error(
     imuRUN::validate_inputs(imuRUN::read_inputs(corrupt_wb())),
@@ -66,6 +64,52 @@ test_that("birth cohorts are rebased and restored by target identity", {
   expect_true(all(restored$cohort + restored$age == 2025L))
 })
 
+test_that("workbook year errors fail during a dry run", {
+  out <- withr::local_tempdir()
+  path <- file.path(out, "example.xlsx")
+  expect_true(file.copy(example_wb(), path))
+  expect_identical(imuRUN::run_fit(path, dryrun = TRUE), 0L)
+
+  n_obs <- nrow(imuRUN::read_inputs(example_wb())$obs)
+  for (year in c(1000L, 9999L)) {
+    wb <- openxlsx2::wb_load(example_wb())
+    wb$add_data(
+      "observations",
+      data.frame(year = rep(year, n_obs)),
+      start_col = 2L,
+      start_row = 2L,
+      col_names = FALSE
+    )
+    wb$add_data(
+      "target",
+      data.frame(year = year, age_low = 2L),
+      start_col = 2L,
+      start_row = 2L,
+      col_names = FALSE
+    )
+    openxlsx2::wb_save(wb, path, overwrite = TRUE)
+    expect_identical(imuRUN::run_fit(path, dryrun = TRUE), 0L)
+  }
+
+  bad_year <- function(sheet, year) {
+    wb <- openxlsx2::wb_load(example_wb())
+    wb$add_data(
+      sheet,
+      data.frame(year = year),
+      start_col = 2L,
+      start_row = 2L,
+      col_names = FALSE
+    )
+    openxlsx2::wb_save(wb, path, overwrite = TRUE)
+    imuRUN::run_fit(path, dryrun = TRUE)
+  }
+  expect_error(
+    bad_year("observations", 999),
+    "'Observation Year'.*1000 through 9999"
+  )
+  expect_error(bad_year("target", 10000), "'Target Year'.*1000 through 9999")
+})
+
 # --- Integration: a real (tiny) fit, gated ------------------------------------
 
 test_that("the example fits end-to-end (gated)", {
@@ -73,7 +117,6 @@ test_that("the example fits end-to-end (gated)", {
   if (!nzchar(Sys.getenv("IMURUN_RUN_INTEGRATION"))) {
     skip("set IMURUN_RUN_INTEGRATION=1 to run the end-to-end fit")
   }
-  skip_if_no_readxl()
   inputs <- imuRUN::read_inputs(example_wb())
   obs <- imuGAP::canonicalize_observations(inputs$obs)
   locs <- imuGAP::canonicalize_locations(inputs$locs)
@@ -135,7 +178,6 @@ test_that("run_fit writes fit.rds and amends the input workbook (gated)", {
   if (!nzchar(Sys.getenv("IMURUN_RUN_INTEGRATION"))) {
     skip("set IMURUN_RUN_INTEGRATION=1 to run the end-to-end fit")
   }
-  skip_if_no_readxl()
   out <- withr::local_tempdir()
   input <- file.path(out, "imurun_example.xlsx")
   expect_true(file.copy(example_wb(), input))

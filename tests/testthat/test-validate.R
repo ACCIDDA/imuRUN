@@ -12,6 +12,35 @@ test_that("validate_inputs accepts a path directly", {
   expect_true(isTRUE(imuRUN::validate_inputs(example_wb())))
 })
 
+test_that("observation years must be whole calendar years", {
+  obs <- data.frame(
+    obs_id = 1L,
+    loc_id = "A",
+    year = 2024,
+    age = 1L,
+    dose = 1L,
+    positive = 1L,
+    sample_n = 10L
+  )
+  locs <- data.frame(loc_id = "A", parent_id = NA)
+  check <- function(year) {
+    obs$year <- year
+    imuRUN::validate_inputs(list(obs = obs, locs = locs))
+  }
+
+  expect_true(isTRUE(check(1000)))
+  expect_true(isTRUE(check(9999)))
+  for (year in list(999, "0999", 10000, 2024.5, 2024 + 1e-12, Inf)) {
+    expect_error(
+      check(year),
+      "'Observation Year'.*1000 through 9999.*row\\(s\\): 2"
+    )
+  }
+  expect_true(isTRUE(check(factor("2024"))))
+  obs$year <- factor("2024")
+  expect_equal(imuRUN:::build_populations(obs)$cohort, 2023)
+})
+
 # --- corrupted input fails with friendly messages ----------------------------
 
 test_that("validate_inputs reports the corrupted workbook problems", {
@@ -272,9 +301,9 @@ test_that("validation checks derived cohort is positive", {
   obs <- data.frame(
     obs_id = 1,
     loc_id = "A",
-    year = 5,
-    age_min = 6,
-    age_max = 8,
+    year = 1000,
+    age_min = 1001,
+    age_max = 1002,
     dose = 1,
     positive = 1,
     sample_n = 10

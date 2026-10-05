@@ -103,7 +103,7 @@ fill_target_locf <- function(targets) {
 #' @examples
 #' tg <- data.frame(
 #'   loc_id = "Bunting School; Cardinal Academy",
-#'   year = 20, age_low = 1, age_high = 5
+#'   year = 2020, age_low = 1, age_high = 5
 #' )
 #' expand_targets(tg, default_dose = 2L)
 #'
@@ -122,12 +122,13 @@ expand_targets <- function(targets, default_dose) {
     if (length(locs) == 0) {
       next
     }
+    # Convert numeric target fields via factor labels, not integer level codes.
     ages <- seq.int(
-      as.integer(targets$age_low[i]),
-      as.integer(targets$age_high[i])
+      as.integer(as.character(targets$age_low[i])),
+      as.integer(as.character(targets$age_high[i]))
     )
     dose <- if (has_dose && !is_blank(targets$dose[i])) {
-      as.integer(targets$dose[i])
+      as.integer(as.character(targets$dose[i]))
     } else {
       as.integer(default_dose)
     }
@@ -136,7 +137,8 @@ expand_targets <- function(targets, default_dose) {
     } else {
       NA_character_
     }
-    ref_cohort <- as.integer(targets$year[i]) - as.integer(targets$age_high[i])
+    ref_cohort <- as.integer(as.character(targets$year[i])) -
+      as.integer(as.character(targets$age_high[i]))
     grid <- as.data.frame(
       imuGAP::create_target(
         location = locs,
@@ -196,6 +198,7 @@ expand_targets <- function(targets, default_dose) {
 #' @description Checks that `targets` matches [IMURUN_TARGET_SCHEMA], that every
 #' named location exists in `loc_ids`, that `age_low <= age_high`, and that the
 #' requested ages and birth cohorts fall within `max_age` and the observations'.
+#' Target years must be whole calendar years from 1000 through 9999.
 #'
 #' @param targets data.frame of target requests.
 #' @param loc_ids character vector of valid location identifiers.
@@ -211,8 +214,9 @@ expand_targets <- function(targets, default_dose) {
 #' @seealso [expand_targets()], [IMURUN_TARGET_SCHEMA]
 #'
 #' @examples
-#' tg <- data.frame(loc_id = "A;B", year = 12, age_low = 5, age_high = 7)
-#' validate_targets(tg, loc_ids = c("A", "B"), max_cohort = 15, max_age = 8)
+#' tg <- data.frame(loc_id = "A;B", year = 2025, age_low = 5, age_high = 7)
+#' validate_targets(tg, loc_ids = c("A", "B"), max_cohort = 15,
+#'                  max_age = 8, earliest = 2010)
 #'
 #' @export
 validate_targets <- function(
@@ -235,11 +239,29 @@ validate_targets <- function(
     stop(format_validation_error(problems), call. = FALSE)
   }
 
-  year <- suppressWarnings(as.integer(targets$year))
-  age_low <- suppressWarnings(as.integer(targets$age_low))
-  age_high <- suppressWarnings(as.integer(targets$age_high))
+  problems <- c(problems, check_calendar_year_column(targets, "target"))
+  blank_year <- which(
+    is.na(targets$year) | !nzchar(trimws(as.character(targets$year)))
+  )
+  if (length(blank_year) > 0L) {
+    problems <- c(
+      problems,
+      sprintf(
+        "[target] 'Target Year' is blank at row(s): %s",
+        sheet_rows(blank_year)
+      )
+    )
+  }
+
+  year <- suppressWarnings(as.integer(as.character(targets$year)))
+  year[union(
+    blank_year,
+    invalid_calendar_year_rows(targets$year)
+  )] <- NA_integer_
+  age_low <- suppressWarnings(as.integer(as.character(targets$age_low)))
+  age_high <- suppressWarnings(as.integer(as.character(targets$age_high)))
   dose <- if ("dose" %in% names(targets)) {
-    suppressWarnings(as.integer(targets$dose))
+    suppressWarnings(as.integer(as.character(targets$dose)))
   } else {
     rep(NA_integer_, nrow(targets))
   }
