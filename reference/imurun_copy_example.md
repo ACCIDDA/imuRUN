@@ -42,6 +42,6 @@ dir <- tempfile("imurun_example_")
 if (nzchar(imurun_example())) {
   imurun_copy_example(dir)
 }
-#> Created: /tmp/Rtmp4eG4gN/imurun_example_19df3a959df0/imurun_example.xlsx
-#> Validate it with:  imuRUN::run_fit("/tmp/Rtmp4eG4gN/imurun_example_19df3a959df0/imurun_example.xlsx", dryrun = TRUE)
+#> Created: /tmp/RtmpcUsidk/imurun_example_1a5b5568473a/imurun_example.xlsx
+#> Validate it with:  imuRUN::run_fit("/tmp/RtmpcUsidk/imurun_example_1a5b5568473a/imurun_example.xlsx", dryrun = TRUE)
 ```
