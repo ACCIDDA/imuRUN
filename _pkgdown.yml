@@ -3,6 +3,11 @@ template:
   light-switch: true
   bootstrap: 5
 
+navbar:
+  structure:
+    left: [intro, articles, reference, news]
+    right: [search, github, lightswitch]
+
 authors:
   sidebar:
     roles: [aut, cre, ctb]
